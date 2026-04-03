@@ -9,10 +9,14 @@ export default function Products() {
   const [showForm, setShowForm] = useState(false);
   const [showImport, setShowImport] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [editFormData, setEditFormData] = useState({});
   const [csvFile, setCsvFile] = useState(null);
   const [warrantyAlerts, setWarrantyAlerts] = useState([]);
   const [maintenanceAlerts, setMaintenanceAlerts] = useState([]);
+  const [productActivities, setProductActivities] = useState([]);
+  const [attachmentFile, setAttachmentFile] = useState(null);
   const [formData, setFormData] = useState({
     name: '', serial_number: '', description: '', price: '', model: '', category: '', 
     specifications: '', warranty_period: '', purchase_date: '', next_maintenance_date: '', license_code: ''
@@ -119,6 +123,66 @@ export default function Products() {
   const handleProductClick = (product) => {
     setSelectedProduct(product);
     setShowDetails(true);
+    setIsEditMode(false);
+    fetchProductActivities(product.id);
+  };
+
+  const fetchProductActivities = async (productId) => {
+    try {
+      const response = await axios.get(`${API_URL}/api/activities`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const filtered = response.data.filter(act => 
+        act.product_ids && act.product_ids.includes(productId)
+      );
+      setProductActivities(filtered);
+    } catch (error) {
+      console.error('Error fetching activities:', error);
+    }
+  };
+
+  const handleEditClick = () => {
+    setIsEditMode(true);
+    setEditFormData({
+      name: selectedProduct.name,
+      model: selectedProduct.model || '',
+      category: selectedProduct.category || '',
+      price: selectedProduct.price || '',
+      license_code: selectedProduct.license_code || '',
+      warranty_period: selectedProduct.warranty_period || '',
+      purchase_date: selectedProduct.purchase_date ? selectedProduct.purchase_date.split('T')[0] : '',
+      next_maintenance_date: selectedProduct.next_maintenance_date ? selectedProduct.next_maintenance_date.split('T')[0] : '',
+      description: selectedProduct.description || '',
+      specifications: selectedProduct.specifications || ''
+    });
+  };
+
+  const handleSaveEdit = async () => {
+    try {
+      await axios.put(`${API_URL}/api/products/${selectedProduct.id}`, editFormData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      alert('Product updated successfully!');
+      fetchProducts();
+      fetchAlerts();
+      setIsEditMode(false);
+      setShowDetails(false);
+    } catch (error) {
+      alert('Error updating product: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleAttachmentUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    // In a real app, upload to server and save URL
+    // For now, we'll just show a message
+    alert(`File "${file.name}" would be uploaded to the server and linked to this product`);
   };
 
   if (loading) return <div className="flex items-center justify-center min-h-screen"><div>Loading...</div></div>;
@@ -224,14 +288,25 @@ export default function Products() {
 
         {/* Product Details Modal */}
         {showDetails && selectedProduct && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="flex justify-between items-start mb-4">
-                <h2 className="text-2xl font-bold text-gray-800">{selectedProduct.name}</h2>
-                <button onClick={() => setShowDetails(false)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 print:relative print:bg-white">
+            <div className="bg-white rounded-lg p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto print:max-h-none">
+              <div className="flex justify-between items-start mb-4 print:mb-2">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-800">{selectedProduct.name}</h2>
+                  <p className="text-sm text-gray-500">Serial: {selectedProduct.serial_number}</p>
+                </div>
+                <div className="flex gap-2 print:hidden">
+                  {user.role === 'admin' && !isEditMode && (
+                    <button onClick={handleEditClick} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">✏️ Edit</button>
+                  )}
+                  <button onClick={handlePrint} className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">🖨️ Print</button>
+                  <button onClick={() => { setShowDetails(false); setIsEditMode(false); }} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {!isEditMode ? (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 print:gap-4">
                 {/* Basic Information */}
                 <div className="bg-blue-50 p-4 rounded-lg">
                   <h3 className="font-semibold text-blue-800 mb-3 text-lg">📋 Basic Information</h3>
@@ -299,9 +374,72 @@ export default function Products() {
                 </div>
               )}
 
-              <div className="mt-6 flex justify-end">
-                <button onClick={() => setShowDetails(false)} className="px-6 py-2 bg-gradient-to-r from-blue-500 to-green-500 text-white rounded-lg hover:shadow-lg">Close</button>
+              {/* Activity History */}
+              {productActivities.length > 0 && (
+                <div className="mt-4 bg-indigo-50 p-4 rounded-lg print:break-inside-avoid">
+                  <h3 className="font-semibold text-indigo-800 mb-3">📋 Activity History ({productActivities.length})</h3>
+                  <div className="space-y-2">
+                    {productActivities.slice(0, 5).map(activity => (
+                      <div key={activity.id} className="bg-white p-3 rounded border-l-4 border-indigo-500">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="font-medium text-sm">{activity.title}</p>
+                            <p className="text-xs text-gray-600">{activity.description || 'No description'}</p>
+                          </div>
+                          <span className={`text-xs px-2 py-1 rounded ${
+                            activity.status === 'completed' ? 'bg-green-100 text-green-800' :
+                            activity.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {activity.status}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                    {productActivities.length > 5 && (
+                      <p className="text-xs text-gray-500">+ {productActivities.length - 5} more activities</p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Attachments Section */}
+              <div className="mt-4 bg-yellow-50 p-4 rounded-lg print:hidden">
+                <h3 className="font-semibold text-yellow-800 mb-2">📎 Attachments</h3>
+                <input 
+                  type="file" 
+                  onChange={handleAttachmentUpload}
+                  className="text-sm"
+                  accept="image/*,.pdf,.doc,.docx"
+                />
+                <p className="text-xs text-gray-500 mt-1">Upload photos, documents, or maintenance reports</p>
               </div>
+
+              <div className="mt-6 flex justify-end print:hidden">
+                <button onClick={() => { setShowDetails(false); setIsEditMode(false); }} className="px-6 py-2 bg-gradient-to-r from-blue-500 to-green-500 text-white rounded-lg hover:shadow-lg">Close</button>
+              </div>
+              </>
+            ) : (
+              /* Edit Mode Form */
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div><label className="block text-sm mb-1">Name *</label><input type="text" required value={editFormData.name} onChange={(e) => setEditFormData({...editFormData, name: e.target.value})} className="w-full border rounded px-3 py-2" /></div>
+                  <div><label className="block text-sm mb-1">Model</label><input type="text" value={editFormData.model} onChange={(e) => setEditFormData({...editFormData, model: e.target.value})} className="w-full border rounded px-3 py-2" /></div>
+                  <div><label className="block text-sm mb-1">Category</label><input type="text" value={editFormData.category} onChange={(e) => setEditFormData({...editFormData, category: e.target.value})} className="w-full border rounded px-3 py-2" /></div>
+                  <div><label className="block text-sm mb-1">Price</label><input type="number" step="0.01" value={editFormData.price} onChange={(e) => setEditFormData({...editFormData, price: e.target.value})} className="w-full border rounded px-3 py-2" /></div>
+                  <div><label className="block text-sm mb-1">License Code</label><input type="text" value={editFormData.license_code} onChange={(e) => setEditFormData({...editFormData, license_code: e.target.value})} className="w-full border rounded px-3 py-2" /></div>
+                  <div><label className="block text-sm mb-1">Warranty Period</label><input type="text" value={editFormData.warranty_period} onChange={(e) => setEditFormData({...editFormData, warranty_period: e.target.value})} className="w-full border rounded px-3 py-2" /></div>
+                  <div><label className="block text-sm mb-1">Purchase Date</label><input type="date" value={editFormData.purchase_date} onChange={(e) => setEditFormData({...editFormData, purchase_date: e.target.value})} className="w-full border rounded px-3 py-2" /></div>
+                  <div><label className="block text-sm mb-1">Next Maintenance</label><input type="date" value={editFormData.next_maintenance_date} onChange={(e) => setEditFormData({...editFormData, next_maintenance_date: e.target.value})} className="w-full border rounded px-3 py-2" /></div>
+                </div>
+                <div><label className="block text-sm mb-1">Description</label><textarea value={editFormData.description} onChange={(e) => setEditFormData({...editFormData, description: e.target.value})} className="w-full border rounded px-3 py-2" rows="3" /></div>
+                <div><label className="block text-sm mb-1">Specifications</label><textarea value={editFormData.specifications} onChange={(e) => setEditFormData({...editFormData, specifications: e.target.value})} className="w-full border rounded px-3 py-2" rows="3" /></div>
+                <div className="flex gap-2 justify-end">
+                  <button onClick={() => setIsEditMode(false)} className="px-4 py-2 border rounded">Cancel</button>
+                  <button onClick={handleSaveEdit} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">💾 Save Changes</button>
+                </div>
+              </div>
+            )}
             </div>
           </div>
         )}

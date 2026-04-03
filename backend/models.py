@@ -85,13 +85,14 @@ class ActivityCreate(BaseModel):
     description: Optional[str] = None
     assigned_to: str  # user_id
     client_id: Optional[str] = None
-    customer_id: Optional[str] = None  # NEW: Customer reference
-    product_ids: Optional[List[str]] = []  # NEW: Multiple products
+    customer_id: Optional[str] = None  # Customer reference
+    product_ids: Optional[List[str]] = []  # Multiple products
     status: ActivityStatus = ActivityStatus.pending
     priority: ActivityPriority = ActivityPriority.medium
     due_date: Optional[datetime] = None
     location_lat: Optional[float] = None
     location_lng: Optional[float] = None
+    maintenance_report: Optional[str] = None  # NEW: Maintenance work report after completion
 
 class Activity(ActivityCreate):
     model_config = ConfigDict(extra="ignore")
@@ -101,20 +102,22 @@ class Activity(ActivityCreate):
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     status_history: Optional[List[dict]] = []  # Track status changes with notes
     progress_updates: Optional[List[dict]] = []  # Track progress while in_progress
+    completion_date: Optional[datetime] = None  # NEW: When activity was completed
 
 class ActivityUpdate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
     assigned_to: Optional[str] = None
     client_id: Optional[str] = None
-    customer_id: Optional[str] = None  # NEW: Customer reference
-    product_ids: Optional[List[str]] = None  # NEW: Multiple products
+    customer_id: Optional[str] = None  # Customer reference
+    product_ids: Optional[List[str]] = None  # Multiple products
     status: Optional[ActivityStatus] = None
     priority: Optional[ActivityPriority] = None
     due_date: Optional[datetime] = None
     location_lat: Optional[float] = None
     location_lng: Optional[float] = None
     notes: Optional[str] = None  # Status update notes
+    maintenance_report: Optional[str] = None  # NEW: Maintenance work report
 
 # Team Models
 class TeamCreate(BaseModel):
