@@ -297,7 +297,10 @@ async def update_location(
 
 @api_router.get("/locations/current")
 async def get_current_locations(current_user_id: str = Depends(get_current_user)):
-    """Get the most recent location for all users"""
+    """Get the most recent location for all users - Admin only"""
+    # Only admins can view all locations
+    await require_admin(current_user_id)
+    
     users = await db.users.find({}, {"_id": 0, "id": 1, "name": 1, "role": 1}).to_list(1000)
     
     result = []
@@ -474,6 +477,26 @@ async def update_activity(
     update_data = activity_update.model_dump(exclude_unset=True)
     if not update_data:
         raise HTTPException(status_code=400, detail="No fields to update")
+    
+    # If status is being updated and notes are provided, add to history
+    if 'status' in update_data:
+        activity_doc = await db.activities.find_one({"id": activity_id}, {"_id": 0})
+        if not activity_doc:
+            raise HTTPException(status_code=404, detail="Activity not found")
+        
+        # Create status history entry
+        status_entry = {
+            'status': update_data['status'],
+            'updated_by': current_user_id,
+            'timestamp': datetime.now(timezone.utc).isoformat(),
+            'notes': update_data.pop('notes', '')  # Remove notes from main update, add to history
+        }
+        
+        # Update status history
+        await db.activities.update_one(
+            {"id": activity_id},
+            {"$push": {"status_history": status_entry}}
+        )
     
     update_data['updated_at'] = datetime.now(timezone.utc).isoformat()
     if 'due_date' in update_data and update_data['due_date']:

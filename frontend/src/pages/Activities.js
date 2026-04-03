@@ -14,6 +14,9 @@ const Activities = () => {
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [filterStatus, setFilterStatus] = useState('all');
+  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [selectedActivity, setSelectedActivity] = useState(null);
+  const [statusUpdateNote, setStatusUpdateNote] = useState('');
   const [newActivity, setNewActivity] = useState({
     title: '',
     description: '',
@@ -55,8 +58,25 @@ const Activities = () => {
   };
 
   const handleUpdateStatus = async (activityId, newStatus) => {
+    setSelectedActivity({ id: activityId, newStatus });
+    setShowStatusModal(true);
+  };
+
+  const handleConfirmStatusUpdate = async () => {
+    if (!statusUpdateNote.trim()) {
+      alert('Please enter details about this status update');
+      return;
+    }
+
     try {
-      await api.put(`/activities/${activityId}`, { status: newStatus });
+      await api.put(`/activities/${selectedActivity.id}`, { 
+        status: selectedActivity.newStatus,
+        notes: statusUpdateNote
+      });
+      alert('Activity status updated successfully!');
+      setShowStatusModal(false);
+      setStatusUpdateNote('');
+      setSelectedActivity(null);
       fetchData();
     } catch (error) {
       alert('Error updating status: ' + (error.response?.data?.detail || error.message));
@@ -226,6 +246,53 @@ const Activities = () => {
               </form>
             </CardContent>
           </Card>
+        )}
+
+        {/* Status Update Modal */}
+        {showStatusModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <Card className="w-full max-w-md mx-4">
+              <CardHeader>
+                <CardTitle>Update Activity Status</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <p className="text-sm text-gray-600">
+                    You are updating the status to: <strong className="capitalize">{selectedActivity?.newStatus?.replace('_', ' ')}</strong>
+                  </p>
+                  <div>
+                    <Label>Enter details about this status update *</Label>
+                    <textarea
+                      className="w-full border rounded-md p-2 mt-1"
+                      rows="4"
+                      placeholder="What work was done? Any blockers? Next steps?"
+                      value={statusUpdateNote}
+                      onChange={(e) => setStatusUpdateNote(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button 
+                      onClick={handleConfirmStatusUpdate}
+                      className="bg-gradient-to-r from-blue-600 to-green-600"
+                    >
+                      Confirm Update
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        setShowStatusModal(false);
+                        setStatusUpdateNote('');
+                        setSelectedActivity(null);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         )}
 
         {loading ? (

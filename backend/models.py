@@ -97,6 +97,7 @@ class Activity(ActivityCreate):
     created_by: str
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    status_history: Optional[List[dict]] = []  # Track status changes with notes
 
 class ActivityUpdate(BaseModel):
     title: Optional[str] = None
@@ -108,6 +109,7 @@ class ActivityUpdate(BaseModel):
     due_date: Optional[datetime] = None
     location_lat: Optional[float] = None
     location_lng: Optional[float] = None
+    notes: Optional[str] = None  # Status update notes
 
 # Team Models
 class TeamCreate(BaseModel):
