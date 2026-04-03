@@ -78,12 +78,6 @@ const LocationTracking = () => {
   // Default center (San Francisco)
   const defaultCenter = [37.7749, -122.4194];
 
-  useEffect(() => {
-    if (user?.role === 'admin') {
-      fetchGeofences();
-    }
-  }, [user]);
-
   const fetchGeofences = async () => {
     try {
       const response = await api.get('/geofences');
@@ -92,6 +86,12 @@ const LocationTracking = () => {
       console.error('Error fetching geofences:', error);
     }
   };
+
+  useEffect(() => {
+    if (user?.role === 'admin') {
+      fetchGeofences();
+    }
+  }, [user]);
 
   // Check if user is admin - show access denied early
   if (user?.role !== 'admin') {
@@ -119,21 +119,6 @@ const LocationTracking = () => {
       </div>
     );
   }
-
-  useEffect(() => {
-    if (user?.role === 'admin') {
-      fetchGeofences();
-    }
-  }, [user]);
-
-  const fetchGeofences = async () => {
-    try {
-      const response = await api.get('/geofences');
-      setGeofences(response.data);
-    } catch (error) {
-      console.error('Error fetching geofences:', error);
-    }
-  };
 
   const handleStartTracking = () => {
     const cleanup = startTracking();
