@@ -486,6 +486,7 @@ const Activities = () => {
                         <p className="text-gray-600 mb-3">{activity.description}</p>
                       )}
                       <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 mb-2">
+                        <span>👤 Created by: <strong className="text-blue-600">{getUserName(activity.created_by)}</strong></span>
                         <span>Assigned to: <strong>{getUserName(activity.assigned_to)}</strong></span>
                         {activity.due_date && (
                           <span>Due: {new Date(activity.due_date).toLocaleDateString()}</span>

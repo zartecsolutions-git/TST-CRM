@@ -441,11 +441,20 @@ async def get_activities(
     assigned_to: Optional[str] = None,
     current_user_id: str = Depends(get_current_user)
 ):
+    # Get current user data for role-based filtering
+    user_data = await get_current_user_data(current_user_id)
+    
     query = {}
+    
+    # Role-based filtering: support users see only activities assigned to them
+    if user_data['role'] == 'support':
+        query['assigned_to'] = current_user_id
+    # If assigned_to filter is explicitly provided, use it (admin/sales can filter)
+    elif assigned_to:
+        query['assigned_to'] = assigned_to
+    
     if status:
         query['status'] = status
-    if assigned_to:
-        query['assigned_to'] = assigned_to
     
     activities = await db.activities.find(query, {"_id": 0}).to_list(1000)
     
