@@ -1,29 +1,58 @@
 {
   "expo": {
-    "name": "crm-mobile",
+    "name": "CRM Mobile",
     "slug": "crm-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#3B82F6"
     },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.crm.mobile",
+      "infoPlist": {
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "This app needs access to your location to track your work activities.",
+        "NSLocationWhenInUseUsageDescription": "This app needs access to your location to track your work activities.",
+        "UIBackgroundModes": [
+          "location"
+        ]
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#3B82F6"
       },
-      "edgeToEdgeEnabled": true
+      "package": "com.crm.mobile",
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "FOREGROUND_SERVICE",
+        "FOREGROUND_SERVICE_LOCATION"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow CRM Mobile to use your location to track work activities.",
+          "locationAlwaysPermission": "Allow CRM Mobile to use your location in the background to track work activities.",
+          "locationWhenInUsePermission": "Allow CRM Mobile to use your location to track work activities.",
+          "isAndroidBackgroundLocationEnabled": true,
+          "isAndroidForegroundServiceEnabled": true
+        }
+      ]
+    ]
   }
 }
