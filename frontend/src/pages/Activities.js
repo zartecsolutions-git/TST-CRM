@@ -15,8 +15,10 @@ const Activities = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [filterStatus, setFilterStatus] = useState('all');
   const [showStatusModal, setShowStatusModal] = useState(false);
+  const [showProgressModal, setShowProgressModal] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState(null);
   const [statusUpdateNote, setStatusUpdateNote] = useState('');
+  const [progressUpdate, setProgressUpdate] = useState({ update: '', percentage: 0 });
   const [newActivity, setNewActivity] = useState({
     title: '',
     description: '',
@@ -80,6 +82,29 @@ const Activities = () => {
       fetchData();
     } catch (error) {
       alert('Error updating status: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  const handleAddProgressUpdate = (activityId) => {
+    setSelectedActivity({ id: activityId });
+    setShowProgressModal(true);
+  };
+
+  const handleConfirmProgressUpdate = async () => {
+    if (!progressUpdate.update.trim()) {
+      alert('Please enter progress details');
+      return;
+    }
+
+    try {
+      await api.post(`/activities/${selectedActivity.id}/progress`, progressUpdate);
+      alert('Progress update added successfully!');
+      setShowProgressModal(false);
+      setProgressUpdate({ update: '', percentage: 0 });
+      setSelectedActivity(null);
+      fetchData();
+    } catch (error) {
+      alert('Error adding progress: ' + (error.response?.data?.detail || error.message));
     }
   };
 
@@ -283,6 +308,67 @@ const Activities = () => {
                       onClick={() => {
                         setShowStatusModal(false);
                         setStatusUpdateNote('');
+                        setSelectedActivity(null);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Progress Update Modal */}
+        {showProgressModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <Card className="w-full max-w-md mx-4">
+              <CardHeader>
+                <CardTitle>Add Progress Update</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <p className="text-sm text-gray-600">
+                    Track your progress on this activity
+                  </p>
+                  <div>
+                    <Label>Progress Details *</Label>
+                    <textarea
+                      className="w-full border rounded-md p-2 mt-1"
+                      rows="4"
+                      placeholder="What have you completed? What's next?"
+                      value={progressUpdate.update}
+                      onChange={(e) => setProgressUpdate({...progressUpdate, update: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label>Completion Percentage</Label>
+                    <div className="flex items-center space-x-2">
+                      <Input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={progressUpdate.percentage}
+                        onChange={(e) => setProgressUpdate({...progressUpdate, percentage: parseInt(e.target.value)})}
+                        className="flex-1"
+                      />
+                      <span className="font-semibold text-blue-600 w-12">{progressUpdate.percentage}%</span>
+                    </div>
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button 
+                      onClick={handleConfirmProgressUpdate}
+                      className="bg-gradient-to-r from-blue-600 to-green-600"
+                    >
+                      Add Progress
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        setShowProgressModal(false);
+                        setProgressUpdate({ update: '', percentage: 0 });
                         setSelectedActivity(null);
                       }}
                     >

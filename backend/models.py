@@ -98,6 +98,7 @@ class Activity(ActivityCreate):
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     status_history: Optional[List[dict]] = []  # Track status changes with notes
+    progress_updates: Optional[List[dict]] = []  # Track progress while in_progress
 
 class ActivityUpdate(BaseModel):
     title: Optional[str] = None

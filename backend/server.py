@@ -521,6 +521,39 @@ async def update_activity(
     
     return Activity(**activity_doc)
 
+@api_router.post("/activities/{activity_id}/progress")
+async def add_progress_update(
+    activity_id: str,
+    update_data: dict,
+    current_user_id: str = Depends(get_current_user)
+):
+    """Add a progress update to an in-progress activity"""
+    activity_doc = await db.activities.find_one({"id": activity_id}, {"_id": 0})
+    if not activity_doc:
+        raise HTTPException(status_code=404, detail="Activity not found")
+    
+    if activity_doc.get('status') != 'in_progress':
+        raise HTTPException(status_code=400, detail="Can only add progress updates to in-progress activities")
+    
+    # Create progress entry
+    progress_entry = {
+        'update': update_data.get('update', ''),
+        'percentage': update_data.get('percentage', 0),
+        'updated_by': current_user_id,
+        'timestamp': datetime.now(timezone.utc).isoformat()
+    }
+    
+    # Add to progress_updates array
+    await db.activities.update_one(
+        {"id": activity_id},
+        {
+            "$push": {"progress_updates": progress_entry},
+            "$set": {"updated_at": datetime.now(timezone.utc).isoformat()}
+        }
+    )
+    
+    return {"message": "Progress update added successfully", "progress": progress_entry}
+
 @api_router.delete("/activities/{activity_id}")
 async def delete_activity(activity_id: str, current_user_id: str = Depends(get_current_user)):
     # Only admins can delete activities
