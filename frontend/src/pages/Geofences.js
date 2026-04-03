@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 import api from '../utils/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 const Geofences = () => {
+  const { user: currentUser } = useAuth();
   const [geofences, setGeofences] = useState([]);
   const [alerts, setAlerts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -98,12 +100,14 @@ const Geofences = () => {
           <div>
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-semibold">Geofences ({geofences.length})</h2>
-              <Button
-                onClick={() => setShowAddForm(!showAddForm)}
-                className="bg-gradient-to-r from-blue-600 to-green-600"
-              >
-                + Create Geofence
-              </Button>
+              {isAdmin && (
+                <Button
+                  onClick={() => setShowAddForm(!showAddForm)}
+                  className="bg-gradient-to-r from-blue-600 to-green-600"
+                >
+                  + Create Geofence
+                </Button>
+              )}
             </div>
 
             {showAddForm && (
@@ -208,13 +212,15 @@ const Geofences = () => {
                             </div>
                           </div>
                         </div>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => handleDeleteGeofence(geofence.id)}
-                        >
-                          Delete
-                        </Button>
+                        {isAdmin && (
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => handleDeleteGeofence(geofence.id)}
+                          >
+                            Delete
+                          </Button>
+                        )}
                       </div>
                     </CardContent>
                   </Card>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 import api from '../utils/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 
 const Activities = () => {
+  const { user: currentUser } = useAuth();
   const [activities, setActivities] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -141,12 +143,14 @@ const Activities = () => {
               Completed
             </Button>
           </div>
-          <Button
-            onClick={() => setShowAddForm(!showAddForm)}
-            className="bg-gradient-to-r from-blue-600 to-green-600"
-          >
-            + Create Activity
-          </Button>
+          {canCreateActivity && (
+            <Button
+              onClick={() => setShowAddForm(!showAddForm)}
+              className="bg-gradient-to-r from-blue-600 to-green-600"
+            >
+              + Create Activity
+            </Button>
+          )}
         </div>
 
         {showAddForm && (
@@ -258,13 +262,15 @@ const Activities = () => {
                           {activity.status === 'pending' ? 'Start' : 'Complete'}
                         </Button>
                       )}
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => handleDeleteActivity(activity.id)}
-                      >
-                        Delete
-                      </Button>
+                      {isAdmin && (
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleDeleteActivity(activity.id)}
+                        >
+                          Delete
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </CardContent>

@@ -57,9 +57,15 @@ const Users = () => {
       alert('User deleted successfully!');
       fetchUsers();
     } catch (error) {
-      alert('Error deleting user: ' + (error.response?.data?.detail || error.message));
+      if (error.response?.status === 403) {
+        alert('Only admins can delete users');
+      } else {
+        alert('Error deleting user: ' + (error.response?.data?.detail || error.message));
+      }
     }
   };
+
+  const isAdmin = currentUser?.role === 'admin';
 
   const getRoleBadgeColor = (role) => {
     switch (role) {
@@ -126,12 +132,14 @@ const Users = () => {
               Clients
             </Button>
           </div>
-          <Button
-            onClick={() => setShowAddForm(!showAddForm)}
-            className="bg-gradient-to-r from-blue-600 to-green-600"
-          >
-            + Add User
-          </Button>
+          {isAdmin && (
+            <Button
+              onClick={() => setShowAddForm(!showAddForm)}
+              className="bg-gradient-to-r from-blue-600 to-green-600"
+            >
+              + Add User
+            </Button>
+          )}
         </div>
 
         {/* Add User Form */}
@@ -228,7 +236,7 @@ const Users = () => {
                     <Badge className={getRoleBadgeColor(user.role)}>
                       {user.role}
                     </Badge>
-                    {user.id !== currentUser?.id && (
+                    {isAdmin && user.id !== currentUser?.id && (
                       <Button
                         size="sm"
                         variant="destructive"

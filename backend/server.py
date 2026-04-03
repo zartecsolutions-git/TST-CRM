@@ -24,6 +24,7 @@ from auth import (
     get_password_hash, verify_password, create_access_token,
     get_current_user, security
 )
+from rbac import require_admin, require_admin_or_agent, get_current_user_data
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
@@ -158,6 +159,16 @@ async def update_user(
     user_update: UserUpdate,
     current_user_id: str = Depends(get_current_user)
 ):
+    current_user = await get_current_user_data(current_user_id)
+    
+    # Only admins can update other users, users can update their own profile (except role)
+    if current_user['role'] != UserRole.admin:
+        if user_id != current_user_id:
+            raise HTTPException(status_code=403, detail="Not authorized to update other users")
+        # Non-admins cannot change their own role
+        if user_update.role is not None:
+            raise HTTPException(status_code=403, detail="Cannot change your own role")
+    
     update_data = user_update.model_dump(exclude_unset=True)
     if not update_data:
         raise HTTPException(status_code=400, detail="No fields to update")
@@ -183,6 +194,13 @@ async def update_user(
 
 @api_router.delete("/users/{user_id}")
 async def delete_user(user_id: str, current_user_id: str = Depends(get_current_user)):
+    # Only admins can delete users
+    await require_admin(current_user_id)
+    
+    # Cannot delete yourself
+    if user_id == current_user_id:
+        raise HTTPException(status_code=400, detail="Cannot delete your own account")
+    
     result = await db.users.delete_one({"id": user_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="User not found")
@@ -395,6 +413,9 @@ async def create_activity(
     activity_data: ActivityCreate,
     current_user_id: str = Depends(get_current_user)
 ):
+    # Only admins and agents can create activities
+    await require_admin_or_agent(current_user_id)
+    
     activity = Activity(**activity_data.model_dump(), created_by=current_user_id)
     activity_dict = activity.model_dump()
     activity_dict['created_at'] = activity_dict['created_at'].isoformat()
@@ -479,6 +500,9 @@ async def update_activity(
 
 @api_router.delete("/activities/{activity_id}")
 async def delete_activity(activity_id: str, current_user_id: str = Depends(get_current_user)):
+    # Only admins can delete activities
+    await require_admin(current_user_id)
+    
     result = await db.activities.delete_one({"id": activity_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Activity not found")
@@ -507,6 +531,9 @@ async def create_team(
     team_data: TeamCreate,
     current_user_id: str = Depends(get_current_user)
 ):
+    # Only admins can create teams
+    await require_admin(current_user_id)
+    
     team = Team(**team_data.model_dump())
     team_dict = team.model_dump()
     team_dict['created_at'] = team_dict['created_at'].isoformat()
@@ -571,6 +598,9 @@ async def update_team(
 
 @api_router.delete("/teams/{team_id}")
 async def delete_team(team_id: str, current_user_id: str = Depends(get_current_user)):
+    # Only admins can delete teams
+    await require_admin(current_user_id)
+    
     result = await db.teams.delete_one({"id": team_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Team not found")
@@ -582,6 +612,9 @@ async def add_team_member(
     user_id: str,
     current_user_id: str = Depends(get_current_user)
 ):
+    # Only admins can add team members
+    await require_admin(current_user_id)
+    
     # Check if user exists
     user = await db.users.find_one({"id": user_id})
     if not user:
@@ -610,6 +643,9 @@ async def remove_team_member(
     user_id: str,
     current_user_id: str = Depends(get_current_user)
 ):
+    # Only admins can remove team members
+    await require_admin(current_user_id)
+    
     result = await db.teams.update_one(
         {"id": team_id},
         {"$pull": {"member_ids": user_id}, "$set": {"updated_at": datetime.now(timezone.utc).isoformat()}}
@@ -635,6 +671,9 @@ async def create_geofence(
     geofence_data: GeofenceCreate,
     current_user_id: str = Depends(get_current_user)
 ):
+    # Only admins can create geofences
+    await require_admin(current_user_id)
+    
     geofence = Geofence(**geofence_data.model_dump(), created_by=current_user_id)
     geofence_dict = geofence.model_dump()
     geofence_dict['created_at'] = geofence_dict['created_at'].isoformat()
@@ -690,6 +729,9 @@ async def update_geofence(
 
 @api_router.delete("/geofences/{geofence_id}")
 async def delete_geofence(geofence_id: str, current_user_id: str = Depends(get_current_user)):
+    # Only admins can delete geofences
+    await require_admin(current_user_id)
+    
     result = await db.geofences.delete_one({"id": geofence_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Geofence not found")

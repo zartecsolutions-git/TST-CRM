@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 import api from '../utils/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 
 const Teams = () => {
+  const { user: currentUser } = useAuth();
   const [teams, setTeams] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -113,12 +115,14 @@ const Teams = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-semibold">All Teams ({teams.length})</h2>
-          <Button
-            onClick={() => setShowAddForm(!showAddForm)}
-            className="bg-gradient-to-r from-blue-600 to-green-600"
-          >
-            + Create Team
-          </Button>
+          {isAdmin && (
+            <Button
+              onClick={() => setShowAddForm(!showAddForm)}
+              className="bg-gradient-to-r from-blue-600 to-green-600"
+            >
+              + Create Team
+            </Button>
+          )}
         </div>
 
         {showAddForm && (
@@ -172,13 +176,15 @@ const Teams = () => {
                       <CardTitle>{team.name}</CardTitle>
                       <p className="text-sm text-gray-600 mt-1">{team.description}</p>
                     </div>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      onClick={() => handleDeleteTeam(team.id)}
-                    >
-                      Delete Team
-                    </Button>
+                    {isAdmin && (
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => handleDeleteTeam(team.id)}
+                      >
+                        Delete Team
+                      </Button>
+                    )}
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -199,13 +205,15 @@ const Teams = () => {
                               <p className="text-xs text-gray-500">{member.role}</p>
                             </div>
                           </div>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => handleRemoveMember(team.id, member.id)}
-                          >
-                            ✕
-                          </Button>
+                          {isAdmin && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleRemoveMember(team.id, member.id)}
+                            >
+                              ✕
+                            </Button>
+                          )}
                         </div>
                       ))}
                       {getTeamMembers(team).length === 0 && (
@@ -214,7 +222,7 @@ const Teams = () => {
                     </div>
                   </div>
 
-                  {getAvailableUsers(team).length > 0 && (
+                  {getAvailableUsers(team).length > 0 && isAdmin && (
                     <div>
                       <h4 className="font-semibold mb-2">Add Members</h4>
                       <div className="flex flex-wrap gap-2">
