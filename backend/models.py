@@ -261,8 +261,8 @@ class LeadCreate(BaseModel):
     estimated_value: Optional[float] = None
     quote_ref: Optional[str] = None
     quote_value: Optional[float] = None
-    quote_date: Optional[datetime] = None
-    expected_close_date: Optional[datetime] = None
+    quote_date: Optional[str] = None  # Accept as string, convert to datetime in endpoint
+    expected_close_date: Optional[str] = None  # Accept as string
     notes: Optional[str] = None
 
 class Lead(LeadCreate):
@@ -285,8 +285,8 @@ class LeadUpdate(BaseModel):
     estimated_value: Optional[float] = None
     quote_ref: Optional[str] = None
     quote_value: Optional[float] = None
-    quote_date: Optional[datetime] = None
-    expected_close_date: Optional[datetime] = None
+    quote_date: Optional[str] = None  # Accept as string
+    expected_close_date: Optional[str] = None  # Accept as string
     notes: Optional[str] = None
     lost_reason: Optional[str] = None
     update_note: Optional[str] = None  # Note for this specific update

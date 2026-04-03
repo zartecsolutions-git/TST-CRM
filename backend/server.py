@@ -1326,10 +1326,22 @@ async def create_lead(
     lead_dict = lead.model_dump()
     lead_dict['created_at'] = lead_dict['created_at'].isoformat()
     lead_dict['updated_at'] = lead_dict['updated_at'].isoformat()
+    
+    # Convert date strings to ISO format if provided
     if lead_dict.get('quote_date'):
-        lead_dict['quote_date'] = lead_dict['quote_date'].isoformat()
+        try:
+            # If it's already a string, keep it; if datetime, convert
+            if isinstance(lead_dict['quote_date'], datetime):
+                lead_dict['quote_date'] = lead_dict['quote_date'].isoformat()
+        except:
+            pass
+    
     if lead_dict.get('expected_close_date'):
-        lead_dict['expected_close_date'] = lead_dict['expected_close_date'].isoformat()
+        try:
+            if isinstance(lead_dict['expected_close_date'], datetime):
+                lead_dict['expected_close_date'] = lead_dict['expected_close_date'].isoformat()
+        except:
+            pass
     
     await db.leads.insert_one(lead_dict)
     return lead

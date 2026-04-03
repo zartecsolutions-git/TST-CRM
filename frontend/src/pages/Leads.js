@@ -55,7 +55,14 @@ export default function Leads() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`${API_URL}/api/leads`, formData, {
+      // Clean up form data - remove empty datetime fields
+      const submitData = { ...formData };
+      if (!submitData.expected_close_date) delete submitData.expected_close_date;
+      if (!submitData.quote_date) delete submitData.quote_date;
+      if (!submitData.estimated_value) delete submitData.estimated_value;
+      if (!submitData.quote_value) delete submitData.quote_value;
+      
+      await axios.post(`${API_URL}/api/leads`, submitData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       alert('Lead created successfully!');
@@ -65,6 +72,7 @@ export default function Leads() {
         status: 'new', priority: 'medium', estimated_value: '', 
         quote_ref: '', quote_value: '', quote_date: '', expected_close_date: '', notes: '' });
     } catch (error) {
+      console.error('Error creating lead:', error);
       alert(error.response?.data?.detail || 'Error saving lead');
     }
   };
@@ -72,7 +80,14 @@ export default function Leads() {
   const handleUpdate = async (e) => {
     e.preventDefault();
     try {
-      await axios.put(`${API_URL}/api/leads/${selectedLead.id}`, updateData, {
+      // Clean up update data - remove empty fields
+      const submitData = { ...updateData };
+      if (!submitData.quote_date) delete submitData.quote_date;
+      if (!submitData.quote_value) delete submitData.quote_value;
+      if (!submitData.quote_ref) delete submitData.quote_ref;
+      if (!submitData.lost_reason) delete submitData.lost_reason;
+      
+      await axios.put(`${API_URL}/api/leads/${selectedLead.id}`, submitData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       alert('Lead updated successfully!');
@@ -80,7 +95,8 @@ export default function Leads() {
       setShowUpdateModal(false);
       setSelectedLead(null);
     } catch (error) {
-      alert('Error updating lead');
+      console.error('Error updating lead:', error);
+      alert(error.response?.data?.detail || 'Error updating lead');
     }
   };
 
