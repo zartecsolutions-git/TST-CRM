@@ -407,8 +407,36 @@ const Activities = () => {
                           <span>Due: {new Date(activity.due_date).toLocaleDateString()}</span>
                         )}
                       </div>
+                      
+                      {/* Progress Updates Section */}
+                      {activity.status === 'in_progress' && activity.progress_updates && activity.progress_updates.length > 0 && (
+                        <div className="mt-4 border-t pt-3">
+                          <h4 className="text-sm font-semibold text-gray-700 mb-2">Progress Updates:</h4>
+                          <div className="space-y-2 max-h-40 overflow-y-auto">
+                            {activity.progress_updates.slice().reverse().map((update, idx) => (
+                              <div key={idx} className="bg-blue-50 p-2 rounded text-xs">
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className="font-semibold text-blue-600">{update.percentage}% Complete</span>
+                                  <span className="text-gray-500">{new Date(update.timestamp).toLocaleString()}</span>
+                                </div>
+                                <p className="text-gray-700">{update.update}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    <div className="flex space-x-2">
+                    <div className="flex flex-col space-y-2">
+                      {activity.status === 'in_progress' && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleAddProgressUpdate(activity.id)}
+                          className="border-blue-600 text-blue-600 hover:bg-blue-50"
+                        >
+                          + Add Progress
+                        </Button>
+                      )}
                       {activity.status !== 'completed' && (
                         <Button
                           size="sm"
