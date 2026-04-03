@@ -16,6 +16,7 @@ const Activities = () => {
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [filterStatus, setFilterStatus] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [showProgressModal, setShowProgressModal] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState(null);
@@ -142,6 +143,19 @@ const Activities = () => {
     return user ? user.name : 'Unassigned';
   };
 
+  const filteredActivities = activities.filter(activity => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    const userName = getUserName(activity.assigned_to).toLowerCase();
+    const customerName = customers.find(c => c.id === activity.customer_id)?.name?.toLowerCase() || '';
+    return (
+      activity.title?.toLowerCase().includes(query) ||
+      activity.description?.toLowerCase().includes(query) ||
+      userName.includes(query) ||
+      customerName.includes(query)
+    );
+  });
+
   const isAdmin = currentUser?.role === 'admin';
   const canCreateActivity = true; // All users can create activities
 
@@ -206,6 +220,22 @@ const Activities = () => {
             >
               + Create Activity
             </Button>
+          )}
+        </div>
+
+        {/* Search Bar */}
+        <div className="mb-6">
+          <input
+            type="text"
+            placeholder="🔍 Search activities by title, description, assigned user, or customer..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+          {searchQuery && (
+            <p className="text-sm text-gray-600 mt-2">
+              Found {filteredActivities.length} activit{filteredActivities.length !== 1 ? 'ies' : 'y'}
+            </p>
           )}
         </div>
 
@@ -441,7 +471,7 @@ const Activities = () => {
           </div>
         ) : (
           <div className="space-y-4">
-            {activities.map((activity) => (
+            {filteredActivities.map((activity) => (
               <Card key={activity.id} className="hover:shadow-lg transition-shadow">
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between">
@@ -537,10 +567,12 @@ const Activities = () => {
           </div>
         )}
 
-        {!loading && activities.length === 0 && (
+        {!loading && filteredActivities.length === 0 && (
           <Card>
             <CardContent className="p-12 text-center">
-              <p className="text-gray-500">No activities found</p>
+              <p className="text-gray-500">
+                {searchQuery ? 'No activities found matching your search' : 'No activities found'}
+              </p>
             </CardContent>
           </Card>
         )}

@@ -18,6 +18,7 @@ export default function Products() {
   const [maintenanceAlerts, setMaintenanceAlerts] = useState([]);
   const [productActivities, setProductActivities] = useState([]);
   const [attachmentFile, setAttachmentFile] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const [formData, setFormData] = useState({
     name: '', serial_number: '', description: '', price: '', model: '', category: '', 
     specifications: '', warranty_period: '', purchase_date: '', next_maintenance_date: '', license_code: ''
@@ -204,6 +205,18 @@ export default function Products() {
     alert(`File "${file.name}" would be uploaded to the server and linked to this product`);
   };
 
+  const filteredProducts = products.filter(product => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    return (
+      product.name?.toLowerCase().includes(query) ||
+      product.serial_number?.toLowerCase().includes(query) ||
+      product.model?.toLowerCase().includes(query) ||
+      product.category?.toLowerCase().includes(query) ||
+      product.license_code?.toLowerCase().includes(query)
+    );
+  });
+
   if (loading) return <div className="flex items-center justify-center min-h-screen"><div>Loading...</div></div>;
 
   return (
@@ -212,12 +225,33 @@ export default function Products() {
         {/* Header with Actions */}
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">Products</h1>
-          {user.role === 'admin' && (
-            <div className="flex gap-2">
-              <button onClick={handleExport} className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">📥 Export CSV</button>
-              <button onClick={() => setShowImport(true)} className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">📤 Import CSV</button>
-              <button onClick={() => setShowForm(true)} className="bg-gradient-to-r from-blue-500 to-green-500 text-white px-6 py-2 rounded-lg">+ Add Product</button>
-            </div>
+          <div className="flex gap-2">
+            <button onClick={() => window.location.href = '/dashboard'} className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+              Back to Dashboard
+            </button>
+            {user.role === 'admin' && (
+              <>
+                <button onClick={handleExport} className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">📥 Export CSV</button>
+                <button onClick={() => setShowImport(true)} className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">📤 Import CSV</button>
+                <button onClick={() => setShowForm(true)} className="bg-gradient-to-r from-blue-500 to-green-500 text-white px-6 py-2 rounded-lg">+ Add Product</button>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Search Bar */}
+        <div className="mb-4">
+          <input
+            type="text"
+            placeholder="🔍 Search products by name, serial number, model, category, or license code..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+          {searchQuery && (
+            <p className="text-sm text-gray-600 mt-2">
+              Found {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''}
+            </p>
           )}
         </div>
 
@@ -499,8 +533,10 @@ export default function Products() {
         )}
 
         <div className="bg-white rounded-lg shadow">
-          {products.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">No products yet</div>
+          {filteredProducts.length === 0 ? (
+            <div className="p-8 text-center text-gray-500">
+              {searchQuery ? 'No products found matching your search' : 'No products yet'}
+            </div>
           ) : (
             <>
               <div className="px-4 py-3 bg-gray-50 border-b text-sm text-gray-600">
@@ -519,7 +555,7 @@ export default function Products() {
                 </tr>
               </thead>
               <tbody>
-                {products.map((p) => (
+                {filteredProducts.map((p) => (
                   <tr 
                     key={p.id} 
                     onClick={() => handleProductClick(p)}
