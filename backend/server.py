@@ -8,8 +8,10 @@ import logging
 from pathlib import Path
 from typing import List, Optional
 from datetime import datetime, timedelta, timezone
+from dateutil.relativedelta import relativedelta
 import json
 import math
+import re
 
 from models import (
     UserCreate, UserLogin, User, UserUpdate, UserRole,
@@ -848,6 +850,33 @@ async def get_dashboard_stats(current_user_id: str = Depends(get_current_user)):
 # ============================================================================
 
 # ============================================================================
+# HELPER FUNCTIONS
+# ============================================================================
+
+def calculate_warranty_finished_date(purchase_date: datetime, warranty_period: str) -> Optional[datetime]:
+    """Calculate warranty end date from purchase date and warranty period string"""
+    if not purchase_date or not warranty_period:
+        return None
+    
+    # Parse warranty period (e.g., "12 months", "24 months", "1 year", "2 years")
+    warranty_period = warranty_period.lower().strip()
+    
+    # Extract number and unit
+    match = re.match(r'(\d+)\s*(month|months|year|years)', warranty_period)
+    if not match:
+        return None
+    
+    value = int(match.group(1))
+    unit = match.group(2)
+    
+    if 'month' in unit:
+        return purchase_date + relativedelta(months=value)
+    elif 'year' in unit:
+        return purchase_date + relativedelta(years=value)
+    
+    return None
+
+# ============================================================================
 # CUSTOMERS ENDPOINTS
 # ============================================================================
 
@@ -966,7 +995,16 @@ async def create_product(
     if existing:
         raise HTTPException(status_code=400, detail="Product with this serial number already exists")
     
+    # Create product instance
     product = Product(**product_data.model_dump(), created_by=current_user_id)
+    
+    # Calculate warranty_finished_date if purchase_date and warranty_period are provided
+    if product.purchase_date and product.warranty_period:
+        product.warranty_finished_date = calculate_warranty_finished_date(
+            product.purchase_date, 
+            product.warranty_period
+        )
+    
     product_dict = product.model_dump()
     product_dict['created_at'] = product_dict['created_at'].isoformat()
     product_dict['updated_at'] = product_dict['updated_at'].isoformat()
@@ -974,6 +1012,10 @@ async def create_product(
         product_dict['purchase_date'] = product_dict['purchase_date'].isoformat()
     if product_dict.get('installation_date'):
         product_dict['installation_date'] = product_dict['installation_date'].isoformat()
+    if product_dict.get('next_maintenance_date'):
+        product_dict['next_maintenance_date'] = product_dict['next_maintenance_date'].isoformat()
+    if product_dict.get('warranty_finished_date'):
+        product_dict['warranty_finished_date'] = product_dict['warranty_finished_date'].isoformat()
     
     await db.products.insert_one(product_dict)
     return product
@@ -993,6 +1035,10 @@ async def get_products(
             product['purchase_date'] = datetime.fromisoformat(product['purchase_date'])
         if product.get('installation_date') and isinstance(product['installation_date'], str):
             product['installation_date'] = datetime.fromisoformat(product['installation_date'])
+        if product.get('next_maintenance_date') and isinstance(product['next_maintenance_date'], str):
+            product['next_maintenance_date'] = datetime.fromisoformat(product['next_maintenance_date'])
+        if product.get('warranty_finished_date') and isinstance(product['warranty_finished_date'], str):
+            product['warranty_finished_date'] = datetime.fromisoformat(product['warranty_finished_date'])
     
     return products
 

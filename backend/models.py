@@ -207,9 +207,11 @@ class ProductCreate(BaseModel):
     model: Optional[str] = None
     category: Optional[str] = None
     specifications: Optional[str] = None
-    warranty_period: Optional[str] = None  # e.g., "12 months"
+    warranty_period: Optional[str] = None  # e.g., "12 months", "24 months"
     purchase_date: Optional[datetime] = None
     installation_date: Optional[datetime] = None
+    next_maintenance_date: Optional[datetime] = None  # NEW: Next scheduled maintenance
+    license_code: Optional[str] = None  # NEW: Product license code
 
 class Product(ProductCreate):
     model_config = ConfigDict(extra="ignore")
@@ -217,6 +219,7 @@ class Product(ProductCreate):
     created_by: str
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    warranty_finished_date: Optional[datetime] = None  # NEW: Auto-calculated from warranty_period + purchase_date
 
 class ProductUpdate(BaseModel):
     name: Optional[str] = None
@@ -229,6 +232,8 @@ class ProductUpdate(BaseModel):
     warranty_period: Optional[str] = None
     purchase_date: Optional[datetime] = None
     installation_date: Optional[datetime] = None
+    next_maintenance_date: Optional[datetime] = None  # NEW
+    license_code: Optional[str] = None  # NEW
 
 # Token Models
 class Token(BaseModel):
