@@ -82,6 +82,58 @@ const Dashboard = () => {
           <p className="text-gray-600 mt-1">Here's what's happening with your team today.</p>
         </div>
 
+        {/* Quick Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <Button
+            onClick={() => window.location.href = '/users'}
+            className="bg-white hover:bg-gray-50 text-gray-900 border border-gray-200 h-auto py-4"
+            data-testid="users-button"
+          >
+            <div className="flex flex-col items-center">
+              <svg className="w-8 h-8 mb-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+              <span className="font-semibold">Manage Users</span>
+            </div>
+          </Button>
+          <Button
+            onClick={() => window.location.href = '/activities'}
+            className="bg-white hover:bg-gray-50 text-gray-900 border border-gray-200 h-auto py-4"
+            data-testid="activities-button"
+          >
+            <div className="flex flex-col items-center">
+              <svg className="w-8 h-8 mb-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+              <span className="font-semibold">Manage Activities</span>
+            </div>
+          </Button>
+          <Button
+            onClick={() => window.location.href = '/teams'}
+            className="bg-white hover:bg-gray-50 text-gray-900 border border-gray-200 h-auto py-4"
+            data-testid="teams-button"
+          >
+            <div className="flex flex-col items-center">
+              <svg className="w-8 h-8 mb-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+              <span className="font-semibold">Manage Teams</span>
+            </div>
+          </Button>
+          <Button
+            onClick={() => window.location.href = '/geofences'}
+            className="bg-white hover:bg-gray-50 text-gray-900 border border-gray-200 h-auto py-4"
+            data-testid="geofences-button"
+          >
+            <div className="flex flex-col items-center">
+              <svg className="w-8 h-8 mb-2 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+              </svg>
+              <span className="font-semibold">Manage Geofences</span>
+            </div>
+          </Button>
+        </div>
+
         {loading ? (
           <div className="text-center py-12">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>

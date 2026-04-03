@@ -6,6 +6,10 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import LocationTracking from './pages/LocationTracking';
+import Users from './pages/Users';
+import Activities from './pages/Activities';
+import Teams from './pages/Teams';
+import Geofences from './pages/Geofences';
 import '@/App.css';
 
 // Protected Route Component
@@ -90,6 +94,38 @@ function App() {
               element={
                 <ProtectedRoute>
                   <LocationTracking />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/users"
+              element={
+                <ProtectedRoute>
+                  <Users />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/activities"
+              element={
+                <ProtectedRoute>
+                  <Activities />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/teams"
+              element={
+                <ProtectedRoute>
+                  <Teams />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/geofences"
+              element={
+                <ProtectedRoute>
+                  <Geofences />
                 </ProtectedRoute>
               }
             />
