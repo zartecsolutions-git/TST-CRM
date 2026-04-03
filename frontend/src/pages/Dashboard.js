@@ -137,6 +137,21 @@ const Dashboard = () => {
                 <span className="font-semibold">Products</span>
               </div>
             </Button>
+
+          {user?.role === 'sales' && (
+            <Button
+              onClick={() => window.location.href = '/meeting-plans'}
+              className="bg-white hover:bg-gray-50 text-gray-900 border border-gray-200 h-auto py-4"
+              data-testid="meetings-button"
+            >
+              <div className="flex flex-col items-center">
+                <svg className="w-8 h-8 mb-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <span className="font-semibold">Meeting Plans</span>
+              </div>
+            </Button>
+          )}
           )}
           <Button
             onClick={() => window.location.href = '/teams'}
@@ -150,7 +165,7 @@ const Dashboard = () => {
               <span className="font-semibold">{user?.role === 'admin' ? 'Manage Teams' : 'My Team'}</span>
             </div>
           </Button>
-          {(user?.role === 'admin' || user?.role === 'agent') && (
+          {(user?.role === 'admin' || user?.role === 'sales') && (
             <Button
               onClick={() => window.location.href = '/geofences'}
               className="bg-white hover:bg-gray-50 text-gray-900 border border-gray-200 h-auto py-4"
@@ -252,12 +267,12 @@ const Dashboard = () => {
                 <CardContent>
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Agents</span>
-                      <span className="text-2xl font-bold text-blue-600">{stats?.total_agents || 0}</span>
+                      <span className="text-gray-600">Sales Team</span>
+                      <span className="text-2xl font-bold text-blue-600">{stats?.total_sales || 0}</span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Clients</span>
-                      <span className="text-2xl font-bold text-green-600">{stats?.total_clients || 0}</span>
+                      <span className="text-gray-600">Support Team</span>
+                      <span className="text-2xl font-bold text-green-600">{stats?.total_support || 0}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-gray-600">Teams</span>

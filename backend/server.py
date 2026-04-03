@@ -25,6 +25,7 @@ from models import (
     GeofenceAlert, AlertType,
     CustomerCreate, Customer, CustomerUpdate,
     ProductCreate, Product, ProductUpdate,
+    MeetingPlanCreate, MeetingPlan, MeetingPlanUpdate,
     Token
 )
 from auth import (
@@ -818,8 +819,8 @@ async def get_geofence_alerts(
 @api_router.get("/dashboard/stats")
 async def get_dashboard_stats(current_user_id: str = Depends(get_current_user)):
     total_users = await db.users.count_documents({})
-    total_agents = await db.users.count_documents({"role": "agent"})
-    total_clients = await db.users.count_documents({"role": "client"})
+    total_sales = await db.users.count_documents({"role": "sales"})
+    total_support = await db.users.count_documents({"role": "support"})
     total_activities = await db.activities.count_documents({})
     pending_activities = await db.activities.count_documents({"status": "pending"})
     completed_activities = await db.activities.count_documents({"status": "completed"})
@@ -838,8 +839,8 @@ async def get_dashboard_stats(current_user_id: str = Depends(get_current_user)):
     
     return {
         "total_users": total_users,
-        "total_agents": total_agents,
-        "total_clients": total_clients,
+        "total_sales": total_sales,
+        "total_support": total_support,
         "active_users": active_users,
         "total_activities": total_activities,
         "pending_activities": pending_activities,
@@ -888,9 +889,9 @@ async def create_customer(
     customer_data: CustomerCreate,
     current_user_id: str = Depends(get_current_user)
 ):
-    # Agents and Clients can create customers
+    # Sales and Support can create customers
     user_data = await get_current_user_data(current_user_id)
-    if user_data['role'] not in ['admin', 'agent', 'client']:
+    if user_data['role'] not in ['admin', 'sales', 'support']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
     # Check if customer email already exists
@@ -1305,6 +1306,162 @@ async def import_products_csv(
         
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"CSV parsing error: {str(e)}")
+
+
+# ============================================================================
+# MEETING PLANS (SALES FEATURE)
+# ============================================================================
+
+@api_router.post("/meeting-plans", response_model=MeetingPlan)
+async def create_meeting_plan(
+    meeting_data: MeetingPlanCreate,
+    current_user_id: str = Depends(get_current_user)
+):
+    # Only sales and admin can create meeting plans
+    user_data = await get_current_user_data(current_user_id)
+    if user_data['role'] not in ['admin', 'sales']:
+        raise HTTPException(status_code=403, detail="Only sales team can create meeting plans")
+    
+    meeting = MeetingPlan(**meeting_data.model_dump(), created_by=current_user_id)
+    meeting_dict = meeting.model_dump()
+    meeting_dict['created_at'] = meeting_dict['created_at'].isoformat()
+    meeting_dict['updated_at'] = meeting_dict['updated_at'].isoformat()
+    meeting_dict['meeting_date'] = meeting_dict['meeting_date'].isoformat()
+    
+    await db.meeting_plans.insert_one(meeting_dict)
+    return meeting
+
+@api_router.get("/meeting-plans", response_model=List[MeetingPlan])
+async def get_meeting_plans(
+    current_user_id: str = Depends(get_current_user),
+    status: Optional[str] = None
+):
+    user_data = await get_current_user_data(current_user_id)
+    
+    # Sales users see only their meetings, admins see all
+    query = {}
+    if user_data['role'] == 'sales':
+        query['created_by'] = current_user_id
+    
+    if status:
+        query['status'] = status
+    
+    meetings = await db.meeting_plans.find(query, {"_id": 0}).to_list(1000)
+    
+    for meeting in meetings:
+        if isinstance(meeting.get('created_at'), str):
+            meeting['created_at'] = datetime.fromisoformat(meeting['created_at'])
+        if isinstance(meeting.get('updated_at'), str):
+            meeting['updated_at'] = datetime.fromisoformat(meeting['updated_at'])
+        if isinstance(meeting.get('meeting_date'), str):
+            meeting['meeting_date'] = datetime.fromisoformat(meeting['meeting_date'])
+    
+    return meetings
+
+@api_router.get("/meeting-plans/{meeting_id}", response_model=MeetingPlan)
+async def get_meeting_plan(
+    meeting_id: str,
+    current_user_id: str = Depends(get_current_user)
+):
+    meeting = await db.meeting_plans.find_one({"id": meeting_id}, {"_id": 0})
+    if not meeting:
+        raise HTTPException(status_code=404, detail="Meeting plan not found")
+    
+    # Sales users can only view their own meetings
+    user_data = await get_current_user_data(current_user_id)
+    if user_data['role'] == 'sales' and meeting['created_by'] != current_user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to view this meeting")
+    
+    if isinstance(meeting.get('created_at'), str):
+        meeting['created_at'] = datetime.fromisoformat(meeting['created_at'])
+    if isinstance(meeting.get('updated_at'), str):
+        meeting['updated_at'] = datetime.fromisoformat(meeting['updated_at'])
+    if isinstance(meeting.get('meeting_date'), str):
+        meeting['meeting_date'] = datetime.fromisoformat(meeting['meeting_date'])
+    
+    return MeetingPlan(**meeting)
+
+@api_router.put("/meeting-plans/{meeting_id}", response_model=MeetingPlan)
+async def update_meeting_plan(
+    meeting_id: str,
+    meeting_update: MeetingPlanUpdate,
+    current_user_id: str = Depends(get_current_user)
+):
+    meeting = await db.meeting_plans.find_one({"id": meeting_id}, {"_id": 0})
+    if not meeting:
+        raise HTTPException(status_code=404, detail="Meeting plan not found")
+    
+    # Sales users can only update their own meetings
+    user_data = await get_current_user_data(current_user_id)
+    if user_data['role'] == 'sales' and meeting['created_by'] != current_user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to update this meeting")
+    
+    update_data = meeting_update.model_dump(exclude_unset=True)
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No fields to update")
+    
+    update_data['updated_at'] = datetime.now(timezone.utc).isoformat()
+    
+    # Convert datetime fields to ISO format
+    if 'meeting_date' in update_data and isinstance(update_data['meeting_date'], datetime):
+        update_data['meeting_date'] = update_data['meeting_date'].isoformat()
+    
+    result = await db.meeting_plans.update_one(
+        {"id": meeting_id},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Meeting plan not found")
+    
+    updated_meeting = await db.meeting_plans.find_one({"id": meeting_id}, {"_id": 0})
+    
+    if isinstance(updated_meeting.get('created_at'), str):
+        updated_meeting['created_at'] = datetime.fromisoformat(updated_meeting['created_at'])
+    if isinstance(updated_meeting.get('updated_at'), str):
+        updated_meeting['updated_at'] = datetime.fromisoformat(updated_meeting['updated_at'])
+    if isinstance(updated_meeting.get('meeting_date'), str):
+        updated_meeting['meeting_date'] = datetime.fromisoformat(updated_meeting['meeting_date'])
+    
+    return MeetingPlan(**updated_meeting)
+
+@api_router.delete("/meeting-plans/{meeting_id}")
+async def delete_meeting_plan(
+    meeting_id: str,
+    current_user_id: str = Depends(get_current_user)
+):
+    meeting = await db.meeting_plans.find_one({"id": meeting_id}, {"_id": 0})
+    if not meeting:
+        raise HTTPException(status_code=404, detail="Meeting plan not found")
+    
+    # Sales users can only delete their own meetings, admins can delete any
+    user_data = await get_current_user_data(current_user_id)
+    if user_data['role'] == 'sales' and meeting['created_by'] != current_user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to delete this meeting")
+    
+    result = await db.meeting_plans.delete_one({"id": meeting_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Meeting plan not found")
+    
+    return {"message": "Meeting plan deleted successfully"}
+
+@api_router.get("/meeting-plans/upcoming/count")
+async def get_upcoming_meetings_count(current_user_id: str = Depends(get_current_user)):
+    """Get count of upcoming meetings for sales dashboard"""
+    user_data = await get_current_user_data(current_user_id)
+    
+    now = datetime.now(timezone.utc).isoformat()
+    query = {
+        "meeting_date": {"$gte": now},
+        "status": "scheduled"
+    }
+    
+    if user_data['role'] == 'sales':
+        query['created_by'] = current_user_id
+    
+    count = await db.meeting_plans.count_documents(query)
+    return {"upcoming_meetings": count}
 
 # ============================================================================
 # WEBSOCKET ENDPOINTS

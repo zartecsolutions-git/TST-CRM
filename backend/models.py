@@ -7,8 +7,8 @@ from enum import Enum
 # Enums
 class UserRole(str, Enum):
     admin = "admin"
-    agent = "agent"
-    client = "client"
+    sales = "sales"
+    support = "support"
 
 class UserStatus(str, Enum):
     active = "active"
@@ -249,6 +249,36 @@ class ProductUpdate(BaseModel):
     invoice_number: Optional[str] = None
     sale_amount: Optional[float] = None
     sale_notes: Optional[str] = None
+
+# Meeting Plan Models (Sales Feature)
+class MeetingPlanCreate(BaseModel):
+    customer_id: str
+    meeting_date: datetime
+    meeting_type: Optional[str] = None  # e.g., "Initial Contact", "Follow-up", "Demo", "Closing"
+    agenda: Optional[str] = None
+    location: Optional[str] = None
+    notes: Optional[str] = None
+    status: str = "scheduled"  # scheduled, completed, cancelled
+
+class MeetingPlan(MeetingPlanCreate):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    created_by: str
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    outcome: Optional[str] = None  # Meeting outcome/result
+    next_steps: Optional[str] = None
+
+class MeetingPlanUpdate(BaseModel):
+    customer_id: Optional[str] = None
+    meeting_date: Optional[datetime] = None
+    meeting_type: Optional[str] = None
+    agenda: Optional[str] = None
+    location: Optional[str] = None
+    notes: Optional[str] = None
+    status: Optional[str] = None
+    outcome: Optional[str] = None
+    next_steps: Optional[str] = None
 
 # Token Models
 class Token(BaseModel):

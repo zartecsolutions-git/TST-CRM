@@ -12,6 +12,7 @@ import Teams from './pages/Teams';
 import Geofences from './pages/Geofences';
 import Customers from './pages/Customers';
 import Products from './pages/Products';
+import MeetingPlans from './pages/MeetingPlans';
 import '@/App.css';
 
 // Protected Route Component
@@ -144,6 +145,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Products />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/meeting-plans"
+              element={
+                <ProtectedRoute>
+                  <MeetingPlans />
                 </ProtectedRoute>
               }
             />
