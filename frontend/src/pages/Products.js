@@ -8,6 +8,8 @@ export default function Products() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [showImport, setShowImport] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const [csvFile, setCsvFile] = useState(null);
   const [warrantyAlerts, setWarrantyAlerts] = useState([]);
   const [maintenanceAlerts, setMaintenanceAlerts] = useState([]);
@@ -105,12 +107,18 @@ export default function Products() {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchProducts();
+      fetchAlerts();
       setShowForm(false);
       setFormData({ name: '', serial_number: '', description: '', price: '', model: '', category: '', 
         specifications: '', warranty_period: '', purchase_date: '', next_maintenance_date: '', license_code: '' });
     } catch (error) {
       alert(error.response?.data?.detail || 'Error saving product');
     }
+  };
+
+  const handleProductClick = (product) => {
+    setSelectedProduct(product);
+    setShowDetails(true);
   };
 
   if (loading) return <div className="flex items-center justify-center min-h-screen"><div>Loading...</div></div>;
@@ -214,11 +222,99 @@ export default function Products() {
           </div>
         )}
 
+        {/* Product Details Modal */}
+        {showDetails && selectedProduct && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg p-6 max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-start mb-4">
+                <h2 className="text-2xl font-bold text-gray-800">{selectedProduct.name}</h2>
+                <button onClick={() => setShowDetails(false)} className="text-gray-500 hover:text-gray-700 text-2xl">×</button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Basic Information */}
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <h3 className="font-semibold text-blue-800 mb-3 text-lg">📋 Basic Information</h3>
+                  <div className="space-y-2 text-sm">
+                    <div><span className="font-medium">Serial Number:</span> <span className="font-mono bg-white px-2 py-1 rounded">{selectedProduct.serial_number}</span></div>
+                    <div><span className="font-medium">Model:</span> {selectedProduct.model || '-'}</div>
+                    <div><span className="font-medium">Category:</span> {selectedProduct.category || '-'}</div>
+                    <div><span className="font-medium">Price:</span> {selectedProduct.price ? `$${selectedProduct.price.toFixed(2)}` : '-'}</div>
+                    <div><span className="font-medium">License Code:</span> <span className="font-mono bg-white px-2 py-1 rounded">{selectedProduct.license_code || '-'}</span></div>
+                  </div>
+                </div>
+
+                {/* Warranty Information */}
+                <div className="bg-orange-50 p-4 rounded-lg">
+                  <h3 className="font-semibold text-orange-800 mb-3 text-lg">⚠️ Warranty Information</h3>
+                  <div className="space-y-2 text-sm">
+                    <div><span className="font-medium">Warranty Period:</span> {selectedProduct.warranty_period || '-'}</div>
+                    <div><span className="font-medium">Purchase Date:</span> {selectedProduct.purchase_date ? new Date(selectedProduct.purchase_date).toLocaleDateString() : '-'}</div>
+                    <div><span className="font-medium">Warranty Ends:</span> {selectedProduct.warranty_finished_date ? (
+                      <span className={new Date(selectedProduct.warranty_finished_date) > new Date() ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
+                        {new Date(selectedProduct.warranty_finished_date).toLocaleDateString()}
+                        {new Date(selectedProduct.warranty_finished_date) > new Date() ? ' ✓ Active' : ' ✗ Expired'}
+                      </span>
+                    ) : '-'}</div>
+                    <div><span className="font-medium">Installation Date:</span> {selectedProduct.installation_date ? new Date(selectedProduct.installation_date).toLocaleDateString() : '-'}</div>
+                  </div>
+                </div>
+
+                {/* Maintenance Information */}
+                <div className="bg-green-50 p-4 rounded-lg">
+                  <h3 className="font-semibold text-green-800 mb-3 text-lg">🔧 Maintenance</h3>
+                  <div className="space-y-2 text-sm">
+                    <div><span className="font-medium">Next Maintenance:</span> {selectedProduct.next_maintenance_date ? (
+                      <span className={new Date(selectedProduct.next_maintenance_date) > new Date() ? 'text-green-600' : 'text-red-600'}>
+                        {new Date(selectedProduct.next_maintenance_date).toLocaleDateString()}
+                        {new Date(selectedProduct.next_maintenance_date) < new Date() && ' (Overdue)'}
+                      </span>
+                    ) : '-'}</div>
+                  </div>
+                </div>
+
+                {/* Created/Updated Info */}
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <h3 className="font-semibold text-gray-800 mb-3 text-lg">ℹ️ System Information</h3>
+                  <div className="space-y-2 text-sm">
+                    <div><span className="font-medium">Created:</span> {new Date(selectedProduct.created_at).toLocaleString()}</div>
+                    <div><span className="font-medium">Last Updated:</span> {new Date(selectedProduct.updated_at).toLocaleString()}</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Description */}
+              {selectedProduct.description && (
+                <div className="mt-4 bg-purple-50 p-4 rounded-lg">
+                  <h3 className="font-semibold text-purple-800 mb-2">📝 Description</h3>
+                  <p className="text-sm text-gray-700">{selectedProduct.description}</p>
+                </div>
+              )}
+
+              {/* Specifications */}
+              {selectedProduct.specifications && (
+                <div className="mt-4 bg-cyan-50 p-4 rounded-lg">
+                  <h3 className="font-semibold text-cyan-800 mb-2">⚙️ Specifications</h3>
+                  <p className="text-sm text-gray-700 whitespace-pre-wrap">{selectedProduct.specifications}</p>
+                </div>
+              )}
+
+              <div className="mt-6 flex justify-end">
+                <button onClick={() => setShowDetails(false)} className="px-6 py-2 bg-gradient-to-r from-blue-500 to-green-500 text-white rounded-lg hover:shadow-lg">Close</button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="bg-white rounded-lg shadow">
           {products.length === 0 ? (
             <div className="p-8 text-center text-gray-500">No products yet</div>
           ) : (
-            <table className="w-full">
+            <>
+              <div className="px-4 py-3 bg-gray-50 border-b text-sm text-gray-600">
+                💡 Click on any product row to view full details
+              </div>
+              <table className="w-full">
               <thead className="bg-gradient-to-r from-blue-500 to-green-500 text-white">
                 <tr>
                   <th className="px-4 py-3 text-left">Name</th>
@@ -232,15 +328,19 @@ export default function Products() {
               </thead>
               <tbody>
                 {products.map((p) => (
-                  <tr key={p.id} className="border-b hover:bg-gray-50">
-                    <td className="px-4 py-3">{p.name}</td>
+                  <tr 
+                    key={p.id} 
+                    onClick={() => handleProductClick(p)}
+                    className="border-b hover:bg-blue-50 cursor-pointer transition-colors"
+                  >
+                    <td className="px-4 py-3 font-medium">{p.name}</td>
                     <td className="px-4 py-3 font-mono text-sm">{p.serial_number}</td>
                     <td className="px-4 py-3">{p.model || '-'}</td>
                     <td className="px-4 py-3 font-mono text-sm">{p.license_code || '-'}</td>
                     <td className="px-4 py-3">{p.warranty_period || '-'}</td>
                     <td className="px-4 py-3">
                       {p.warranty_finished_date ? (
-                        <span className={new Date(p.warranty_finished_date) > new Date() ? 'text-green-600' : 'text-red-600'}>
+                        <span className={new Date(p.warranty_finished_date) > new Date() ? 'text-green-600 font-semibold' : 'text-red-600 font-semibold'}>
                           {new Date(p.warranty_finished_date).toLocaleDateString()}
                         </span>
                       ) : '-'}
@@ -252,6 +352,7 @@ export default function Products() {
                 ))}
               </tbody>
             </table>
+            </>
           )}
         </div>
       </div>
