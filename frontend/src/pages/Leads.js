@@ -215,6 +215,104 @@ export default function Leads() {
           </div>
         )}
 
+
+        {/* Detail Modal - Click lead to view */}
+        {showDetailModal && selectedLead && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto">
+            <div className="bg-white rounded-lg p-6 max-w-4xl w-full m-4 my-8 max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-start mb-4">
+                <h2 className="text-2xl font-bold">📋 Lead Details: {selectedLead.lead_title}</h2>
+                <button onClick={() => setShowDetailModal(false)} className="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+              </div>
+              
+              {/* Lead Information Grid */}
+              <div className="grid grid-cols-2 gap-4 mb-6 p-4 bg-gradient-to-br from-blue-50 to-green-50 rounded-lg">
+                <div className="space-y-3">
+                  <div><span className="font-semibold text-gray-700">Customer:</span> <span className="text-gray-900">{customers.find(c => c.id === selectedLead.customer_id)?.name || 'Unknown'}</span></div>
+                  <div><span className="font-semibold text-gray-700">Status:</span> <span className={`ml-2 px-3 py-1 rounded text-sm font-semibold ${getStatusColor(selectedLead.status)}`}>{selectedLead.status.replace('_', ' ').toUpperCase()}</span></div>
+                  <div><span className="font-semibold text-gray-700">Priority:</span> <span className={`ml-2 px-2 py-1 rounded text-sm font-semibold ${selectedLead.priority === 'high' ? 'bg-red-100 text-red-800' : selectedLead.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'}`}>{selectedLead.priority?.toUpperCase()}</span></div>
+                  <div><span className="font-semibold text-gray-700">Lead Source:</span> <span className="text-gray-900">{selectedLead.lead_source || '-'}</span></div>
+                  <div><span className="font-semibold text-gray-700">Estimated Value:</span> <span className="text-green-600 font-semibold">{selectedLead.estimated_value ? `$${selectedLead.estimated_value.toLocaleString()}` : '-'}</span></div>
+                </div>
+                <div className="space-y-3">
+                  <div><span className="font-semibold text-gray-700">Quote Reference:</span> <span className="text-gray-900 font-mono">{selectedLead.quote_ref || '-'}</span></div>
+                  <div><span className="font-semibold text-gray-700">Quote Value:</span> <span className="text-green-600 font-semibold">{selectedLead.quote_value ? `$${selectedLead.quote_value.toLocaleString()}` : '-'}</span></div>
+                  <div><span className="font-semibold text-gray-700">Quote Date:</span> <span className="text-gray-900">{selectedLead.quote_date ? new Date(selectedLead.quote_date).toLocaleDateString() : '-'}</span></div>
+                  <div><span className="font-semibold text-gray-700">Expected Close Date:</span> <span className="text-gray-900">{selectedLead.expected_close_date ? new Date(selectedLead.expected_close_date).toLocaleDateString() : '-'}</span></div>
+                  <div><span className="font-semibold text-gray-700">Created:</span> <span className="text-gray-600 text-sm">{new Date(selectedLead.created_at).toLocaleString()}</span></div>
+                </div>
+              </div>
+
+              {/* Description */}
+              {selectedLead.description && (
+                <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+                  <h3 className="font-semibold text-gray-700 mb-2">📝 Description:</h3>
+                  <p className="text-gray-800">{selectedLead.description}</p>
+                </div>
+              )}
+
+              {/* Notes */}
+              {selectedLead.notes && (
+                <div className="mb-6 p-4 bg-yellow-50 rounded-lg border-l-4 border-yellow-400">
+                  <h3 className="font-semibold text-gray-700 mb-2">📌 Notes:</h3>
+                  <p className="text-gray-800">{selectedLead.notes}</p>
+                </div>
+              )}
+
+              {/* Update History */}
+              <div className="mb-6">
+                <h3 className="font-semibold text-lg mb-3 flex items-center">
+                  <span className="mr-2">🕐</span> Update History 
+                  <span className="ml-2 text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                    {selectedLead.updates_history?.length || 0} update{selectedLead.updates_history?.length !== 1 ? 's' : ''}
+                  </span>
+                </h3>
+                {selectedLead.updates_history && selectedLead.updates_history.length > 0 ? (
+                  <div className="space-y-3 max-h-64 overflow-y-auto border border-gray-200 rounded-lg p-3">
+                    {[...selectedLead.updates_history].reverse().map((update, idx) => (
+                      <div key={idx} className="border-l-4 border-blue-500 pl-4 py-2 bg-gradient-to-r from-blue-50 to-white rounded">
+                        <div className="flex justify-between items-start mb-2">
+                          <span className="font-semibold text-blue-700">Update #{selectedLead.updates_history.length - idx}</span>
+                          <div className="text-right">
+                            <div className="text-xs text-gray-500">{new Date(update.updated_at).toLocaleString()}</div>
+                            {update.update_date && <div className="text-xs text-blue-600 font-medium">Update Date: {update.update_date}</div>}
+                          </div>
+                        </div>
+                        {update.note && (
+                          <div className="mb-2 bg-white p-2 rounded">
+                            <p className="text-sm text-gray-700"><strong className="text-blue-600">Note:</strong> {update.note}</p>
+                          </div>
+                        )}
+                        {update.changes && Object.keys(update.changes).length > 0 && (
+                          <div className="text-xs text-gray-600 flex flex-wrap gap-2">
+                            <strong>Changes:</strong>
+                            {update.changes.status && <span className="bg-purple-100 px-2 py-1 rounded">Status → <strong>{update.changes.status}</strong></span>}
+                            {update.changes.quote_ref && <span className="bg-green-100 px-2 py-1 rounded">Quote Ref → <strong>{update.changes.quote_ref}</strong></span>}
+                            {update.changes.quote_value && <span className="bg-green-100 px-2 py-1 rounded">Quote Value → <strong>${update.changes.quote_value}</strong></span>}
+                            {update.changes.quote_date && <span className="bg-green-100 px-2 py-1 rounded">Quote Date → <strong>{update.changes.quote_date}</strong></span>}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 italic p-4 bg-gray-50 rounded">No updates recorded yet</p>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 justify-end pt-4 border-t">
+                <button onClick={() => setShowDetailModal(false)} className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                  Close
+                </button>
+                <button onClick={() => { setShowDetailModal(false); openUpdateModal(selectedLead); }} className="px-6 py-2 bg-gradient-to-r from-blue-600 to-green-600 text-white rounded-lg hover:from-blue-700 hover:to-green-700 flex items-center">
+                  <span className="mr-2">✏️</span> Edit Lead
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {showUpdateModal && selectedLead && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto">
             <div className="bg-white rounded-lg p-6 max-w-2xl w-full m-4 my-8">
