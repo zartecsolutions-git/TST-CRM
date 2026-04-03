@@ -284,10 +284,13 @@ async def get_current_locations(current_user_id: str = Depends(get_current_user)
     
     result = []
     for user in users:
-        location = await db.locations.find_one(
+        # Use find().sort().limit(1) instead of find_one().sort()
+        locations_cursor = db.locations.find(
             {"user_id": user['id']},
             {"_id": 0}
-        ).sort("timestamp", -1)
+        ).sort("timestamp", -1).limit(1)
+        locations_list = await locations_cursor.to_list(1)
+        location = locations_list[0] if locations_list else None
         
         if location:
             if isinstance(location.get('timestamp'), str):
