@@ -416,9 +416,7 @@ async def create_activity(
     activity_data: ActivityCreate,
     current_user_id: str = Depends(get_current_user)
 ):
-    # Only admins and agents can create activities
-    await require_admin_or_agent(current_user_id)
-    
+    # All authenticated users can create activities
     activity = Activity(**activity_data.model_dump(), created_by=current_user_id)
     activity_dict = activity.model_dump()
     activity_dict['created_at'] = activity_dict['created_at'].isoformat()

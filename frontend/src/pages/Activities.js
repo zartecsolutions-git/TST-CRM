@@ -135,7 +135,7 @@ const Activities = () => {
   };
 
   const isAdmin = currentUser?.role === 'admin';
-  const canCreateActivity = isAdmin || currentUser?.role === 'agent';
+  const canCreateActivity = true; // All users can create activities
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-100">
