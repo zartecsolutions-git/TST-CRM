@@ -290,6 +290,7 @@ class LeadUpdate(BaseModel):
     notes: Optional[str] = None
     lost_reason: Optional[str] = None
     update_note: Optional[str] = None  # Note for this specific update
+    update_date: Optional[str] = None  # Date when this update was made
 
 # Token Models
 class Token(BaseModel):

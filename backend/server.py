@@ -1434,8 +1434,10 @@ async def update_lead(
     
     # Track update in history
     update_note = update_data.pop('update_note', None)
+    update_date = update_data.pop('update_date', None)
     update_history_entry = {
         "updated_at": datetime.now(timezone.utc).isoformat(),
+        "update_date": update_date or datetime.now(timezone.utc).isoformat().split('T')[0],
         "updated_by": current_user_id,
         "note": update_note,
         "changes": update_data.copy()

@@ -9,6 +9,7 @@ export default function Leads() {
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedLead, setSelectedLead] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [formData, setFormData] = useState({
@@ -17,7 +18,7 @@ export default function Leads() {
     quote_ref: '', quote_value: '', quote_date: '', expected_close_date: '', notes: ''
   });
   const [updateData, setUpdateData] = useState({
-    status: '', quote_ref: '', quote_value: '', quote_date: '', notes: '', update_note: '', lost_reason: ''
+    status: '', quote_ref: '', quote_value: '', quote_date: '', notes: '', update_note: '', lost_reason: '', update_date: ''
   });
 
   const token = localStorage.getItem('token');
@@ -109,9 +110,15 @@ export default function Leads() {
       quote_date: lead.quote_date ? new Date(lead.quote_date).toISOString().split('T')[0] : '',
       notes: lead.notes || '',
       update_note: '',
-      lost_reason: lead.lost_reason || ''
+      lost_reason: lead.lost_reason || '',
+      update_date: new Date().toISOString().split('T')[0]
     });
     setShowUpdateModal(true);
+  };
+
+  const openDetailModal = (lead) => {
+    setSelectedLead(lead);
+    setShowDetailModal(true);
   };
 
   const filteredLeads = leads.filter(lead => {
@@ -230,6 +237,9 @@ export default function Leads() {
                   <div><label className="block text-sm mb-1">Quote Date</label>
                     <input type="date" value={updateData.quote_date} onChange={(e) => setUpdateData({...updateData, quote_date: e.target.value})} className="w-full border rounded px-3 py-2" />
                   </div>
+                  <div><label className="block text-sm mb-1">Update Date *</label>
+                    <input type="date" required value={updateData.update_date} onChange={(e) => setUpdateData({...updateData, update_date: e.target.value})} className="w-full border rounded px-3 py-2" />
+                  </div>
                 </div>
                 {updateData.status === 'closed_lost' && (
                   <div><label className="block text-sm mb-1">Lost Reason</label>
@@ -265,7 +275,7 @@ export default function Leads() {
               </thead>
               <tbody>
                 {filteredLeads.map((lead) => (
-                  <tr key={lead.id} className="border-b hover:bg-gray-50">
+                  <tr key={lead.id} onClick={() => openDetailModal(lead)} className="border-b hover:bg-blue-50 cursor-pointer">
                     <td className="px-4 py-3 font-medium">{customers.find(c => c.id === lead.customer_id)?.name || 'Unknown'}</td>
                     <td className="px-4 py-3">{lead.lead_title}</td>
                     <td className="px-4 py-3">
@@ -275,7 +285,7 @@ export default function Leads() {
                     </td>
                     <td className="px-4 py-3 font-mono text-sm">{lead.quote_ref || '-'}</td>
                     <td className="px-4 py-3">{lead.quote_value ? `$${lead.quote_value.toLocaleString()}` : '-'}</td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                       <button onClick={() => openUpdateModal(lead)} className="text-blue-600 hover:text-blue-800 text-sm font-medium">
                         ✏️ Update
                       </button>
