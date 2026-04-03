@@ -1,0 +1,20 @@
+// Blue & Green color scheme matching web app
+export const colors = {
+  primary: '#3B82F6',
+  primaryDark: '#2563EB',
+  secondary: '#10B981',
+  secondaryDark: '#059669',
+  background: '#F0F9FF',
+  surface: '#FFFFFF',
+  error: '#EF4444',
+  text: '#1F2937',
+  textSecondary: '#6B7280',
+  border: '#E5E7EB',
+  success: '#10B981',
+  warning: '#F59E0B',
+  info: '#3B82F6',
+  gradient: ['#3B82F6', '#10B981'],
+  statusPending: '#F59E0B',
+  statusInProgress: '#3B82F6',
+  statusCompleted: '#10B981',
+};
