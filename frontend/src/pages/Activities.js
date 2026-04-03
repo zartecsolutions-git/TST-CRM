@@ -11,6 +11,8 @@ const Activities = () => {
   const { user: currentUser } = useAuth();
   const [activities, setActivities] = useState([]);
   const [users, setUsers] = useState([]);
+  const [customers, setCustomers] = useState([]);
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [filterStatus, setFilterStatus] = useState('all');
@@ -23,6 +25,8 @@ const Activities = () => {
     title: '',
     description: '',
     assigned_to: '',
+    customer_id: '',
+    product_ids: [],
     status: 'pending',
     due_date: ''
   });
@@ -33,12 +37,16 @@ const Activities = () => {
 
   const fetchData = async () => {
     try {
-      const [activitiesRes, usersRes] = await Promise.all([
+      const [activitiesRes, usersRes, customersRes, productsRes] = await Promise.all([
         api.get(filterStatus === 'all' ? '/activities' : `/activities?status=${filterStatus}`),
-        api.get('/users')
+        api.get('/users'),
+        api.get('/customers'),
+        api.get('/products')
       ]);
       setActivities(activitiesRes.data);
       setUsers(usersRes.data);
+      setCustomers(customersRes.data);
+      setProducts(productsRes.data);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -51,7 +59,7 @@ const Activities = () => {
     try {
       await api.post('/activities', newActivity);
       alert('Activity created successfully!');
-      setNewActivity({ title: '', description: '', assigned_to: '', status: 'pending', due_date: '' });
+      setNewActivity({ title: '', description: '', assigned_to: '', customer_id: '', product_ids: [], status: 'pending', due_date: '' });
       setShowAddForm(false);
       fetchData();
     } catch (error) {
@@ -230,6 +238,40 @@ const Activities = () => {
                       ))}
                     </select>
                   </div>
+                  <div>
+                    <Label>Customer</Label>
+                    <select
+                      className="w-full border rounded-md p-2"
+                      value={newActivity.customer_id}
+                      onChange={(e) => setNewActivity({...newActivity, customer_id: e.target.value})}
+                    >
+                      <option value="">Select Customer (Optional)</option>
+                      {customers.map(customer => (
+                        <option key={customer.id} value={customer.id}>
+                          {customer.name} - {customer.business_vertical || 'N/A'}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="md:col-span-2">
+                    <Label>Products (Multiple Selection)</Label>
+                    <select
+                      multiple
+                      className="w-full border rounded-md p-2 min-h-[100px]"
+                      value={newActivity.product_ids}
+                      onChange={(e) => {
+                        const selected = Array.from(e.target.selectedOptions, option => option.value);
+                        setNewActivity({...newActivity, product_ids: selected});
+                      }}
+                    >
+                      {products.map(product => (
+                        <option key={product.id} value={product.id}>
+                          {product.name} (SN: {product.serial_number}) - {product.category || 'N/A'}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-sm text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple products</p>
+                  </div>
                   <div className="md:col-span-2">
                     <Label>Description</Label>
                     <textarea
@@ -401,12 +443,32 @@ const Activities = () => {
                       {activity.description && (
                         <p className="text-gray-600 mb-3">{activity.description}</p>
                       )}
-                      <div className="flex items-center space-x-4 text-sm text-gray-500">
+                      <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 mb-2">
                         <span>Assigned to: <strong>{getUserName(activity.assigned_to)}</strong></span>
                         {activity.due_date && (
                           <span>Due: {new Date(activity.due_date).toLocaleDateString()}</span>
                         )}
                       </div>
+                      
+                      {/* Customer and Products Section */}
+                      {(activity.customer_id || (activity.product_ids && activity.product_ids.length > 0)) && (
+                        <div className="flex flex-wrap items-center gap-4 text-sm mb-2">
+                          {activity.customer_id && (
+                            <span className="bg-cyan-100 text-cyan-800 px-2 py-1 rounded">
+                              Customer: <strong>{customers.find(c => c.id === activity.customer_id)?.name || 'Unknown'}</strong>
+                            </span>
+                          )}
+                          {activity.product_ids && activity.product_ids.length > 0 && (
+                            <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded">
+                              Products: <strong>{activity.product_ids.length}</strong>
+                              {activity.product_ids.map(pid => {
+                                const product = products.find(p => p.id === pid);
+                                return product ? ` ${product.name} (${product.serial_number})` : '';
+                              }).join(', ')}
+                            </span>
+                          )}
+                        </div>
+                      )}
                       
                       {/* Progress Updates Section */}
                       {activity.status === 'in_progress' && activity.progress_updates && activity.progress_updates.length > 0 && (
