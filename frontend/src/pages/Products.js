@@ -5,6 +5,7 @@ const API_URL = process.env.REACT_APP_BACKEND_URL;
 
 export default function Products() {
   const [products, setProducts] = useState([]);
+  const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [showImport, setShowImport] = useState(false);
@@ -27,6 +28,7 @@ export default function Products() {
 
   useEffect(() => { 
     fetchProducts();
+    fetchCustomers();
     fetchAlerts();
   }, []);
 
@@ -40,6 +42,17 @@ export default function Products() {
       console.error('Error:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchCustomers = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/api/customers`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setCustomers(response.data);
+    } catch (error) {
+      console.error('Error fetching customers:', error);
     }
   };
 
@@ -169,6 +182,7 @@ export default function Products() {
       });
       alert('Product updated successfully!');
       fetchProducts();
+      fetchCustomers();
       fetchAlerts();
       setIsEditMode(false);
       setShowDetails(false);
