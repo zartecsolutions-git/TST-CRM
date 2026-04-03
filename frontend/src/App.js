@@ -10,6 +10,8 @@ import Users from './pages/Users';
 import Activities from './pages/Activities';
 import Teams from './pages/Teams';
 import Geofences from './pages/Geofences';
+import Customers from './pages/Customers';
+import Products from './pages/Products';
 import '@/App.css';
 
 // Protected Route Component
@@ -126,6 +128,22 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Geofences />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/customers"
+              element={
+                <ProtectedRoute>
+                  <Customers />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/products"
+              element={
+                <ProtectedRoute>
+                  <Products />
                 </ProtectedRoute>
               }
             />

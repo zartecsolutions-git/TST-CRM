@@ -85,6 +85,8 @@ class ActivityCreate(BaseModel):
     description: Optional[str] = None
     assigned_to: str  # user_id
     client_id: Optional[str] = None
+    customer_id: Optional[str] = None  # NEW: Customer reference
+    product_ids: Optional[List[str]] = []  # NEW: Multiple products
     status: ActivityStatus = ActivityStatus.pending
     priority: ActivityPriority = ActivityPriority.medium
     due_date: Optional[datetime] = None
@@ -105,6 +107,8 @@ class ActivityUpdate(BaseModel):
     description: Optional[str] = None
     assigned_to: Optional[str] = None
     client_id: Optional[str] = None
+    customer_id: Optional[str] = None  # NEW: Customer reference
+    product_ids: Optional[List[str]] = None  # NEW: Multiple products
     status: Optional[ActivityStatus] = None
     priority: Optional[ActivityPriority] = None
     due_date: Optional[datetime] = None
@@ -167,6 +171,64 @@ class GeofenceAlert(BaseModel):
     latitude: float
     longitude: float
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+# Customer Models
+class CustomerCreate(BaseModel):
+    name: str
+    email: EmailStr
+    phone: Optional[str] = None
+    address: Optional[str] = None
+    region: Optional[str] = None
+    business_vertical: Optional[str] = None
+    contact_person: Optional[str] = None
+
+class Customer(CustomerCreate):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    created_by: str
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class CustomerUpdate(BaseModel):
+    name: Optional[str] = None
+    email: Optional[EmailStr] = None
+    phone: Optional[str] = None
+    address: Optional[str] = None
+    region: Optional[str] = None
+    business_vertical: Optional[str] = None
+    contact_person: Optional[str] = None
+
+# Product Models
+class ProductCreate(BaseModel):
+    name: str
+    serial_number: str
+    description: Optional[str] = None
+    price: Optional[float] = None
+    model: Optional[str] = None
+    category: Optional[str] = None
+    specifications: Optional[str] = None
+    warranty_period: Optional[str] = None  # e.g., "12 months"
+    purchase_date: Optional[datetime] = None
+    installation_date: Optional[datetime] = None
+
+class Product(ProductCreate):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    created_by: str
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class ProductUpdate(BaseModel):
+    name: Optional[str] = None
+    serial_number: Optional[str] = None
+    description: Optional[str] = None
+    price: Optional[float] = None
+    model: Optional[str] = None
+    category: Optional[str] = None
+    specifications: Optional[str] = None
+    warranty_period: Optional[str] = None
+    purchase_date: Optional[datetime] = None
+    installation_date: Optional[datetime] = None
 
 # Token Models
 class Token(BaseModel):

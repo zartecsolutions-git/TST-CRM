@@ -18,6 +18,8 @@ from models import (
     TeamCreate, Team, TeamUpdate,
     GeofenceCreate, Geofence, GeofenceUpdate,
     GeofenceAlert, AlertType,
+    CustomerCreate, Customer, CustomerUpdate,
+    ProductCreate, Product, ProductUpdate,
     Token
 )
 from auth import (
@@ -843,6 +845,241 @@ async def get_dashboard_stats(current_user_id: str = Depends(get_current_user)):
 
 # ============================================================================
 # WEBSOCKET ENDPOINT
+# ============================================================================
+
+# ============================================================================
+# CUSTOMERS ENDPOINTS
+# ============================================================================
+
+@api_router.post("/customers", response_model=Customer)
+async def create_customer(
+    customer_data: CustomerCreate,
+    current_user_id: str = Depends(get_current_user)
+):
+    # Agents and Clients can create customers
+    user_data = await get_current_user_data(current_user_id)
+    if user_data['role'] not in ['admin', 'agent', 'client']:
+        raise HTTPException(status_code=403, detail="Not authorized")
+    
+    # Check if customer email already exists
+    existing = await db.customers.find_one({"email": customer_data.email})
+    if existing:
+        raise HTTPException(status_code=400, detail="Customer with this email already exists")
+    
+    customer = Customer(**customer_data.model_dump(), created_by=current_user_id)
+    customer_dict = customer.model_dump()
+    customer_dict['created_at'] = customer_dict['created_at'].isoformat()
+    customer_dict['updated_at'] = customer_dict['updated_at'].isoformat()
+    
+    await db.customers.insert_one(customer_dict)
+    return customer
+
+@api_router.get("/customers", response_model=List[Customer])
+async def get_customers(
+    current_user_id: str = Depends(get_current_user)
+):
+    customers = await db.customers.find({}, {"_id": 0}).to_list(1000)
+    
+    for customer in customers:
+        if isinstance(customer.get('created_at'), str):
+            customer['created_at'] = datetime.fromisoformat(customer['created_at'])
+        if isinstance(customer.get('updated_at'), str):
+            customer['updated_at'] = datetime.fromisoformat(customer['updated_at'])
+    
+    return customers
+
+@api_router.get("/customers/{customer_id}", response_model=Customer)
+async def get_customer(
+    customer_id: str,
+    current_user_id: str = Depends(get_current_user)
+):
+    customer_doc = await db.customers.find_one({"id": customer_id}, {"_id": 0})
+    if not customer_doc:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    
+    if isinstance(customer_doc.get('created_at'), str):
+        customer_doc['created_at'] = datetime.fromisoformat(customer_doc['created_at'])
+    if isinstance(customer_doc.get('updated_at'), str):
+        customer_doc['updated_at'] = datetime.fromisoformat(customer_doc['updated_at'])
+    
+    return Customer(**customer_doc)
+
+@api_router.put("/customers/{customer_id}", response_model=Customer)
+async def update_customer(
+    customer_id: str,
+    customer_update: CustomerUpdate,
+    current_user_id: str = Depends(get_current_user)
+):
+    # Only Admin can update customers
+    await require_admin(current_user_id)
+    
+    update_data = customer_update.model_dump(exclude_unset=True)
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No fields to update")
+    
+    update_data['updated_at'] = datetime.now(timezone.utc).isoformat()
+    
+    result = await db.customers.update_one(
+        {"id": customer_id},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    
+    customer_doc = await db.customers.find_one({"id": customer_id}, {"_id": 0})
+    
+    if isinstance(customer_doc.get('created_at'), str):
+        customer_doc['created_at'] = datetime.fromisoformat(customer_doc['created_at'])
+    if isinstance(customer_doc.get('updated_at'), str):
+        customer_doc['updated_at'] = datetime.fromisoformat(customer_doc['updated_at'])
+    
+    return Customer(**customer_doc)
+
+@api_router.delete("/customers/{customer_id}")
+async def delete_customer(
+    customer_id: str,
+    current_user_id: str = Depends(get_current_user)
+):
+    # Only Admin can delete customers
+    await require_admin(current_user_id)
+    
+    result = await db.customers.delete_one({"id": customer_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    return {"message": "Customer deleted successfully"}
+
+# ============================================================================
+# PRODUCTS ENDPOINTS
+# ============================================================================
+
+@api_router.post("/products", response_model=Product)
+async def create_product(
+    product_data: ProductCreate,
+    current_user_id: str = Depends(get_current_user)
+):
+    # Only Admin can create products
+    await require_admin(current_user_id)
+    
+    # Check if serial number already exists
+    existing = await db.products.find_one({"serial_number": product_data.serial_number})
+    if existing:
+        raise HTTPException(status_code=400, detail="Product with this serial number already exists")
+    
+    product = Product(**product_data.model_dump(), created_by=current_user_id)
+    product_dict = product.model_dump()
+    product_dict['created_at'] = product_dict['created_at'].isoformat()
+    product_dict['updated_at'] = product_dict['updated_at'].isoformat()
+    if product_dict.get('purchase_date'):
+        product_dict['purchase_date'] = product_dict['purchase_date'].isoformat()
+    if product_dict.get('installation_date'):
+        product_dict['installation_date'] = product_dict['installation_date'].isoformat()
+    
+    await db.products.insert_one(product_dict)
+    return product
+
+@api_router.get("/products", response_model=List[Product])
+async def get_products(
+    current_user_id: str = Depends(get_current_user)
+):
+    products = await db.products.find({}, {"_id": 0}).to_list(1000)
+    
+    for product in products:
+        if isinstance(product.get('created_at'), str):
+            product['created_at'] = datetime.fromisoformat(product['created_at'])
+        if isinstance(product.get('updated_at'), str):
+            product['updated_at'] = datetime.fromisoformat(product['updated_at'])
+        if product.get('purchase_date') and isinstance(product['purchase_date'], str):
+            product['purchase_date'] = datetime.fromisoformat(product['purchase_date'])
+        if product.get('installation_date') and isinstance(product['installation_date'], str):
+            product['installation_date'] = datetime.fromisoformat(product['installation_date'])
+    
+    return products
+
+@api_router.get("/products/{product_id}", response_model=Product)
+async def get_product(
+    product_id: str,
+    current_user_id: str = Depends(get_current_user)
+):
+    product_doc = await db.products.find_one({"id": product_id}, {"_id": 0})
+    if not product_doc:
+        raise HTTPException(status_code=404, detail="Product not found")
+    
+    if isinstance(product_doc.get('created_at'), str):
+        product_doc['created_at'] = datetime.fromisoformat(product_doc['created_at'])
+    if isinstance(product_doc.get('updated_at'), str):
+        product_doc['updated_at'] = datetime.fromisoformat(product_doc['updated_at'])
+    if product_doc.get('purchase_date') and isinstance(product_doc['purchase_date'], str):
+        product_doc['purchase_date'] = datetime.fromisoformat(product_doc['purchase_date'])
+    if product_doc.get('installation_date') and isinstance(product_doc['installation_date'], str):
+        product_doc['installation_date'] = datetime.fromisoformat(product_doc['installation_date'])
+    
+    return Product(**product_doc)
+
+@api_router.put("/products/{product_id}", response_model=Product)
+async def update_product(
+    product_id: str,
+    product_update: ProductUpdate,
+    current_user_id: str = Depends(get_current_user)
+):
+    # Only Admin can update products
+    await require_admin(current_user_id)
+    
+    update_data = product_update.model_dump(exclude_unset=True)
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No fields to update")
+    
+    # Check if serial number is being updated and if it already exists
+    if 'serial_number' in update_data:
+        existing = await db.products.find_one({
+            "serial_number": update_data['serial_number'],
+            "id": {"$ne": product_id}
+        })
+        if existing:
+            raise HTTPException(status_code=400, detail="Product with this serial number already exists")
+    
+    update_data['updated_at'] = datetime.now(timezone.utc).isoformat()
+    if update_data.get('purchase_date'):
+        update_data['purchase_date'] = update_data['purchase_date'].isoformat()
+    if update_data.get('installation_date'):
+        update_data['installation_date'] = update_data['installation_date'].isoformat()
+    
+    result = await db.products.update_one(
+        {"id": product_id},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="Product not found")
+    
+    product_doc = await db.products.find_one({"id": product_id}, {"_id": 0})
+    
+    if isinstance(product_doc.get('created_at'), str):
+        product_doc['created_at'] = datetime.fromisoformat(product_doc['created_at'])
+    if isinstance(product_doc.get('updated_at'), str):
+        product_doc['updated_at'] = datetime.fromisoformat(product_doc['updated_at'])
+    if product_doc.get('purchase_date') and isinstance(product_doc['purchase_date'], str):
+        product_doc['purchase_date'] = datetime.fromisoformat(product_doc['purchase_date'])
+    if product_doc.get('installation_date') and isinstance(product_doc['installation_date'], str):
+        product_doc['installation_date'] = datetime.fromisoformat(product_doc['installation_date'])
+    
+    return Product(**product_doc)
+
+@api_router.delete("/products/{product_id}")
+async def delete_product(
+    product_id: str,
+    current_user_id: str = Depends(get_current_user)
+):
+    # Only Admin can delete products
+    await require_admin(current_user_id)
+    
+    result = await db.products.delete_one({"id": product_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Product not found")
+    return {"message": "Product deleted successfully"}
+
+# ============================================================================
+# WEBSOCKET ENDPOINTS
 # ============================================================================
 
 @app.websocket("/ws/locations")
