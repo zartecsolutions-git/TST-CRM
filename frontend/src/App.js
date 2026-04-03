@@ -12,7 +12,7 @@ import Teams from './pages/Teams';
 import Geofences from './pages/Geofences';
 import Customers from './pages/Customers';
 import Products from './pages/Products';
-import MeetingPlans from './pages/MeetingPlans';
+import Leads from './pages/Leads';
 import '@/App.css';
 
 // Protected Route Component
@@ -149,10 +149,10 @@ function App() {
               }
             />
             <Route
-              path="/meeting-plans"
+              path="/leads"
               element={
                 <ProtectedRoute>
-                  <MeetingPlans />
+                  <Leads />
                 </ProtectedRoute>
               }
             />

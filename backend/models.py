@@ -250,35 +250,46 @@ class ProductUpdate(BaseModel):
     sale_amount: Optional[float] = None
     sale_notes: Optional[str] = None
 
-# Meeting Plan Models (Sales Feature)
-class MeetingPlanCreate(BaseModel):
+# Leads Models (Sales Feature)
+class LeadCreate(BaseModel):
     customer_id: str
-    meeting_date: datetime
-    meeting_type: Optional[str] = None  # e.g., "Initial Contact", "Follow-up", "Demo", "Closing"
-    agenda: Optional[str] = None
-    location: Optional[str] = None
+    lead_title: str
+    description: Optional[str] = None
+    lead_source: Optional[str] = None  # e.g., "Website", "Referral", "Cold Call", "Trade Show"
+    status: str = "new"  # new, contacted, qualified, proposal, negotiation, closed_won, closed_lost
+    priority: Optional[str] = "medium"  # low, medium, high
+    estimated_value: Optional[float] = None
+    quote_ref: Optional[str] = None
+    quote_value: Optional[float] = None
+    quote_date: Optional[datetime] = None
+    expected_close_date: Optional[datetime] = None
     notes: Optional[str] = None
-    status: str = "scheduled"  # scheduled, completed, cancelled
 
-class MeetingPlan(MeetingPlanCreate):
+class Lead(LeadCreate):
     model_config = ConfigDict(extra="ignore")
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     created_by: str
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    outcome: Optional[str] = None  # Meeting outcome/result
-    next_steps: Optional[str] = None
+    closed_at: Optional[datetime] = None
+    lost_reason: Optional[str] = None
+    updates_history: Optional[List[dict]] = []  # Track all updates
 
-class MeetingPlanUpdate(BaseModel):
+class LeadUpdate(BaseModel):
     customer_id: Optional[str] = None
-    meeting_date: Optional[datetime] = None
-    meeting_type: Optional[str] = None
-    agenda: Optional[str] = None
-    location: Optional[str] = None
-    notes: Optional[str] = None
+    lead_title: Optional[str] = None
+    description: Optional[str] = None
+    lead_source: Optional[str] = None
     status: Optional[str] = None
-    outcome: Optional[str] = None
-    next_steps: Optional[str] = None
+    priority: Optional[str] = None
+    estimated_value: Optional[float] = None
+    quote_ref: Optional[str] = None
+    quote_value: Optional[float] = None
+    quote_date: Optional[datetime] = None
+    expected_close_date: Optional[datetime] = None
+    notes: Optional[str] = None
+    lost_reason: Optional[str] = None
+    update_note: Optional[str] = None  # Note for this specific update
 
 # Token Models
 class Token(BaseModel):

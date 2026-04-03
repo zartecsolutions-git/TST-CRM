@@ -25,7 +25,7 @@ from models import (
     GeofenceAlert, AlertType,
     CustomerCreate, Customer, CustomerUpdate,
     ProductCreate, Product, ProductUpdate,
-    MeetingPlanCreate, MeetingPlan, MeetingPlanUpdate,
+    LeadCreate, Lead, LeadUpdate,
     Token
 )
 from auth import (
@@ -1309,36 +1309,39 @@ async def import_products_csv(
 
 
 # ============================================================================
-# MEETING PLANS (SALES FEATURE)
+# LEADS (SALES FEATURE)
 # ============================================================================
 
-@api_router.post("/meeting-plans", response_model=MeetingPlan)
-async def create_meeting_plan(
-    meeting_data: MeetingPlanCreate,
+@api_router.post("/leads", response_model=Lead)
+async def create_lead(
+    lead_data: LeadCreate,
     current_user_id: str = Depends(get_current_user)
 ):
-    # Only sales and admin can create meeting plans
+    # Only sales and admin can create leads
     user_data = await get_current_user_data(current_user_id)
     if user_data['role'] not in ['admin', 'sales']:
-        raise HTTPException(status_code=403, detail="Only sales team can create meeting plans")
+        raise HTTPException(status_code=403, detail="Only sales team can create leads")
     
-    meeting = MeetingPlan(**meeting_data.model_dump(), created_by=current_user_id)
-    meeting_dict = meeting.model_dump()
-    meeting_dict['created_at'] = meeting_dict['created_at'].isoformat()
-    meeting_dict['updated_at'] = meeting_dict['updated_at'].isoformat()
-    meeting_dict['meeting_date'] = meeting_dict['meeting_date'].isoformat()
+    lead = Lead(**lead_data.model_dump(), created_by=current_user_id)
+    lead_dict = lead.model_dump()
+    lead_dict['created_at'] = lead_dict['created_at'].isoformat()
+    lead_dict['updated_at'] = lead_dict['updated_at'].isoformat()
+    if lead_dict.get('quote_date'):
+        lead_dict['quote_date'] = lead_dict['quote_date'].isoformat()
+    if lead_dict.get('expected_close_date'):
+        lead_dict['expected_close_date'] = lead_dict['expected_close_date'].isoformat()
     
-    await db.meeting_plans.insert_one(meeting_dict)
-    return meeting
+    await db.leads.insert_one(lead_dict)
+    return lead
 
-@api_router.get("/meeting-plans", response_model=List[MeetingPlan])
-async def get_meeting_plans(
+@api_router.get("/leads", response_model=List[Lead])
+async def get_leads(
     current_user_id: str = Depends(get_current_user),
     status: Optional[str] = None
 ):
     user_data = await get_current_user_data(current_user_id)
     
-    # Sales users see only their meetings, admins see all
+    # Sales users see only their leads, admins see all
     query = {}
     if user_data['role'] == 'sales':
         query['created_by'] = current_user_id
@@ -1346,122 +1349,170 @@ async def get_meeting_plans(
     if status:
         query['status'] = status
     
-    meetings = await db.meeting_plans.find(query, {"_id": 0}).to_list(1000)
+    leads = await db.leads.find(query, {"_id": 0}).to_list(1000)
     
-    for meeting in meetings:
-        if isinstance(meeting.get('created_at'), str):
-            meeting['created_at'] = datetime.fromisoformat(meeting['created_at'])
-        if isinstance(meeting.get('updated_at'), str):
-            meeting['updated_at'] = datetime.fromisoformat(meeting['updated_at'])
-        if isinstance(meeting.get('meeting_date'), str):
-            meeting['meeting_date'] = datetime.fromisoformat(meeting['meeting_date'])
+    for lead in leads:
+        if isinstance(lead.get('created_at'), str):
+            lead['created_at'] = datetime.fromisoformat(lead['created_at'])
+        if isinstance(lead.get('updated_at'), str):
+            lead['updated_at'] = datetime.fromisoformat(lead['updated_at'])
+        if lead.get('quote_date') and isinstance(lead.get('quote_date'), str):
+            lead['quote_date'] = datetime.fromisoformat(lead['quote_date'])
+        if lead.get('expected_close_date') and isinstance(lead.get('expected_close_date'), str):
+            lead['expected_close_date'] = datetime.fromisoformat(lead['expected_close_date'])
+        if lead.get('closed_at') and isinstance(lead.get('closed_at'), str):
+            lead['closed_at'] = datetime.fromisoformat(lead['closed_at'])
     
-    return meetings
+    return leads
 
-@api_router.get("/meeting-plans/{meeting_id}", response_model=MeetingPlan)
-async def get_meeting_plan(
-    meeting_id: str,
+@api_router.get("/leads/{lead_id}", response_model=Lead)
+async def get_lead(
+    lead_id: str,
     current_user_id: str = Depends(get_current_user)
 ):
-    meeting = await db.meeting_plans.find_one({"id": meeting_id}, {"_id": 0})
-    if not meeting:
-        raise HTTPException(status_code=404, detail="Meeting plan not found")
+    lead = await db.leads.find_one({"id": lead_id}, {"_id": 0})
+    if not lead:
+        raise HTTPException(status_code=404, detail="Lead not found")
     
-    # Sales users can only view their own meetings
+    # Sales users can only view their own leads
     user_data = await get_current_user_data(current_user_id)
-    if user_data['role'] == 'sales' and meeting['created_by'] != current_user_id:
-        raise HTTPException(status_code=403, detail="Not authorized to view this meeting")
+    if user_data['role'] == 'sales' and lead['created_by'] != current_user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to view this lead")
     
-    if isinstance(meeting.get('created_at'), str):
-        meeting['created_at'] = datetime.fromisoformat(meeting['created_at'])
-    if isinstance(meeting.get('updated_at'), str):
-        meeting['updated_at'] = datetime.fromisoformat(meeting['updated_at'])
-    if isinstance(meeting.get('meeting_date'), str):
-        meeting['meeting_date'] = datetime.fromisoformat(meeting['meeting_date'])
+    if isinstance(lead.get('created_at'), str):
+        lead['created_at'] = datetime.fromisoformat(lead['created_at'])
+    if isinstance(lead.get('updated_at'), str):
+        lead['updated_at'] = datetime.fromisoformat(lead['updated_at'])
+    if lead.get('quote_date') and isinstance(lead.get('quote_date'), str):
+        lead['quote_date'] = datetime.fromisoformat(lead['quote_date'])
+    if lead.get('expected_close_date') and isinstance(lead.get('expected_close_date'), str):
+        lead['expected_close_date'] = datetime.fromisoformat(lead['expected_close_date'])
+    if lead.get('closed_at') and isinstance(lead.get('closed_at'), str):
+        lead['closed_at'] = datetime.fromisoformat(lead['closed_at'])
     
-    return MeetingPlan(**meeting)
+    return Lead(**lead)
 
-@api_router.put("/meeting-plans/{meeting_id}", response_model=MeetingPlan)
-async def update_meeting_plan(
-    meeting_id: str,
-    meeting_update: MeetingPlanUpdate,
+@api_router.put("/leads/{lead_id}", response_model=Lead)
+async def update_lead(
+    lead_id: str,
+    lead_update: LeadUpdate,
     current_user_id: str = Depends(get_current_user)
 ):
-    meeting = await db.meeting_plans.find_one({"id": meeting_id}, {"_id": 0})
-    if not meeting:
-        raise HTTPException(status_code=404, detail="Meeting plan not found")
+    lead = await db.leads.find_one({"id": lead_id}, {"_id": 0})
+    if not lead:
+        raise HTTPException(status_code=404, detail="Lead not found")
     
-    # Sales users can only update their own meetings
+    # Sales users can only update their own leads
     user_data = await get_current_user_data(current_user_id)
-    if user_data['role'] == 'sales' and meeting['created_by'] != current_user_id:
-        raise HTTPException(status_code=403, detail="Not authorized to update this meeting")
+    if user_data['role'] == 'sales' and lead['created_by'] != current_user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to update this lead")
     
-    update_data = meeting_update.model_dump(exclude_unset=True)
+    update_data = lead_update.model_dump(exclude_unset=True)
     if not update_data:
         raise HTTPException(status_code=400, detail="No fields to update")
     
+    # Track update in history
+    update_note = update_data.pop('update_note', None)
+    update_history_entry = {
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+        "updated_by": current_user_id,
+        "note": update_note,
+        "changes": update_data.copy()
+    }
+    
     update_data['updated_at'] = datetime.now(timezone.utc).isoformat()
     
-    # Convert datetime fields to ISO format
-    if 'meeting_date' in update_data and isinstance(update_data['meeting_date'], datetime):
-        update_data['meeting_date'] = update_data['meeting_date'].isoformat()
+    # Auto-set closed_at when status changes to closed_won or closed_lost
+    if 'status' in update_data and update_data['status'] in ['closed_won', 'closed_lost']:
+        update_data['closed_at'] = datetime.now(timezone.utc).isoformat()
     
-    result = await db.meeting_plans.update_one(
-        {"id": meeting_id},
-        {"$set": update_data}
+    # Convert datetime fields to ISO format
+    if 'quote_date' in update_data and isinstance(update_data['quote_date'], datetime):
+        update_data['quote_date'] = update_data['quote_date'].isoformat()
+    if 'expected_close_date' in update_data and isinstance(update_data['expected_close_date'], datetime):
+        update_data['expected_close_date'] = update_data['expected_close_date'].isoformat()
+    
+    # Add to updates history
+    result = await db.leads.update_one(
+        {"id": lead_id},
+        {
+            "$set": update_data,
+            "$push": {"updates_history": update_history_entry}
+        }
     )
     
     if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Meeting plan not found")
+        raise HTTPException(status_code=404, detail="Lead not found")
     
-    updated_meeting = await db.meeting_plans.find_one({"id": meeting_id}, {"_id": 0})
+    updated_lead = await db.leads.find_one({"id": lead_id}, {"_id": 0})
     
-    if isinstance(updated_meeting.get('created_at'), str):
-        updated_meeting['created_at'] = datetime.fromisoformat(updated_meeting['created_at'])
-    if isinstance(updated_meeting.get('updated_at'), str):
-        updated_meeting['updated_at'] = datetime.fromisoformat(updated_meeting['updated_at'])
-    if isinstance(updated_meeting.get('meeting_date'), str):
-        updated_meeting['meeting_date'] = datetime.fromisoformat(updated_meeting['meeting_date'])
+    if isinstance(updated_lead.get('created_at'), str):
+        updated_lead['created_at'] = datetime.fromisoformat(updated_lead['created_at'])
+    if isinstance(updated_lead.get('updated_at'), str):
+        updated_lead['updated_at'] = datetime.fromisoformat(updated_lead['updated_at'])
+    if updated_lead.get('quote_date') and isinstance(updated_lead.get('quote_date'), str):
+        updated_lead['quote_date'] = datetime.fromisoformat(updated_lead['quote_date'])
+    if updated_lead.get('expected_close_date') and isinstance(updated_lead.get('expected_close_date'), str):
+        updated_lead['expected_close_date'] = datetime.fromisoformat(updated_lead['expected_close_date'])
+    if updated_lead.get('closed_at') and isinstance(updated_lead.get('closed_at'), str):
+        updated_lead['closed_at'] = datetime.fromisoformat(updated_lead['closed_at'])
     
-    return MeetingPlan(**updated_meeting)
+    return Lead(**updated_lead)
 
-@api_router.delete("/meeting-plans/{meeting_id}")
-async def delete_meeting_plan(
-    meeting_id: str,
+@api_router.delete("/leads/{lead_id}")
+async def delete_lead(
+    lead_id: str,
     current_user_id: str = Depends(get_current_user)
 ):
-    meeting = await db.meeting_plans.find_one({"id": meeting_id}, {"_id": 0})
-    if not meeting:
-        raise HTTPException(status_code=404, detail="Meeting plan not found")
+    lead = await db.leads.find_one({"id": lead_id}, {"_id": 0})
+    if not lead:
+        raise HTTPException(status_code=404, detail="Lead not found")
     
-    # Sales users can only delete their own meetings, admins can delete any
+    # Sales users can only delete their own leads, admins can delete any
     user_data = await get_current_user_data(current_user_id)
-    if user_data['role'] == 'sales' and meeting['created_by'] != current_user_id:
-        raise HTTPException(status_code=403, detail="Not authorized to delete this meeting")
+    if user_data['role'] == 'sales' and lead['created_by'] != current_user_id:
+        raise HTTPException(status_code=403, detail="Not authorized to delete this lead")
     
-    result = await db.meeting_plans.delete_one({"id": meeting_id})
+    result = await db.leads.delete_one({"id": lead_id})
     
     if result.deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Meeting plan not found")
+        raise HTTPException(status_code=404, detail="Lead not found")
     
-    return {"message": "Meeting plan deleted successfully"}
+    return {"message": "Lead deleted successfully"}
 
-@api_router.get("/meeting-plans/upcoming/count")
-async def get_upcoming_meetings_count(current_user_id: str = Depends(get_current_user)):
-    """Get count of upcoming meetings for sales dashboard"""
+@api_router.get("/leads/stats/summary")
+async def get_leads_summary(current_user_id: str = Depends(get_current_user)):
+    """Get lead statistics for sales dashboard"""
     user_data = await get_current_user_data(current_user_id)
     
-    now = datetime.now(timezone.utc).isoformat()
-    query = {
-        "meeting_date": {"$gte": now},
-        "status": "scheduled"
-    }
-    
+    query = {}
     if user_data['role'] == 'sales':
         query['created_by'] = current_user_id
     
-    count = await db.meeting_plans.count_documents(query)
-    return {"upcoming_meetings": count}
+    total_leads = await db.leads.count_documents(query)
+    new_leads = await db.leads.count_documents({**query, "status": "new"})
+    qualified_leads = await db.leads.count_documents({**query, "status": "qualified"})
+    won_leads = await db.leads.count_documents({**query, "status": "closed_won"})
+    lost_leads = await db.leads.count_documents({**query, "status": "closed_lost"})
+    
+    # Calculate total quote value
+    pipeline = [
+        {"$match": query},
+        {"$match": {"quote_value": {"$exists": True, "$ne": None}}},
+        {"$group": {"_id": None, "total": {"$sum": "$quote_value"}}}
+    ]
+    quote_result = await db.leads.aggregate(pipeline).to_list(1)
+    total_quote_value = quote_result[0]['total'] if quote_result else 0
+    
+    return {
+        "total_leads": total_leads,
+        "new_leads": new_leads,
+        "qualified_leads": qualified_leads,
+        "won_leads": won_leads,
+        "lost_leads": lost_leads,
+        "total_quote_value": total_quote_value
+    }
+
 
 # ============================================================================
 # WEBSOCKET ENDPOINTS
