@@ -90,6 +90,8 @@ const Teams = () => {
     return users.filter(user => !team.member_ids?.includes(user.id));
   };
 
+  const isAdmin = currentUser?.role === 'admin';
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-100">
       <header className="bg-white shadow-sm border-b">

@@ -68,9 +68,15 @@ const Geofences = () => {
       alert('Geofence deleted successfully!');
       fetchData();
     } catch (error) {
-      alert('Error deleting geofence: ' + (error.response?.data?.detail || error.message));
+      if (error.response?.status === 403) {
+        alert('Only admins can delete geofences');
+      } else {
+        alert('Error deleting geofence: ' + (error.response?.data?.detail || error.message));
+      }
     }
   };
+
+  const isAdmin = currentUser?.role === 'admin';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-100">

@@ -89,6 +89,9 @@ const Activities = () => {
     return user ? user.name : 'Unassigned';
   };
 
+  const isAdmin = currentUser?.role === 'admin';
+  const canCreateActivity = isAdmin || currentUser?.role === 'agent';
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-100">
       <header className="bg-white shadow-sm border-b">
