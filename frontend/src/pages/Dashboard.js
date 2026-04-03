@@ -137,7 +137,7 @@ const Dashboard = () => {
                 <span className="font-semibold">Products</span>
               </div>
             </Button>
-
+          )}
           {user?.role === 'sales' && (
             <Button
               onClick={() => window.location.href = '/meeting-plans'}
