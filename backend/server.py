@@ -1,5 +1,6 @@
 from fastapi import FastAPI, APIRouter, HTTPException, Depends, WebSocket, WebSocketDisconnect
 from fastapi.security import HTTPAuthorizationCredentials
+from fastapi.responses import StreamingResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -12,6 +13,8 @@ from dateutil.relativedelta import relativedelta
 import json
 import math
 import re
+import csv
+import io
 
 from models import (
     UserCreate, UserLogin, User, UserUpdate, UserRole,
@@ -1111,6 +1114,107 @@ async def update_product(
     
     return Product(**product_doc)
 
+@api_router.get("/products/alerts/warranty-expiring")
+async def get_warranty_expiring_products(
+    days: int = 30,
+    current_user_id: str = Depends(get_current_user)
+):
+    """Get products with warranty expiring within specified days"""
+    now = datetime.now(timezone.utc)
+    future_date = now + timedelta(days=days)
+    
+    products = await db.products.find({}, {"_id": 0}).to_list(1000)
+    expiring_products = []
+    
+    for product in products:
+        if product.get('warranty_finished_date'):
+            warranty_date = product['warranty_finished_date']
+            if isinstance(warranty_date, str):
+                warranty_date = datetime.fromisoformat(warranty_date)
+            
+            # Check if warranty expires within the specified days
+            if now <= warranty_date <= future_date:
+                days_remaining = (warranty_date - now).days
+                product['days_remaining'] = days_remaining
+                expiring_products.append(product)
+    
+    return expiring_products
+
+@api_router.get("/products/alerts/maintenance-due")
+async def get_maintenance_due_products(
+    days: int = 30,
+    current_user_id: str = Depends(get_current_user)
+):
+    """Get products with maintenance due within specified days"""
+    now = datetime.now(timezone.utc)
+    future_date = now + timedelta(days=days)
+    
+    products = await db.products.find({}, {"_id": 0}).to_list(1000)
+    maintenance_due = []
+    
+    for product in products:
+        if product.get('next_maintenance_date'):
+            maintenance_date = product['next_maintenance_date']
+            if isinstance(maintenance_date, str):
+                maintenance_date = datetime.fromisoformat(maintenance_date)
+            
+            # Check if maintenance is due within the specified days
+            if maintenance_date <= future_date:
+                days_until = (maintenance_date - now).days
+                product['days_until_maintenance'] = days_until
+                maintenance_due.append(product)
+    
+    return maintenance_due
+
+@api_router.get("/products/export/csv")
+async def export_products_csv(
+    current_user_id: str = Depends(get_current_user)
+):
+    """Export all products to CSV with warranty status"""
+    products = await db.products.find({}, {"_id": 0}).to_list(1000)
+    
+    # Create CSV in memory
+    output = io.StringIO()
+    writer = csv.DictWriter(output, fieldnames=[
+        'name', 'serial_number', 'model', 'category', 'license_code',
+        'price', 'warranty_period', 'purchase_date', 'warranty_finished_date',
+        'warranty_status', 'next_maintenance_date', 'specifications'
+    ])
+    
+    writer.writeheader()
+    now = datetime.now(timezone.utc)
+    
+    for product in products:
+        # Determine warranty status
+        warranty_status = 'N/A'
+        if product.get('warranty_finished_date'):
+            warranty_date = product['warranty_finished_date']
+            if isinstance(warranty_date, str):
+                warranty_date = datetime.fromisoformat(warranty_date)
+            warranty_status = 'Active' if warranty_date > now else 'Expired'
+        
+        writer.writerow({
+            'name': product.get('name', ''),
+            'serial_number': product.get('serial_number', ''),
+            'model': product.get('model', ''),
+            'category': product.get('category', ''),
+            'license_code': product.get('license_code', ''),
+            'price': product.get('price', ''),
+            'warranty_period': product.get('warranty_period', ''),
+            'purchase_date': product.get('purchase_date', ''),
+            'warranty_finished_date': product.get('warranty_finished_date', ''),
+            'warranty_status': warranty_status,
+            'next_maintenance_date': product.get('next_maintenance_date', ''),
+            'specifications': product.get('specifications', '')
+        })
+    
+    output.seek(0)
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=products_export.csv"}
+    )
+
 @api_router.delete("/products/{product_id}")
 async def delete_product(
     product_id: str,
@@ -1123,6 +1227,84 @@ async def delete_product(
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Product not found")
     return {"message": "Product deleted successfully"}
+
+@api_router.post("/products/import/csv")
+async def import_products_csv(
+    file_content: str,
+    current_user_id: str = Depends(get_current_user)
+):
+    """Bulk import products from CSV with auto warranty calculation"""
+    await require_admin(current_user_id)
+    
+    try:
+        # Parse CSV
+        csv_file = io.StringIO(file_content)
+        reader = csv.DictReader(csv_file)
+        
+        imported_count = 0
+        errors = []
+        
+        for row_num, row in enumerate(reader, start=2):
+            try:
+                # Check if serial number exists
+                existing = await db.products.find_one({"serial_number": row['serial_number']})
+                if existing:
+                    errors.append(f"Row {row_num}: Serial number {row['serial_number']} already exists")
+                    continue
+                
+                # Create product
+                product_data = {
+                    "name": row['name'],
+                    "serial_number": row['serial_number'],
+                    "model": row.get('model', ''),
+                    "category": row.get('category', ''),
+                    "license_code": row.get('license_code', ''),
+                    "price": float(row['price']) if row.get('price') else None,
+                    "warranty_period": row.get('warranty_period', ''),
+                    "description": row.get('description', ''),
+                    "specifications": row.get('specifications', '')
+                }
+                
+                # Parse dates if provided
+                if row.get('purchase_date'):
+                    product_data['purchase_date'] = datetime.fromisoformat(row['purchase_date'].replace('Z', '+00:00'))
+                if row.get('next_maintenance_date'):
+                    product_data['next_maintenance_date'] = datetime.fromisoformat(row['next_maintenance_date'].replace('Z', '+00:00'))
+                
+                product = Product(**product_data, created_by=current_user_id)
+                
+                # Calculate warranty_finished_date
+                if product.purchase_date and product.warranty_period:
+                    product.warranty_finished_date = calculate_warranty_finished_date(
+                        product.purchase_date,
+                        product.warranty_period
+                    )
+                
+                # Save to database
+                product_dict = product.model_dump()
+                product_dict['created_at'] = product_dict['created_at'].isoformat()
+                product_dict['updated_at'] = product_dict['updated_at'].isoformat()
+                if product_dict.get('purchase_date'):
+                    product_dict['purchase_date'] = product_dict['purchase_date'].isoformat()
+                if product_dict.get('next_maintenance_date'):
+                    product_dict['next_maintenance_date'] = product_dict['next_maintenance_date'].isoformat()
+                if product_dict.get('warranty_finished_date'):
+                    product_dict['warranty_finished_date'] = product_dict['warranty_finished_date'].isoformat()
+                
+                await db.products.insert_one(product_dict)
+                imported_count += 1
+                
+            except Exception as e:
+                errors.append(f"Row {row_num}: {str(e)}")
+        
+        return {
+            "imported": imported_count,
+            "errors": errors,
+            "total_rows": row_num - 1 if 'row_num' in locals() else 0
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"CSV parsing error: {str(e)}")
 
 # ============================================================================
 # WEBSOCKET ENDPOINTS

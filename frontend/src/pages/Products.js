@@ -7,6 +7,10 @@ export default function Products() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [showImport, setShowImport] = useState(false);
+  const [csvFile, setCsvFile] = useState(null);
+  const [warrantyAlerts, setWarrantyAlerts] = useState([]);
+  const [maintenanceAlerts, setMaintenanceAlerts] = useState([]);
   const [formData, setFormData] = useState({
     name: '', serial_number: '', description: '', price: '', model: '', category: '', 
     specifications: '', warranty_period: '', purchase_date: '', next_maintenance_date: '', license_code: ''
@@ -15,7 +19,10 @@ export default function Products() {
   const token = localStorage.getItem('token');
   const user = JSON.parse(localStorage.getItem('user') || '{}');
 
-  useEffect(() => { fetchProducts(); }, []);
+  useEffect(() => { 
+    fetchProducts();
+    fetchAlerts();
+  }, []);
 
   const fetchProducts = async () => {
     try {
@@ -27,6 +34,67 @@ export default function Products() {
       console.error('Error:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchAlerts = async () => {
+    try {
+      const [warrantyRes, maintenanceRes] = await Promise.all([
+        axios.get(`${API_URL}/api/products/alerts/warranty-expiring?days=30`, {
+          headers: { Authorization: `Bearer ${token}` }
+        }),
+        axios.get(`${API_URL}/api/products/alerts/maintenance-due?days=30`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+      ]);
+      setWarrantyAlerts(warrantyRes.data);
+      setMaintenanceAlerts(maintenanceRes.data);
+    } catch (error) {
+      console.error('Error fetching alerts:', error);
+    }
+  };
+
+  const handleExport = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/api/products/export/csv`, {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: 'blob'
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'products_export.csv');
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      alert('Error exporting products');
+    }
+  };
+
+  const handleImport = async (e) => {
+    e.preventDefault();
+    if (!csvFile) {
+      alert('Please select a CSV file');
+      return;
+    }
+    
+    try {
+      const text = await csvFile.text();
+      const response = await axios.post(`${API_URL}/api/products/import/csv`, 
+        { file_content: text },
+        { headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } }
+      );
+      alert(`Import complete! Imported: ${response.data.imported}, Errors: ${response.data.errors.length}`);
+      if (response.data.errors.length > 0) {
+        console.log('Import errors:', response.data.errors);
+      }
+      setShowImport(false);
+      setCsvFile(null);
+      fetchProducts();
+      fetchAlerts();
+    } catch (error) {
+      alert('Error importing products: ' + (error.response?.data?.detail || error.message));
     }
   };
 
@@ -50,12 +118,47 @@ export default function Products() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 p-6">
       <div className="max-w-7xl mx-auto">
+        {/* Header with Actions */}
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">Products</h1>
           {user.role === 'admin' && (
-            <button onClick={() => setShowForm(true)} className="bg-gradient-to-r from-blue-500 to-green-500 text-white px-6 py-2 rounded-lg">+ Add Product</button>
+            <div className="flex gap-2">
+              <button onClick={handleExport} className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">📥 Export CSV</button>
+              <button onClick={() => setShowImport(true)} className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">📤 Import CSV</button>
+              <button onClick={() => setShowForm(true)} className="bg-gradient-to-r from-blue-500 to-green-500 text-white px-6 py-2 rounded-lg">+ Add Product</button>
+            </div>
           )}
         </div>
+
+        {/* Alerts Section */}
+        {(warrantyAlerts.length > 0 || maintenanceAlerts.length > 0) && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            {warrantyAlerts.length > 0 && (
+              <div className="bg-orange-100 border-l-4 border-orange-500 p-4 rounded">
+                <h3 className="font-bold text-orange-800 mb-2">⚠️ Warranty Expiring Soon ({warrantyAlerts.length})</h3>
+                <ul className="text-sm space-y-1">
+                  {warrantyAlerts.map(p => (
+                    <li key={p.id} className="text-orange-700">
+                      {p.name} - {p.days_remaining} days remaining
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {maintenanceAlerts.length > 0 && (
+              <div className="bg-blue-100 border-l-4 border-blue-500 p-4 rounded">
+                <h3 className="font-bold text-blue-800 mb-2">🔧 Maintenance Due Soon ({maintenanceAlerts.length})</h3>
+                <ul className="text-sm space-y-1">
+                  {maintenanceAlerts.map(p => (
+                    <li key={p.id} className="text-blue-700">
+                      {p.name} - {p.days_until_maintenance >= 0 ? `${p.days_until_maintenance} days` : 'Overdue'}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
 
         {showForm && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -78,6 +181,33 @@ export default function Products() {
                 <div className="flex gap-2 justify-end">
                   <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 border rounded">Cancel</button>
                   <button type="submit" className="px-4 py-2 bg-gradient-to-r from-blue-500 to-green-500 text-white rounded">Create</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Import Modal */}
+        {showImport && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full m-4">
+              <h2 className="text-2xl font-bold mb-4">Import Products from CSV</h2>
+              <form onSubmit={handleImport} className="space-y-4">
+                <div>
+                  <label className="block text-sm mb-2">Select CSV File</label>
+                  <input 
+                    type="file" 
+                    accept=".csv" 
+                    onChange={(e) => setCsvFile(e.target.files[0])}
+                    className="w-full border rounded px-3 py-2"
+                  />
+                  <p className="text-xs text-gray-500 mt-2">
+                    CSV should include: name, serial_number, model, category, license_code, price, warranty_period, purchase_date, next_maintenance_date, specifications
+                  </p>
+                </div>
+                <div className="flex gap-2 justify-end">
+                  <button type="button" onClick={() => setShowImport(false)} className="px-4 py-2 border rounded">Cancel</button>
+                  <button type="submit" className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">Import</button>
                 </div>
               </form>
             </div>
