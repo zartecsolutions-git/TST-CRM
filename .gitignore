@@ -83,3 +83,5 @@ android-sdk/crm-mobile/android/app/build/intermediates/cxx/Debug/2u3f1z4l/obj/ar
 crm-mobile/android/app/build/intermediates/cxx/Debug/2u3f1z4l/obj/arm64-v8a/libreactnative.so
 crm-mobile/node_modules/expo-modules-core/android/build/intermediates/cxx/Debug/3h4in1si/obj/arm64-v8a/libreactnative.so
 crm-mobile/node_modules/expo-modules-core/android/build/intermediates/cxx/Debug/3h4in1si/obj/armeabi-v7a/libreactnative.so
+crm-mobile/node_modules/expo-modules-core/android/build/intermediates/cxx/Debug/3h4in1si/obj/x86/libreactnative.so
+crm-mobile/node_modules/expo-modules-core/android/build/intermediates/cxx/Debug/3h4in1si/obj/x86_64/libreactnative.so
