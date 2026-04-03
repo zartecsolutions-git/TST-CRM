@@ -1364,14 +1364,19 @@ async def get_leads(
     leads = await db.leads.find(query, {"_id": 0}).to_list(1000)
     
     for lead in leads:
+        # Convert ISO string dates back to datetime objects for Pydantic validation
         if isinstance(lead.get('created_at'), str):
             lead['created_at'] = datetime.fromisoformat(lead['created_at'])
         if isinstance(lead.get('updated_at'), str):
             lead['updated_at'] = datetime.fromisoformat(lead['updated_at'])
-        if lead.get('quote_date') and isinstance(lead.get('quote_date'), str):
-            lead['quote_date'] = datetime.fromisoformat(lead['quote_date'])
-        if lead.get('expected_close_date') and isinstance(lead.get('expected_close_date'), str):
-            lead['expected_close_date'] = datetime.fromisoformat(lead['expected_close_date'])
+        
+        # Keep quote_date and expected_close_date as strings (they're already strings in DB)
+        # Remove them if they're datetime objects (shouldn't happen but just in case)
+        if lead.get('quote_date') and isinstance(lead.get('quote_date'), datetime):
+            lead['quote_date'] = lead['quote_date'].isoformat().split('T')[0]
+        if lead.get('expected_close_date') and isinstance(lead.get('expected_close_date'), datetime):
+            lead['expected_close_date'] = lead['expected_close_date'].isoformat().split('T')[0]
+            
         if lead.get('closed_at') and isinstance(lead.get('closed_at'), str):
             lead['closed_at'] = datetime.fromisoformat(lead['closed_at'])
     
@@ -1391,14 +1396,18 @@ async def get_lead(
     if user_data['role'] == 'sales' and lead['created_by'] != current_user_id:
         raise HTTPException(status_code=403, detail="Not authorized to view this lead")
     
+    # Convert ISO strings to datetime objects
     if isinstance(lead.get('created_at'), str):
         lead['created_at'] = datetime.fromisoformat(lead['created_at'])
     if isinstance(lead.get('updated_at'), str):
         lead['updated_at'] = datetime.fromisoformat(lead['updated_at'])
-    if lead.get('quote_date') and isinstance(lead.get('quote_date'), str):
-        lead['quote_date'] = datetime.fromisoformat(lead['quote_date'])
-    if lead.get('expected_close_date') and isinstance(lead.get('expected_close_date'), str):
-        lead['expected_close_date'] = datetime.fromisoformat(lead['expected_close_date'])
+    
+    # Keep date fields as strings
+    if lead.get('quote_date') and isinstance(lead.get('quote_date'), datetime):
+        lead['quote_date'] = lead['quote_date'].isoformat().split('T')[0]
+    if lead.get('expected_close_date') and isinstance(lead.get('expected_close_date'), datetime):
+        lead['expected_close_date'] = lead['expected_close_date'].isoformat().split('T')[0]
+        
     if lead.get('closed_at') and isinstance(lead.get('closed_at'), str):
         lead['closed_at'] = datetime.fromisoformat(lead['closed_at'])
     
@@ -1458,14 +1467,18 @@ async def update_lead(
     
     updated_lead = await db.leads.find_one({"id": lead_id}, {"_id": 0})
     
+    # Convert datetime strings properly
     if isinstance(updated_lead.get('created_at'), str):
         updated_lead['created_at'] = datetime.fromisoformat(updated_lead['created_at'])
     if isinstance(updated_lead.get('updated_at'), str):
         updated_lead['updated_at'] = datetime.fromisoformat(updated_lead['updated_at'])
-    if updated_lead.get('quote_date') and isinstance(updated_lead.get('quote_date'), str):
-        updated_lead['quote_date'] = datetime.fromisoformat(updated_lead['quote_date'])
-    if updated_lead.get('expected_close_date') and isinstance(updated_lead.get('expected_close_date'), str):
-        updated_lead['expected_close_date'] = datetime.fromisoformat(updated_lead['expected_close_date'])
+    
+    # Keep date fields as strings
+    if updated_lead.get('quote_date') and isinstance(updated_lead.get('quote_date'), datetime):
+        updated_lead['quote_date'] = updated_lead['quote_date'].isoformat().split('T')[0]
+    if updated_lead.get('expected_close_date') and isinstance(updated_lead.get('expected_close_date'), datetime):
+        updated_lead['expected_close_date'] = updated_lead['expected_close_date'].isoformat().split('T')[0]
+        
     if updated_lead.get('closed_at') and isinstance(updated_lead.get('closed_at'), str):
         updated_lead['closed_at'] = datetime.fromisoformat(updated_lead['closed_at'])
     
