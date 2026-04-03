@@ -6,6 +6,7 @@ const API_URL = process.env.REACT_APP_BACKEND_URL;
 export default function Leads() {
   const [leads, setLeads] = useState([]);
   const [customers, setCustomers] = useState([]);
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
@@ -27,6 +28,7 @@ export default function Leads() {
   useEffect(() => { 
     fetchLeads();
     fetchCustomers();
+    fetchUsers();
   }, []);
 
   const fetchLeads = async () => {
@@ -51,6 +53,22 @@ export default function Leads() {
     } catch (error) {
       console.error('Error fetching customers:', error);
     }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/api/users`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setUsers(response.data);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+    }
+  };
+
+  const getUserName = (userId) => {
+    const foundUser = users.find(u => u.id === userId);
+    return foundUser ? foundUser.name : 'Unknown';
   };
 
   const handleSubmit = async (e) => {
@@ -229,6 +247,7 @@ export default function Leads() {
               <div className="grid grid-cols-2 gap-4 mb-6 p-4 bg-gradient-to-br from-blue-50 to-green-50 rounded-lg">
                 <div className="space-y-3">
                   <div><span className="font-semibold text-gray-700">Customer:</span> <span className="text-gray-900">{customers.find(c => c.id === selectedLead.customer_id)?.name || 'Unknown'}</span></div>
+                  <div><span className="font-semibold text-gray-700">Sales Rep:</span> <span className="text-blue-600 font-semibold">👤 {getUserName(selectedLead.created_by)}</span></div>
                   <div><span className="font-semibold text-gray-700">Status:</span> <span className={`ml-2 px-3 py-1 rounded text-sm font-semibold ${getStatusColor(selectedLead.status)}`}>{selectedLead.status.replace('_', ' ').toUpperCase()}</span></div>
                   <div><span className="font-semibold text-gray-700">Priority:</span> <span className={`ml-2 px-2 py-1 rounded text-sm font-semibold ${selectedLead.priority === 'high' ? 'bg-red-100 text-red-800' : selectedLead.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'}`}>{selectedLead.priority?.toUpperCase()}</span></div>
                   <div><span className="font-semibold text-gray-700">Lead Source:</span> <span className="text-gray-900">{selectedLead.lead_source || '-'}</span></div>
@@ -365,6 +384,7 @@ export default function Leads() {
                 <tr>
                   <th className="px-4 py-3 text-left">Customer</th>
                   <th className="px-4 py-3 text-left">Lead Title</th>
+                  <th className="px-4 py-3 text-left">Sales Rep</th>
                   <th className="px-4 py-3 text-left">Status</th>
                   <th className="px-4 py-3 text-left">Quote Ref</th>
                   <th className="px-4 py-3 text-left">Quote Value</th>
@@ -376,6 +396,7 @@ export default function Leads() {
                   <tr key={lead.id} onClick={() => openDetailModal(lead)} className="border-b hover:bg-blue-50 cursor-pointer">
                     <td className="px-4 py-3 font-medium">{customers.find(c => c.id === lead.customer_id)?.name || 'Unknown'}</td>
                     <td className="px-4 py-3">{lead.lead_title}</td>
+                    <td className="px-4 py-3 text-blue-600 font-medium">👤 {getUserName(lead.created_by)}</td>
                     <td className="px-4 py-3">
                       <span className={`px-2 py-1 rounded text-xs font-semibold ${getStatusColor(lead.status)}`}>
                         {lead.status.replace('_', ' ').toUpperCase()}
