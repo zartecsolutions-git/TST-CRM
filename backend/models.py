@@ -40,7 +40,7 @@ class UserBase(BaseModel):
     email: EmailStr
     name: str
     phone: Optional[str] = None
-    role: UserRole = UserRole.agent
+    role: UserRole = UserRole.sales
 
 class UserCreate(UserBase):
     password: str

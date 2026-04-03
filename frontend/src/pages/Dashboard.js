@@ -152,7 +152,6 @@ const Dashboard = () => {
               </div>
             </Button>
           )}
-          )}
           <Button
             onClick={() => window.location.href = '/teams'}
             className="bg-white hover:bg-gray-50 text-gray-900 border border-gray-200 h-auto py-4"
