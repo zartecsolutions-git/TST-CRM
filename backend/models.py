@@ -213,8 +213,14 @@ class ProductCreate(BaseModel):
     warranty_period: Optional[str] = None  # e.g., "12 months", "24 months"
     purchase_date: Optional[datetime] = None
     installation_date: Optional[datetime] = None
-    next_maintenance_date: Optional[datetime] = None  # NEW: Next scheduled maintenance
-    license_code: Optional[str] = None  # NEW: Product license code
+    next_maintenance_date: Optional[datetime] = None
+    license_code: Optional[str] = None
+    # Sales/Customer Linkage (NEW)
+    customer_id: Optional[str] = None  # Linked customer after sale
+    sale_date: Optional[datetime] = None
+    invoice_number: Optional[str] = None
+    sale_amount: Optional[float] = None
+    sale_notes: Optional[str] = None
 
 class Product(ProductCreate):
     model_config = ConfigDict(extra="ignore")
@@ -222,7 +228,7 @@ class Product(ProductCreate):
     created_by: str
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
-    warranty_finished_date: Optional[datetime] = None  # NEW: Auto-calculated from warranty_period + purchase_date
+    warranty_finished_date: Optional[datetime] = None  # Auto-calculated from warranty_period + purchase_date
 
 class ProductUpdate(BaseModel):
     name: Optional[str] = None
@@ -235,8 +241,14 @@ class ProductUpdate(BaseModel):
     warranty_period: Optional[str] = None
     purchase_date: Optional[datetime] = None
     installation_date: Optional[datetime] = None
-    next_maintenance_date: Optional[datetime] = None  # NEW
-    license_code: Optional[str] = None  # NEW
+    next_maintenance_date: Optional[datetime] = None
+    license_code: Optional[str] = None
+    # Sales/Customer Linkage (NEW)
+    customer_id: Optional[str] = None
+    sale_date: Optional[datetime] = None
+    invoice_number: Optional[str] = None
+    sale_amount: Optional[float] = None
+    sale_notes: Optional[str] = None
 
 # Token Models
 class Token(BaseModel):

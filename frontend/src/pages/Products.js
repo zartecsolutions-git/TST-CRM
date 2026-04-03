@@ -153,7 +153,12 @@ export default function Products() {
       purchase_date: selectedProduct.purchase_date ? selectedProduct.purchase_date.split('T')[0] : '',
       next_maintenance_date: selectedProduct.next_maintenance_date ? selectedProduct.next_maintenance_date.split('T')[0] : '',
       description: selectedProduct.description || '',
-      specifications: selectedProduct.specifications || ''
+      specifications: selectedProduct.specifications || '',
+      customer_id: selectedProduct.customer_id || '',
+      sale_date: selectedProduct.sale_date ? selectedProduct.sale_date.split('T')[0] : '',
+      invoice_number: selectedProduct.invoice_number || '',
+      sale_amount: selectedProduct.sale_amount || '',
+      sale_notes: selectedProduct.sale_notes || ''
     });
   };
 
@@ -348,6 +353,24 @@ export default function Products() {
                   </div>
                 </div>
 
+                {/* Sales Information */}
+                <div className="bg-pink-50 p-4 rounded-lg">
+                  <h3 className="font-semibold text-pink-800 mb-3 text-lg">💰 Sales Information</h3>
+                  <div className="space-y-2 text-sm">
+                    <div><span className="font-medium">Customer:</span> {selectedProduct.customer_id ? (
+                      <span className="font-semibold text-pink-700">{customers.find(c => c.id === selectedProduct.customer_id)?.name || 'Unknown'}</span>
+                    ) : <span className="text-gray-500">Not sold yet</span>}</div>
+                    {selectedProduct.sale_date && (
+                      <>
+                        <div><span className="font-medium">Sale Date:</span> {new Date(selectedProduct.sale_date).toLocaleDateString()}</div>
+                        <div><span className="font-medium">Invoice Number:</span> <span className="font-mono bg-white px-2 py-1 rounded">{selectedProduct.invoice_number || '-'}</span></div>
+                        <div><span className="font-medium">Sale Amount:</span> {selectedProduct.sale_amount ? `$${selectedProduct.sale_amount.toFixed(2)}` : '-'}</div>
+                        {selectedProduct.sale_notes && <div><span className="font-medium">Notes:</span> {selectedProduct.sale_notes}</div>}
+                      </>
+                    )}
+                  </div>
+                </div>
+
                 {/* Created/Updated Info */}
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <h3 className="font-semibold text-gray-800 mb-3 text-lg">ℹ️ System Information</h3>
@@ -422,6 +445,7 @@ export default function Products() {
             ) : (
               /* Edit Mode Form */
               <div className="space-y-4">
+                <h3 className="font-semibold text-lg mb-2">Basic Information</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div><label className="block text-sm mb-1">Name *</label><input type="text" required value={editFormData.name} onChange={(e) => setEditFormData({...editFormData, name: e.target.value})} className="w-full border rounded px-3 py-2" /></div>
                   <div><label className="block text-sm mb-1">Model</label><input type="text" value={editFormData.model} onChange={(e) => setEditFormData({...editFormData, model: e.target.value})} className="w-full border rounded px-3 py-2" /></div>
@@ -432,6 +456,22 @@ export default function Products() {
                   <div><label className="block text-sm mb-1">Purchase Date</label><input type="date" value={editFormData.purchase_date} onChange={(e) => setEditFormData({...editFormData, purchase_date: e.target.value})} className="w-full border rounded px-3 py-2" /></div>
                   <div><label className="block text-sm mb-1">Next Maintenance</label><input type="date" value={editFormData.next_maintenance_date} onChange={(e) => setEditFormData({...editFormData, next_maintenance_date: e.target.value})} className="w-full border rounded px-3 py-2" /></div>
                 </div>
+                
+                <h3 className="font-semibold text-lg mb-2 mt-4">💰 Sales Information</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm mb-1">Link to Customer</label>
+                    <select value={editFormData.customer_id} onChange={(e) => setEditFormData({...editFormData, customer_id: e.target.value})} className="w-full border rounded px-3 py-2">
+                      <option value="">Not sold yet</option>
+                      {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    </select>
+                  </div>
+                  <div><label className="block text-sm mb-1">Sale Date</label><input type="date" value={editFormData.sale_date} onChange={(e) => setEditFormData({...editFormData, sale_date: e.target.value})} className="w-full border rounded px-3 py-2" /></div>
+                  <div><label className="block text-sm mb-1">Invoice Number</label><input type="text" value={editFormData.invoice_number} onChange={(e) => setEditFormData({...editFormData, invoice_number: e.target.value})} className="w-full border rounded px-3 py-2" placeholder="INV-2024-001" /></div>
+                  <div><label className="block text-sm mb-1">Sale Amount</label><input type="number" step="0.01" value={editFormData.sale_amount} onChange={(e) => setEditFormData({...editFormData, sale_amount: e.target.value})} className="w-full border rounded px-3 py-2" /></div>
+                </div>
+                <div><label className="block text-sm mb-1">Sale Notes</label><textarea value={editFormData.sale_notes} onChange={(e) => setEditFormData({...editFormData, sale_notes: e.target.value})} className="w-full border rounded px-3 py-2" rows="2" placeholder="Payment terms, delivery details, etc." /></div>
+                
                 <div><label className="block text-sm mb-1">Description</label><textarea value={editFormData.description} onChange={(e) => setEditFormData({...editFormData, description: e.target.value})} className="w-full border rounded px-3 py-2" rows="3" /></div>
                 <div><label className="block text-sm mb-1">Specifications</label><textarea value={editFormData.specifications} onChange={(e) => setEditFormData({...editFormData, specifications: e.target.value})} className="w-full border rounded px-3 py-2" rows="3" /></div>
                 <div className="flex gap-2 justify-end">

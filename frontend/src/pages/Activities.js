@@ -243,7 +243,9 @@ const Activities = () => {
                     <select
                       className="w-full border rounded-md p-2"
                       value={newActivity.customer_id}
-                      onChange={(e) => setNewActivity({...newActivity, customer_id: e.target.value})}
+                      onChange={(e) => {
+                        setNewActivity({...newActivity, customer_id: e.target.value, product_ids: []});
+                      }}
                     >
                       <option value="">Select Customer (Optional)</option>
                       {customers.map(customer => (
@@ -255,22 +257,32 @@ const Activities = () => {
                   </div>
                   <div className="md:col-span-2">
                     <Label>Products (Multiple Selection)</Label>
-                    <select
-                      multiple
-                      className="w-full border rounded-md p-2 min-h-[100px]"
-                      value={newActivity.product_ids}
-                      onChange={(e) => {
-                        const selected = Array.from(e.target.selectedOptions, option => option.value);
-                        setNewActivity({...newActivity, product_ids: selected});
-                      }}
-                    >
-                      {products.map(product => (
-                        <option key={product.id} value={product.id}>
-                          {product.name} (SN: {product.serial_number}) - {product.category || 'N/A'}
-                        </option>
-                      ))}
-                    </select>
-                    <p className="text-sm text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple products</p>
+                    {newActivity.customer_id ? (
+                      <select
+                        multiple
+                        className="w-full border rounded-md p-2 min-h-[100px]"
+                        value={newActivity.product_ids}
+                        onChange={(e) => {
+                          const selected = Array.from(e.target.selectedOptions, option => option.value);
+                          setNewActivity({...newActivity, product_ids: selected});
+                        }}
+                      >
+                        {products.filter(p => p.customer_id === newActivity.customer_id).map(product => (
+                          <option key={product.id} value={product.id}>
+                            {product.name} (SN: {product.serial_number}) - {product.category || 'N/A'}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <div className="w-full border rounded-md p-2 min-h-[100px] bg-gray-50 flex items-center justify-center text-gray-500">
+                        Please select a customer first to see their products
+                      </div>
+                    )}
+                    <p className="text-sm text-gray-500 mt-1">
+                      {newActivity.customer_id 
+                        ? `Hold Ctrl/Cmd to select multiple products. ${products.filter(p => p.customer_id === newActivity.customer_id).length} product(s) available for this customer.`
+                        : 'Products will be filtered based on selected customer'}
+                    </p>
                   </div>
                   <div className="md:col-span-2">
                     <Label>Description</Label>
