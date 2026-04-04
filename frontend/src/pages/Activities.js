@@ -247,6 +247,9 @@ const Activities = () => {
     .filter(act => act.status === 'completed' && act.total_amount)
     .reduce((sum, act) => sum + (parseFloat(act.total_amount) || 0), 0);
 
+  // Count completed activities
+  const completedActivitiesCount = activities.filter(act => act.status === 'completed').length;
+
   // Get support users for dropdown
   const supportUsers = users.filter(u => u.role === 'support');
 
@@ -276,11 +279,16 @@ const Activities = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
             <h3 className="text-sm font-semibold text-gray-600 uppercase mb-2">Total Activities</h3>
             <p className="text-3xl font-bold text-blue-600">{totalActivitiesByUser}</p>
             <p className="text-xs text-gray-500 mt-1">All your activities</p>
+          </div>
+          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-orange-500">
+            <h3 className="text-sm font-semibold text-gray-600 uppercase mb-2">Completed Activities</h3>
+            <p className="text-3xl font-bold text-orange-600">{completedActivitiesCount}</p>
+            <p className="text-xs text-gray-500 mt-1">Successfully completed</p>
           </div>
           <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
             <h3 className="text-sm font-semibold text-gray-600 uppercase mb-2">Total Value</h3>
