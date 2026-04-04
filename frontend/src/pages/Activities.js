@@ -415,13 +415,22 @@ const Activities = () => {
                       </Button>
                     )}
                     {activity.status === 'in_progress' && (
-                      <Button
-                        size="sm"
-                        onClick={() => handleStatusChange(activity, 'completed')}
-                        className="bg-green-600 hover:bg-green-700"
-                      >
-                        Complete
-                      </Button>
+                      <>
+                        <Button
+                          size="sm"
+                          onClick={() => handleAddProgressUpdate(activity.id)}
+                          className="bg-purple-600 hover:bg-purple-700"
+                        >
+                          Add Progress
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={() => handleStatusChange(activity, 'completed')}
+                          className="bg-green-600 hover:bg-green-700"
+                        >
+                          Complete
+                        </Button>
+                      </>
                     )}
                     {isAdmin && (
                       <Button
