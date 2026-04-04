@@ -219,7 +219,7 @@ export default function Leads() {
       'contacted': 'bg-purple-100 text-purple-800',
       'qualified': 'bg-cyan-100 text-cyan-800',
       'proposal': 'bg-yellow-100 text-yellow-800',
-      'negotiation': 'bg-orange-100 text-orange-800',
+      'negotiation': 'bg-green-100 text-green-800',
       'closed_won': 'bg-green-100 text-green-800',
       'closed_lost': 'bg-red-100 text-red-800'
     };
@@ -239,7 +239,7 @@ export default function Leads() {
             <button onClick={() => window.location.href = '/dashboard'} className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
               Back to Dashboard
             </button>
-            <button onClick={() => setShowForm(true)} className="bg-gradient-to-r from-orange-500 to-sky-500 text-white px-6 py-2 rounded-lg">+ Add Lead</button>
+            <button onClick={() => setShowForm(true)} className="bg-gradient-to-r from-teal-600 to-green-600 text-white px-6 py-2 rounded-lg">+ Add Lead</button>
           </div>
         </div>
 
@@ -249,9 +249,9 @@ export default function Leads() {
             <h3 className="text-sm font-semibold text-gray-600 uppercase mb-2">Total Leads</h3>
             <p className="text-3xl font-bold text-blue-600">{leads.length}</p>
           </div>
-          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-orange-500">
+          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-600">
             <h3 className="text-sm font-semibold text-gray-600 uppercase mb-2">Total Quote Value</h3>
-            <p className="text-3xl font-bold text-orange-600">{formatAmount(totalQuoteValue)}</p>
+            <p className="text-3xl font-bold text-green-600">{formatAmount(totalQuoteValue)}</p>
           </div>
           <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
             <h3 className="text-sm font-semibold text-gray-600 uppercase mb-2">Total Project Value</h3>
@@ -262,7 +262,7 @@ export default function Leads() {
 
         {/* Sales Rep-wise Performance Table */}
         <div className="bg-white rounded-lg shadow mb-6 overflow-hidden">
-          <div className="bg-gradient-to-r from-orange-500 to-sky-500 px-6 py-4">
+          <div className="bg-gradient-to-r from-teal-600 to-green-600 px-6 py-4">
             <h2 className="text-xl font-bold text-white">📊 Sales Rep Performance</h2>
           </div>
           <div className="overflow-x-auto">
@@ -293,7 +293,7 @@ export default function Leads() {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-center">
-                        <span className="font-semibold text-orange-600 text-lg">
+                        <span className="font-semibold text-green-600 text-lg">
                           {formatAmount(rep.totalQuoteValue)}
                         </span>
                       </td>
@@ -363,7 +363,7 @@ export default function Leads() {
                 </div>
                 <div className="flex gap-2 justify-end">
                   <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 border rounded">Cancel</button>
-                  <button type="submit" className="px-4 py-2 bg-gradient-to-r from-orange-500 to-sky-500 text-white rounded">Create Lead</button>
+                  <button type="submit" className="px-4 py-2 bg-gradient-to-r from-teal-600 to-green-600 text-white rounded">Create Lead</button>
                 </div>
               </form>
             </div>
@@ -499,7 +499,7 @@ export default function Leads() {
                   Close
                 </button>
                 {selectedLead.status !== 'closed_won' && (
-                  <button onClick={() => { setShowDetailModal(false); openUpdateModal(selectedLead); }} className="px-6 py-2 bg-gradient-to-r from-orange-500 to-sky-500 text-white rounded-lg hover:from-blue-700 hover:to-green-700 flex items-center">
+                  <button onClick={() => { setShowDetailModal(false); openUpdateModal(selectedLead); }} className="px-6 py-2 bg-gradient-to-r from-teal-600 to-green-600 text-white rounded-lg hover:from-blue-700 hover:to-green-700 flex items-center">
                     <span className="mr-2">✏️</span> Edit Lead
                   </button>
                 )}
@@ -575,7 +575,7 @@ export default function Leads() {
             <div className="p-8 text-center text-gray-500">{searchQuery ? 'No leads found' : 'No leads yet'}</div>
           ) : (
             <table className="w-full">
-              <thead className="bg-gradient-to-r from-orange-500 to-sky-500 text-white">
+              <thead className="bg-gradient-to-r from-teal-600 to-green-600 text-white">
                 <tr>
                   <th className="px-4 py-3 text-left">Customer</th>
                   <th className="px-4 py-3 text-left">Lead Title</th>

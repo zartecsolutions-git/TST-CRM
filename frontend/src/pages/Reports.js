@@ -144,7 +144,7 @@ const Reports = () => {
                   className="h-16 w-auto max-w-[200px] rounded-lg object-contain border-2 border-orange-200 bg-white p-1"
                 />
               ) : (
-                <div className="bg-gradient-to-r from-orange-500 to-sky-500 p-2 rounded-xl">
+                <div className="bg-gradient-to-r from-teal-600 to-green-600 p-2 rounded-xl">
                   <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                   </svg>
@@ -152,7 +152,7 @@ const Reports = () => {
               )}
               
               <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-sky-500 bg-clip-text text-transparent">
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-teal-600 to-green-600 bg-clip-text text-transparent">
                   📊 {companySettings?.name || 'Company'} Reports
                 </h1>
                 <p className="text-sm text-gray-600">Business Analytics & Insights</p>
@@ -178,7 +178,7 @@ const Reports = () => {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Company Info Card */}
-        <Card className="mb-6 bg-gradient-to-r from-orange-500 to-sky-500 text-white">
+        <Card className="mb-6 bg-gradient-to-r from-teal-600 to-green-600 text-white">
           <CardContent className="pt-6">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
@@ -238,7 +238,7 @@ const Reports = () => {
               <CardTitle className="text-sm text-gray-600">Products</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-orange-600">{reportData?.totalProducts || 0}</p>
+              <p className="text-3xl font-bold text-green-600">{reportData?.totalProducts || 0}</p>
               <p className="text-xs text-gray-500 mt-1">In catalog</p>
             </CardContent>
           </Card>
@@ -340,7 +340,7 @@ const Reports = () => {
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-4">
                       <div 
-                        className="bg-gradient-to-r from-orange-500 to-sky-500 h-4 rounded-full transition-all duration-500"
+                        className="bg-gradient-to-r from-teal-600 to-green-600 h-4 rounded-full transition-all duration-500"
                         style={{ width: `${percentage}%` }}
                       ></div>
                     </div>
@@ -372,7 +372,7 @@ const Reports = () => {
               </div>
               <div className="text-center p-4 bg-orange-50 rounded-lg">
                 <p className="text-sm text-gray-600 mb-1">Support</p>
-                <p className="text-3xl font-bold text-orange-600">{reportData?.usersByRole.support || 0}</p>
+                <p className="text-3xl font-bold text-green-600">{reportData?.usersByRole.support || 0}</p>
               </div>
             </div>
             <div className="mt-4 text-center">

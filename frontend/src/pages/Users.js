@@ -82,7 +82,7 @@ const Users = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-sky-100 to-sky-50">
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-green-100 to-green-50">
       {/* Header */}
       <PageHeader title="User Management">
         <Button onClick={() => window.location.href = '/dashboard'} variant="outline">
@@ -97,7 +97,7 @@ const Users = () => {
             <Button
               onClick={() => setFilterRole('all')}
               variant={filterRole === 'all' ? 'default' : 'outline'}
-              className={filterRole === 'all' ? 'bg-gradient-to-r from-orange-500 to-sky-500' : ''}
+              className={filterRole === 'all' ? 'bg-gradient-to-r from-teal-600 to-green-600' : ''}
             >
               All Users
             </Button>
@@ -126,7 +126,7 @@ const Users = () => {
           {isAdmin && (
             <Button
               onClick={() => setShowAddForm(!showAddForm)}
-              className="bg-gradient-to-r from-orange-500 to-sky-500"
+              className="bg-gradient-to-r from-teal-600 to-green-600"
             >
               + Add User
             </Button>
@@ -196,7 +196,7 @@ const Users = () => {
                   </div>
                 </div>
                 <div className="flex space-x-2 pt-4 border-t">
-                  <Button type="submit" className="bg-gradient-to-r from-orange-500 to-sky-500">
+                  <Button type="submit" className="bg-gradient-to-r from-teal-600 to-green-600">
                     ✓ Create User
                   </Button>
                   <Button type="button" variant="outline" onClick={() => setShowAddForm(false)}>

@@ -293,13 +293,13 @@ const CompanySettings = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-3">
-              <div className="bg-gradient-to-r from-orange-500 to-sky-500 p-2 rounded-xl">
+              <div className="bg-gradient-to-r from-teal-600 to-green-600 p-2 rounded-xl">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
               </div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-sky-500 bg-clip-text text-transparent">
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-teal-600 to-green-600 bg-clip-text text-transparent">
                 ⚙️ Company Settings
               </h1>
             </div>
@@ -338,7 +338,7 @@ const CompanySettings = () => {
             </div>
             <button
               onClick={handleCreateNew}
-              className="bg-gradient-to-r from-orange-500 to-sky-500 text-white px-6 py-2 rounded-lg hover:from-orange-600 hover:to-sky-600"
+              className="bg-gradient-to-r from-teal-600 to-green-600 text-white px-6 py-2 rounded-lg hover:from-orange-600 hover:to-sky-600"
             >
               + Add New Company
             </button>
@@ -356,7 +356,7 @@ const CompanySettings = () => {
                   }}
                   className={`p-4 border-2 rounded-lg cursor-pointer transition-all relative ${
                     selectedCompany?.id === company.id
-                      ? 'border-orange-500 bg-orange-50'
+                      ? 'border-green-600 bg-orange-50'
                       : 'border-gray-200 hover:border-orange-300'
                   }`}
                 >
@@ -385,7 +385,7 @@ const CompanySettings = () => {
                             e.stopPropagation();
                             handleSetDefault(company.id);
                           }}
-                          className="mt-2 text-xs text-orange-600 hover:text-orange-700 font-semibold"
+                          className="mt-2 text-xs text-green-600 hover:text-orange-700 font-semibold"
                         >
                           Set as Default
                         </button>
@@ -408,7 +408,7 @@ const CompanySettings = () => {
         {/* Company Details Form */}
         {(selectedCompany || isEditing) && (
           <div className="bg-white rounded-lg shadow">
-            <div className="bg-gradient-to-r from-orange-500 to-sky-500 px-6 py-4 rounded-t-lg">
+            <div className="bg-gradient-to-r from-teal-600 to-green-600 px-6 py-4 rounded-t-lg">
               <h2 className="text-xl font-bold text-white">
                 {selectedCompany && !isEditing ? 'Company Details' : 'Edit Company Settings'}
               </h2>
@@ -432,7 +432,7 @@ const CompanySettings = () => {
                       accept="image/*"
                       onChange={handleLogoUpload}
                       disabled={!isEditing && selectedCompany}
-                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100 disabled:opacity-50"
+                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-green-100 disabled:opacity-50"
                     />
                     <p className="text-xs text-gray-500 mt-1">PNG, JPG up to 2MB. Recommended: 200x80px or wider for best visibility</p>
                   </div>
@@ -589,7 +589,7 @@ const CompanySettings = () => {
                   <button
                     type="button"
                     onClick={() => setIsEditing(true)}
-                    className="px-6 py-2 bg-gradient-to-r from-orange-500 to-sky-500 text-white rounded-lg hover:from-orange-600 hover:to-sky-600"
+                    className="px-6 py-2 bg-gradient-to-r from-teal-600 to-green-600 text-white rounded-lg hover:from-orange-600 hover:to-sky-600"
                   >
                     ✏️ Edit Settings
                   </button>
@@ -614,7 +614,7 @@ const CompanySettings = () => {
                     <button
                       type="submit"
                       disabled={saving}
-                      className="px-6 py-2 bg-gradient-to-r from-orange-500 to-sky-500 text-white rounded-lg hover:from-orange-600 hover:to-sky-600 disabled:opacity-50"
+                      className="px-6 py-2 bg-gradient-to-r from-teal-600 to-green-600 text-white rounded-lg hover:from-orange-600 hover:to-sky-600 disabled:opacity-50"
                     >
                       {saving ? 'Saving...' : selectedCompany ? 'Save Changes' : 'Create Company'}
                     </button>

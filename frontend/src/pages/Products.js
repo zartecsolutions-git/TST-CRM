@@ -236,7 +236,7 @@ export default function Products() {
               <>
                 <button onClick={handleExport} className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">📥 Export CSV</button>
                 <button onClick={() => setShowImport(true)} className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">📤 Import CSV</button>
-                <button onClick={() => setShowForm(true)} className="bg-gradient-to-r from-orange-500 to-sky-500 text-white px-6 py-2 rounded-lg">+ Add Product</button>
+                <button onClick={() => setShowForm(true)} className="bg-gradient-to-r from-teal-600 to-green-600 text-white px-6 py-2 rounded-lg">+ Add Product</button>
               </>
             )}
           </div>
@@ -262,8 +262,8 @@ export default function Products() {
         {(warrantyAlerts.length > 0 || maintenanceAlerts.length > 0) && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             {warrantyAlerts.length > 0 && (
-              <div className="bg-orange-100 border-l-4 border-orange-500 p-4 rounded">
-                <h3 className="font-bold text-orange-800 mb-2">⚠️ Warranty Expiring Soon ({warrantyAlerts.length})</h3>
+              <div className="bg-green-100 border-l-4 border-green-600 p-4 rounded">
+                <h3 className="font-bold text-green-800 mb-2">⚠️ Warranty Expiring Soon ({warrantyAlerts.length})</h3>
                 <ul className="text-sm space-y-1">
                   {warrantyAlerts.map(p => (
                     <li key={p.id} className="text-orange-700">
@@ -308,7 +308,7 @@ export default function Products() {
                 <div><label className="block text-sm mb-1">Specifications</label><textarea value={formData.specifications} onChange={(e) => setFormData({...formData, specifications: e.target.value})} className="w-full border rounded px-3 py-2" rows="2" placeholder="e.g., Power: 5kW, Pressure: 10 bar" /></div>
                 <div className="flex gap-2 justify-end">
                   <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 border rounded">Cancel</button>
-                  <button type="submit" className="px-4 py-2 bg-gradient-to-r from-orange-500 to-sky-500 text-white rounded">Create</button>
+                  <button type="submit" className="px-4 py-2 bg-gradient-to-r from-teal-600 to-green-600 text-white rounded">Create</button>
                 </div>
               </form>
             </div>
@@ -377,7 +377,7 @@ export default function Products() {
 
                 {/* Warranty Information */}
                 <div className="bg-orange-50 p-4 rounded-lg">
-                  <h3 className="font-semibold text-orange-800 mb-3 text-lg">⚠️ Warranty Information</h3>
+                  <h3 className="font-semibold text-green-800 mb-3 text-lg">⚠️ Warranty Information</h3>
                   <div className="space-y-2 text-sm">
                     <div><span className="font-medium">Warranty Period:</span> {selectedProduct.warranty_period || '-'}</div>
                     <div><span className="font-medium">Purchase Date:</span> {selectedProduct.purchase_date ? new Date(selectedProduct.purchase_date).toLocaleDateString() : '-'}</div>
@@ -490,7 +490,7 @@ export default function Products() {
               </div>
 
               <div className="mt-6 flex justify-end print:hidden">
-                <button onClick={() => { setShowDetails(false); setIsEditMode(false); }} className="px-6 py-2 bg-gradient-to-r from-orange-500 to-sky-500 text-white rounded-lg hover:shadow-lg">Close</button>
+                <button onClick={() => { setShowDetails(false); setIsEditMode(false); }} className="px-6 py-2 bg-gradient-to-r from-teal-600 to-green-600 text-white rounded-lg hover:shadow-lg">Close</button>
               </div>
               </>
             ) : (
@@ -546,7 +546,7 @@ export default function Products() {
                 💡 Click on any product row to view full details
               </div>
               <table className="w-full">
-              <thead className="bg-gradient-to-r from-orange-500 to-sky-500 text-white">
+              <thead className="bg-gradient-to-r from-teal-600 to-green-600 text-white">
                 <tr>
                   <th className="px-4 py-3 text-left">Name</th>
                   <th className="px-4 py-3 text-left">Serial Number</th>

@@ -270,7 +270,7 @@ const Activities = () => {
   const canCreateActivity = true; // All users can create activities
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-sky-100 to-sky-50">
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-green-100 to-green-50">
       <PageHeader title="📋 Activities Management">
         <Button onClick={() => window.location.href = '/dashboard'} variant="outline">
           Back to Dashboard
@@ -285,9 +285,9 @@ const Activities = () => {
             <p className="text-3xl font-bold text-blue-600">{totalActivitiesByUser}</p>
             <p className="text-xs text-gray-500 mt-1">All your activities</p>
           </div>
-          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-orange-500">
+          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-600">
             <h3 className="text-sm font-semibold text-gray-600 uppercase mb-2">Completed Activities</h3>
-            <p className="text-3xl font-bold text-orange-600">{completedActivitiesCount}</p>
+            <p className="text-3xl font-bold text-green-600">{completedActivitiesCount}</p>
             <p className="text-xs text-gray-500 mt-1">Successfully completed</p>
           </div>
           <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
@@ -302,7 +302,7 @@ const Activities = () => {
             <Button
               onClick={() => setFilterStatus('all')}
               variant={filterStatus === 'all' ? 'default' : 'outline'}
-              className={filterStatus === 'all' ? 'bg-gradient-to-r from-orange-500 to-sky-500' : ''}
+              className={filterStatus === 'all' ? 'bg-gradient-to-r from-teal-600 to-green-600' : ''}
             >
               All
             </Button>
@@ -331,7 +331,7 @@ const Activities = () => {
           {canCreateActivity && (
             <Button
               onClick={() => setShowAddForm(!showAddForm)}
-              className="bg-gradient-to-r from-orange-500 to-sky-500"
+              className="bg-gradient-to-r from-teal-600 to-green-600"
             >
               + Create Activity
             </Button>
@@ -419,7 +419,7 @@ const Activities = () => {
                         <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
                           <td className="py-3 px-4">
                             <div className="flex items-center">
-                              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-orange-500 to-sky-500 flex items-center justify-center text-white font-bold mr-3">
+                              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-teal-600 to-green-600 flex items-center justify-center text-white font-bold mr-3">
                                 {perf.name.charAt(0).toUpperCase()}
                               </div>
                               <span className="font-medium text-gray-900">{perf.name}</span>
@@ -541,7 +541,7 @@ const Activities = () => {
                                   </div>
                                   <div className="flex justify-between">
                                     <span className="text-gray-600">Tax ({companySettings?.tax_percentage || 0}%):</span>
-                                    <span className="font-semibold text-orange-600">
+                                    <span className="font-semibold text-green-600">
                                       {formatAmount(getTaxBreakdown(parseFloat(activity.total_amount)).taxAmount)}
                                     </span>
                                   </div>
@@ -571,7 +571,7 @@ const Activities = () => {
                         setSelectedActivity(activity);
                         setShowDetailModal(true);
                       }}
-                      className="bg-gradient-to-r from-orange-500 to-sky-500 hover:from-orange-600 hover:to-sky-600"
+                      className="bg-gradient-to-r from-teal-600 to-green-600 hover:from-orange-600 hover:to-sky-600"
                     >
                       👁️ View Details
                     </Button>
@@ -787,7 +787,7 @@ const Activities = () => {
                     <Button type="button" variant="outline" onClick={() => setShowAddForm(false)}>
                       Cancel
                     </Button>
-                    <Button type="submit" className="bg-gradient-to-r from-orange-500 to-sky-500">
+                    <Button type="submit" className="bg-gradient-to-r from-teal-600 to-green-600">
                       Create Activity
                     </Button>
                   </div>
@@ -856,7 +856,7 @@ const Activities = () => {
                   <div className="flex space-x-2">
                     <Button 
                       onClick={handleConfirmStatusUpdate}
-                      className="bg-gradient-to-r from-orange-500 to-sky-500"
+                      className="bg-gradient-to-r from-teal-600 to-green-600"
                     >
                       Confirm Update
                     </Button>
@@ -917,7 +917,7 @@ const Activities = () => {
                     </div>
                   </div>
                   <div className="flex space-x-2">
-                    <Button onClick={handleConfirmProgressUpdate} className="bg-gradient-to-r from-orange-500 to-sky-500">
+                    <Button onClick={handleConfirmProgressUpdate} className="bg-gradient-to-r from-teal-600 to-green-600">
                       Save Progress
                     </Button>
                     <Button variant="outline" onClick={() => setShowProgressModal(false)}>

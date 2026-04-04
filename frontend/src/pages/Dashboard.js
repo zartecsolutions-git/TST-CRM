@@ -28,7 +28,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-sky-100 to-sky-50">
+    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-green-100 to-green-50">
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -42,7 +42,7 @@ const Dashboard = () => {
                   className="h-16 w-auto max-w-[200px] rounded-lg object-contain border-2 border-orange-200 bg-white p-1"
                 />
               ) : (
-                <div className="bg-gradient-to-r from-orange-500 to-sky-500 p-2 rounded-xl">
+                <div className="bg-gradient-to-r from-teal-600 to-green-600 p-2 rounded-xl">
                   <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                   </svg>
@@ -50,7 +50,7 @@ const Dashboard = () => {
               )}
               
               <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-sky-500 bg-clip-text text-transparent">
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-teal-600 to-green-600 bg-clip-text text-transparent">
                   {companySettings?.name || 'Sales & Service CRM'}
                 </h1>
                 {companySettings?.country && (
@@ -65,7 +65,7 @@ const Dashboard = () => {
                 <>
                   <Button
                     onClick={() => window.location.href = '/location-tracking'}
-                    className="bg-gradient-to-r from-orange-500 to-sky-500 hover:from-blue-700 hover:to-green-700"
+                    className="bg-gradient-to-r from-teal-600 to-green-600 hover:from-blue-700 hover:to-green-700"
                     data-testid="location-tracking-button"
                   >
                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -88,7 +88,7 @@ const Dashboard = () => {
                   <Button
                     onClick={() => window.location.href = '/settings'}
                     variant="outline"
-                    className="border-orange-200 text-orange-600 hover:bg-orange-50"
+                    className="border-orange-200 text-green-600 hover:bg-orange-50"
                     data-testid="settings-button"
                   >
                     <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -179,7 +179,7 @@ const Dashboard = () => {
               data-testid="products-button"
             >
               <div className="flex flex-col items-center">
-                <svg className="w-8 h-8 mb-2 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-8 h-8 mb-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                 </svg>
                 <span className="font-semibold">Products</span>
