@@ -406,15 +406,29 @@ export default function Leads() {
                     <span className="mr-2">🎉</span> Deal Closed!
                   </h3>
                   <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <span className="font-semibold text-gray-700">💰 Project Value:</span>
-                      <span className="ml-2 text-2xl font-bold text-green-700">
-                        {selectedLead.project_value ? formatAmount(parseFloat(selectedLead.project_value)) : '-'}
-                      </span>
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="font-semibold text-gray-700">💰 Project Value (Base):</span>
+                        <span className="text-xl font-bold text-gray-800">
+                          {selectedLead.project_value ? formatAmount(parseFloat(selectedLead.project_value)) : '-'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="font-semibold text-gray-700">📊 Tax ({companySettings?.tax_percentage || 0}%):</span>
+                        <span className="text-xl font-bold text-amber-600">
+                          {selectedLead.project_value ? formatAmount(parseFloat(selectedLead.project_value) * ((companySettings?.tax_percentage || 0) / 100)) : '-'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center pt-2 border-t-2 border-green-300">
+                        <span className="font-bold text-gray-800">💵 Total Amount:</span>
+                        <span className="text-2xl font-bold text-green-700">
+                          {selectedLead.project_value ? formatAmount(calculateTotal(parseFloat(selectedLead.project_value))) : '-'}
+                        </span>
+                      </div>
                     </div>
                     <div>
                       <span className="font-semibold text-gray-700">📅 Closed Date:</span>
-                      <span className="ml-2 text-lg font-semibold text-green-700">
+                      <span className="ml-2 text-lg font-semibold text-green-700 block mt-1">
                         {selectedLead.closed_at ? new Date(selectedLead.closed_at).toLocaleDateString() : 'Not recorded'}
                       </span>
                     </div>
