@@ -22,6 +22,10 @@ const Activities = () => {
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState(null);
   const [statusUpdateNote, setStatusUpdateNote] = useState('');
+  const [completionData, setCompletionData] = useState({
+    invoice_number: '',
+    total_amount: ''
+  });
   const [progressUpdate, setProgressUpdate] = useState({ update: '', percentage: 0 });
   const [newActivity, setNewActivity] = useState({
     title: '',
@@ -135,13 +139,26 @@ const Activities = () => {
     }
 
     try {
-      await api.put(`/activities/${selectedActivity.id}`, { 
+      const updateData = {
         status: selectedActivity.newStatus,
         notes: statusUpdateNote
-      });
+      };
+      
+      // Add invoice and amount if completing
+      if (selectedActivity.newStatus === 'completed') {
+        if (completionData.invoice_number) {
+          updateData.invoice_number = completionData.invoice_number;
+        }
+        if (completionData.total_amount) {
+          updateData.total_amount = parseFloat(completionData.total_amount);
+        }
+      }
+      
+      await api.put(`/activities/${selectedActivity.id}`, updateData);
       alert('Activity status updated successfully!');
       setShowStatusModal(false);
       setStatusUpdateNote('');
+      setCompletionData({ invoice_number: '', total_amount: '' });
       setSelectedActivity(null);
       fetchData();
     } catch (error) {
@@ -495,6 +512,31 @@ const Activities = () => {
                       required
                     />
                   </div>
+                  
+                  {/* Show invoice and amount fields when completing */}
+                  {selectedActivity?.newStatus === 'completed' && (
+                    <div className="border-t pt-4 space-y-4">
+                      <h4 className="font-semibold text-green-700">💰 Completion Details</h4>
+                      <div>
+                        <Label>Invoice Number</Label>
+                        <Input
+                          placeholder="INV-2024-001"
+                          value={completionData.invoice_number}
+                          onChange={(e) => setCompletionData({...completionData, invoice_number: e.target.value})}
+                        />
+                      </div>
+                      <div>
+                        <Label>Total Amount ($)</Label>
+                        <Input
+                          type="number"
+                          placeholder="0.00"
+                          value={completionData.total_amount}
+                          onChange={(e) => setCompletionData({...completionData, total_amount: e.target.value})}
+                        />
+                      </div>
+                    </div>
+                  )}
+                  
                   <div className="flex space-x-2">
                     <Button 
                       onClick={handleConfirmStatusUpdate}
@@ -507,6 +549,7 @@ const Activities = () => {
                       onClick={() => {
                         setShowStatusModal(false);
                         setStatusUpdateNote('');
+                        setCompletionData({ invoice_number: '', total_amount: '' });
                         setSelectedActivity(null);
                       }}
                     >
