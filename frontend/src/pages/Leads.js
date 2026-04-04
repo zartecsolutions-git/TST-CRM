@@ -150,17 +150,41 @@ export default function Leads() {
       if (!submitData.quote_value) delete submitData.quote_value;
       if (!submitData.quote_ref) delete submitData.quote_ref;
       if (!submitData.lost_reason) delete submitData.lost_reason;
+      if (!submitData.project_value || submitData.project_value === '') delete submitData.project_value;
       
-      await axios.put(`${API_URL}/api/leads/${selectedLead.id}`, submitData, {
+      console.log('Submitting update:', submitData);
+      
+      const response = await axios.put(`${API_URL}/api/leads/${selectedLead.id}`, submitData, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      
+      console.log('Update response:', response.data);
       alert('Lead updated successfully!');
       fetchLeads();
       setShowUpdateModal(false);
       setSelectedLead(null);
     } catch (error) {
-      console.error('Error updating lead:', error);
-      alert(error.response?.data?.detail || 'Error updating lead');
+      console.error('Full error object:', error);
+      console.error('Error response:', error.response);
+      
+      // Better error message extraction
+      let errorMessage = 'Error updating lead';
+      if (error.response) {
+        // Server responded with error
+        if (typeof error.response.data === 'string') {
+          errorMessage = error.response.data;
+        } else if (error.response.data?.detail) {
+          errorMessage = error.response.data.detail;
+        } else if (error.response.data?.message) {
+          errorMessage = error.response.data.message;
+        } else {
+          errorMessage = `Error: ${error.response.status} - ${error.response.statusText}`;
+        }
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      alert(errorMessage);
     }
   };
 
