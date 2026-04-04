@@ -33,7 +33,7 @@ from auth import (
     get_password_hash, verify_password, create_access_token,
     get_current_user, security
 )
-from rbac import require_admin, require_admin_or_agent, get_current_user_data
+from rbac import require_admin, require_admin_or_agent, get_current_user_data, require_super_admin
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
