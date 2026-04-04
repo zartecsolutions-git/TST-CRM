@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useCurrency } from '../contexts/CurrencyContext';
 import api from '../utils/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 
 const Activities = () => {
   const { user: currentUser } = useAuth();
+  const { formatAmount, getTaxBreakdown, companySettings } = useCurrency();
   const [activities, setActivities] = useState([]);
   const [users, setUsers] = useState([]);
   const [customers, setCustomers] = useState([]);
@@ -241,7 +243,10 @@ const Activities = () => {
   const totalActivitiesByUser = activities.length;
   const totalValue = activities
     .filter(act => act.status === 'completed' && act.total_amount)
-    .reduce((sum, act) => sum + (parseFloat(act.total_amount) || 0), 0);
+    .reduce((sum, act) => {
+      const breakdown = getTaxBreakdown(parseFloat(act.total_amount) || 0);
+      return sum + breakdown.total;
+    }, 0);
 
   // Get support users for dropdown
   const supportUsers = users.filter(u => u.role === 'support');
@@ -402,7 +407,8 @@ const Activities = () => {
                         if (activity.invoice_number) performanceMap[userName].invoices++;
                         if (activity.work_order_no) performanceMap[userName].workOrders++;
                         if (activity.total_amount) {
-                          performanceMap[userName].totalValue += parseFloat(activity.total_amount);
+                          const breakdown = getTaxBreakdown(parseFloat(activity.total_amount));
+                          performanceMap[userName].totalValue += breakdown.total;
                         }
                       }
                       
@@ -454,7 +460,7 @@ const Activities = () => {
                           </td>
                           <td className="text-right py-3 px-4">
                             <span className="font-bold text-green-700">
-                              {perf.totalValue > 0 ? `$${perf.totalValue.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}` : '-'}
+                              {perf.totalValue > 0 ? formatAmount(perf.totalValue) : '-'}
                             </span>
                           </td>
                         </tr>
@@ -535,9 +541,25 @@ const Activities = () => {
                               </div>
                             )}
                             {activity.total_amount && (
-                              <div>
-                                <span className="text-gray-600">💰 Total Value:</span>
-                                <span className="ml-2 font-bold text-green-700">${parseFloat(activity.total_amount).toLocaleString()}</span>
+                              <div className="bg-green-50 px-3 py-2 rounded-lg">
+                                <div className="text-sm space-y-1">
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-600">Base Amount:</span>
+                                    <span className="font-semibold text-gray-900">{formatAmount(parseFloat(activity.total_amount))}</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-gray-600">Tax ({companySettings?.tax_percentage || 0}%):</span>
+                                    <span className="font-semibold text-orange-600">
+                                      {formatAmount(getTaxBreakdown(parseFloat(activity.total_amount)).taxAmount)}
+                                    </span>
+                                  </div>
+                                  <div className="flex justify-between pt-1 border-t border-green-200">
+                                    <span className="text-gray-700 font-bold">Total Value:</span>
+                                    <span className="font-bold text-green-700">
+                                      {formatAmount(getTaxBreakdown(parseFloat(activity.total_amount)).total)}
+                                    </span>
+                                  </div>
+                                </div>
                               </div>
                             )}
                           </div>

@@ -15,6 +15,7 @@ import Customers from './pages/Customers';
 import Products from './pages/Products';
 import Leads from './pages/Leads';
 import CompanySettings from './pages/CompanySettings';
+import Reports from './pages/Reports';
 import '@/App.css';
 
 // Protected Route Component
@@ -164,6 +165,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <CompanySettings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/reports"
+              element={
+                <ProtectedRoute>
+                  <Reports />
                 </ProtectedRoute>
               }
             />
