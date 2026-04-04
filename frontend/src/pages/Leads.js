@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useCurrency } from '../contexts/CurrencyContext';
 import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
 export default function Leads() {
+  const { formatAmount } = useCurrency();
   const [leads, setLeads] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [users, setUsers] = useState([]);
@@ -288,12 +290,12 @@ export default function Leads() {
                       </td>
                       <td className="px-6 py-4 text-center">
                         <span className="font-semibold text-orange-600 text-lg">
-                          ${rep.totalQuoteValue.toLocaleString()}
+                          {formatAmount(rep.totalQuoteValue)}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-center">
                         <span className="font-semibold text-green-600 text-lg">
-                          ${rep.totalProjectValue.toLocaleString()}
+                          {formatAmount(rep.totalProjectValue)}
                         </span>
                       </td>
                     </tr>
@@ -382,11 +384,11 @@ export default function Leads() {
                   <div><span className="font-semibold text-gray-700">Status:</span> <span className={`ml-2 px-3 py-1 rounded text-sm font-semibold ${getStatusColor(selectedLead.status)}`}>{selectedLead.status.replace('_', ' ').toUpperCase()}</span></div>
                   <div><span className="font-semibold text-gray-700">Priority:</span> <span className={`ml-2 px-2 py-1 rounded text-sm font-semibold ${selectedLead.priority === 'high' ? 'bg-red-100 text-red-800' : selectedLead.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'}`}>{selectedLead.priority?.toUpperCase()}</span></div>
                   <div><span className="font-semibold text-gray-700">Lead Source:</span> <span className="text-gray-900">{selectedLead.lead_source || '-'}</span></div>
-                  <div><span className="font-semibold text-gray-700">Estimated Value:</span> <span className="text-green-600 font-semibold">{selectedLead.estimated_value ? `$${selectedLead.estimated_value.toLocaleString()}` : '-'}</span></div>
+                  <div><span className="font-semibold text-gray-700">Estimated Value:</span> <span className="text-green-600 font-semibold">{selectedLead.estimated_value ? formatAmount(selectedLead.estimated_value) : '-'}</span></div>
                 </div>
                 <div className="space-y-3">
                   <div><span className="font-semibold text-gray-700">Quote Reference:</span> <span className="text-gray-900 font-mono">{selectedLead.quote_ref || '-'}</span></div>
-                  <div><span className="font-semibold text-gray-700">Quote Value:</span> <span className="text-green-600 font-semibold">{selectedLead.quote_value ? `$${selectedLead.quote_value.toLocaleString()}` : '-'}</span></div>
+                  <div><span className="font-semibold text-gray-700">Quote Value:</span> <span className="text-green-600 font-semibold">{selectedLead.quote_value ? formatAmount(selectedLead.quote_value) : '-'}</span></div>
                   <div><span className="font-semibold text-gray-700">Quote Date:</span> <span className="text-gray-900">{selectedLead.quote_date ? new Date(selectedLead.quote_date).toLocaleDateString() : '-'}</span></div>
                   <div><span className="font-semibold text-gray-700">Expected Close Date:</span> <span className="text-gray-900">{selectedLead.expected_close_date ? new Date(selectedLead.expected_close_date).toLocaleDateString() : '-'}</span></div>
                   <div><span className="font-semibold text-gray-700">Created:</span> <span className="text-gray-600 text-sm">{new Date(selectedLead.created_at).toLocaleString()}</span></div>
@@ -403,7 +405,7 @@ export default function Leads() {
                     <div>
                       <span className="font-semibold text-gray-700">💰 Project Value:</span>
                       <span className="ml-2 text-2xl font-bold text-green-700">
-                        {selectedLead.project_value ? `$${parseFloat(selectedLead.project_value).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}` : '-'}
+                        {selectedLead.project_value ? formatAmount(parseFloat(selectedLead.project_value)) : '-'}
                       </span>
                     </div>
                     <div>

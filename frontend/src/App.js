@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LocationProvider } from './contexts/LocationContext';
+import { CurrencyProvider } from './contexts/CurrencyContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
@@ -63,9 +64,10 @@ const PublicRoute = ({ children }) => {
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <LocationProvider>
-          <Routes>
+      <CurrencyProvider>
+        <BrowserRouter>
+          <LocationProvider>
+            <Routes>
             {/* Public Routes */}
             <Route
               path="/login"
@@ -172,6 +174,7 @@ function App() {
           </Routes>
         </LocationProvider>
       </BrowserRouter>
+    </CurrencyProvider>
     </AuthProvider>
   );
 }

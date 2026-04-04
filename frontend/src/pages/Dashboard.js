@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useCurrency } from '../contexts/CurrencyContext';
 import api from '../utils/api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 
 const Dashboard = () => {
   const { user, logout } = useAuth();
+  const { formatAmount, currencySymbol } = useCurrency();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -288,7 +290,7 @@ const Dashboard = () => {
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-gray-600">💰 Project Value</span>
                         <span className="text-lg font-bold text-green-600">
-                          ${(stats?.total_project_value || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                          {formatAmount(stats?.total_project_value || 0)}
                         </span>
                       </div>
                     </div>
