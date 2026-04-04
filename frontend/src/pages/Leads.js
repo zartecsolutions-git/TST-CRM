@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useCurrency } from '../contexts/CurrencyContext';
+import PageHeader from '../components/PageHeader';
 import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
