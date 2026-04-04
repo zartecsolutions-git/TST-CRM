@@ -119,7 +119,11 @@ export default function ActivitiesScreen({ navigation }) {
   };
 
   const renderActivity = ({ item }) => (
-    <View style={styles.activityCard}>
+    <TouchableOpacity 
+      style={styles.activityCard}
+      onPress={() => navigation.navigate('ActivityDetails', { activityId: item.id })}
+      activeOpacity={0.7}
+    >
       <View style={styles.activityHeader}>
         <Text style={styles.activityTitle}>{item.title}</Text>
         <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) }]}>
@@ -130,6 +134,8 @@ export default function ActivitiesScreen({ navigation }) {
       {item.description && (
         <Text style={styles.activityDescription}>{item.description}</Text>
       )}
+
+      <Text style={styles.tapHint}>👆 Tap to view full details</Text>
 
       {/* Progress Updates */}
       {item.status === 'in_progress' && item.progress_updates && item.progress_updates.length > 0 && (
@@ -156,7 +162,10 @@ export default function ActivitiesScreen({ navigation }) {
         {item.status === 'in_progress' && (
           <TouchableOpacity
             style={[styles.actionButton, styles.progressButton]}
-            onPress={() => handleAddProgress(item)}
+            onPress={(e) => {
+              e.stopPropagation();
+              handleAddProgress(item);
+            }}
           >
             <Text style={styles.progressButtonText}>+ Add Progress</Text>
           </TouchableOpacity>
@@ -165,7 +174,10 @@ export default function ActivitiesScreen({ navigation }) {
         {item.status !== 'completed' && (
           <TouchableOpacity
             style={[styles.actionButton, styles.statusButton]}
-            onPress={() => handleUpdateStatus(item)}
+            onPress={(e) => {
+              e.stopPropagation();
+              handleUpdateStatus(item);
+            }}
           >
             <Text style={styles.statusButtonText}>
               {item.status === 'pending' ? 'Start' : 'Complete'}
@@ -173,7 +185,7 @@ export default function ActivitiesScreen({ navigation }) {
           </TouchableOpacity>
         )}
       </View>
-    </View>
+    </TouchableOpacity>
   );
 
   return (
@@ -422,6 +434,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.textSecondary,
     marginBottom: 12,
+  },
+  tapHint: {
+    fontSize: 12,
+    color: colors.primary,
+    fontStyle: 'italic',
+    marginBottom: 8,
   },
   progressSection: {
     borderTopWidth: 1,

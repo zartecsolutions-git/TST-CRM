@@ -11,6 +11,7 @@ import CreateActivityScreen from '../screens/CreateActivityScreen';
 import CustomersScreen from '../screens/CustomersScreen';
 import ProductsScreen from '../screens/ProductsScreen';
 import LeadsScreen from '../screens/LeadsScreen';
+import ActivityDetailsScreen from '../screens/ActivityDetailsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -31,6 +32,7 @@ export default function AppNavigator() {
             <Stack.Screen name="Dashboard" component={DashboardScreen} />
             <Stack.Screen name="Activities" component={ActivitiesScreen} />
             <Stack.Screen name="CreateActivity" component={CreateActivityScreen} />
+            <Stack.Screen name="ActivityDetails" component={ActivityDetailsScreen} />
             <Stack.Screen name="Customers" component={CustomersScreen} />
             <Stack.Screen name="Products" component={ProductsScreen} />
             <Stack.Screen name="Leads" component={LeadsScreen} />
