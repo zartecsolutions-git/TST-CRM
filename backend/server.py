@@ -841,11 +841,11 @@ async def get_dashboard_stats(current_user_id: str = Depends(get_current_user)):
     total_teams = await db.teams.count_documents({})
     total_geofences = await db.geofences.count_documents({})
     
-    # For sales users, filter leads by assigned_to or sales_rep
+    # For sales users, filter leads by created_by (sales rep)
     # For admin, show all leads
     if user_role == "sales":
-        # Sales users see only their leads
-        leads_filter = {"$or": [{"assigned_to": current_user_id}, {"sales_rep": current_user_id}]}
+        # Sales users see only their leads (leads they created)
+        leads_filter = {"created_by": current_user_id}
         total_leads = await db.leads.count_documents(leads_filter)
         closed_won_leads = await db.leads.count_documents({**leads_filter, "status": "closed_won"})
         
