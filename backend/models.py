@@ -64,6 +64,8 @@ class UserUpdate(BaseModel):
     avatar_url: Optional[str] = None
     status: Optional[UserStatus] = None
     team_id: Optional[str] = None
+    company_id: Optional[str] = None
+    company_id: Optional[str] = None
 
 # Location Models
 class LocationCreate(BaseModel):
@@ -316,3 +318,37 @@ class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
     user: User
+
+# Company Models
+class CompanyBase(BaseModel):
+    name: str
+    country: str
+    currency: str
+    tax_id: Optional[str] = None
+    tax_percentage: float = 0.0
+    address: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[EmailStr] = None
+    timezone: str = "UTC"
+
+class CompanyCreate(CompanyBase):
+    logo_url: Optional[str] = None
+
+class Company(CompanyBase):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    logo_url: Optional[str] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class CompanyUpdate(BaseModel):
+    name: Optional[str] = None
+    country: Optional[str] = None
+    currency: Optional[str] = None
+    tax_id: Optional[str] = None
+    tax_percentage: Optional[float] = None
+    address: Optional[str] = None
+    phone: Optional[str] = None
+    email: Optional[EmailStr] = None
+    logo_url: Optional[str] = None
+    timezone: Optional[str] = None
