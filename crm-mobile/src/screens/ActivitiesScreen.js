@@ -118,75 +118,84 @@ export default function ActivitiesScreen({ navigation }) {
     return status.replace('_', ' ').toUpperCase();
   };
 
-  const renderActivity = ({ item }) => (
-    <TouchableOpacity 
-      style={styles.activityCard}
-      onPress={() => navigation.navigate('ActivityDetails', { activityId: item.id })}
-      activeOpacity={0.7}
-    >
-      <View style={styles.activityHeader}>
-        <Text style={styles.activityTitle}>{item.title}</Text>
-        <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) }]}>
-          <Text style={styles.statusText}>{getStatusText(item.status)}</Text>
-        </View>
-      </View>
-      
-      {item.description && (
-        <Text style={styles.activityDescription}>{item.description}</Text>
-      )}
+  const renderActivity = ({ item }) => {
+    const handleCardPress = () => {
+      navigation.navigate('ActivityDetails', { activityId: item.id });
+    };
 
-      <Text style={styles.tapHint}>👆 Tap to view full details</Text>
+    const handleProgressPress = () => {
+      handleAddProgress(item);
+    };
 
-      {/* Progress Updates */}
-      {item.status === 'in_progress' && item.progress_updates && item.progress_updates.length > 0 && (
-        <View style={styles.progressSection}>
-          <Text style={styles.progressTitle}>Progress Updates:</Text>
-          {item.progress_updates.slice().reverse().slice(0, 2).map((update, idx) => (
-            <View key={idx} style={styles.progressUpdate}>
-              <View style={styles.progressHeader}>
-                <Text style={styles.progressPercentage}>{update.percentage}% Complete</Text>
-                <Text style={styles.progressTime}>
-                  {new Date(update.timestamp).toLocaleTimeString()}
-                </Text>
-              </View>
-              <Text style={styles.progressText}>{update.update}</Text>
+    const handleStatusPress = () => {
+      handleUpdateStatus(item);
+    };
+
+    return (
+      <View style={styles.activityCard}>
+        <TouchableOpacity 
+          onPress={handleCardPress}
+          activeOpacity={0.7}
+        >
+          <View style={styles.activityHeader}>
+            <Text style={styles.activityTitle}>{item.title}</Text>
+            <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) }]}>
+              <Text style={styles.statusText}>{getStatusText(item.status)}</Text>
             </View>
-          ))}
-          {item.progress_updates.length > 2 && (
-            <Text style={styles.moreUpdates}>+ {item.progress_updates.length - 2} more updates</Text>
+          </View>
+          
+          {item.description && (
+            <Text style={styles.activityDescription}>{item.description}</Text>
+          )}
+
+          <Text style={styles.tapHint}>👆 Tap to view full details</Text>
+
+          {/* Progress Updates */}
+          {item.status === 'in_progress' && item.progress_updates && item.progress_updates.length > 0 && (
+            <View style={styles.progressSection}>
+              <Text style={styles.progressTitle}>Progress Updates:</Text>
+              {item.progress_updates.slice().reverse().slice(0, 2).map((update, idx) => (
+                <View key={idx} style={styles.progressUpdate}>
+                  <View style={styles.progressHeader}>
+                    <Text style={styles.progressPercentage}>{update.percentage}% Complete</Text>
+                    <Text style={styles.progressTime}>
+                      {new Date(update.timestamp).toLocaleTimeString()}
+                    </Text>
+                  </View>
+                  <Text style={styles.progressText}>{update.update}</Text>
+                </View>
+              ))}
+              {item.progress_updates.length > 2 && (
+                <Text style={styles.moreUpdates}>+ {item.progress_updates.length - 2} more updates</Text>
+              )}
+            </View>
+          )}
+        </TouchableOpacity>
+
+        <View style={styles.activityActions}>
+          {item.status === 'in_progress' && (
+            <TouchableOpacity
+              style={[styles.actionButton, styles.progressButton]}
+              onPress={handleProgressPress}
+            >
+              <Text style={styles.progressButtonText}>+ Add Progress</Text>
+            </TouchableOpacity>
+          )}
+          
+          {item.status !== 'completed' && (
+            <TouchableOpacity
+              style={[styles.actionButton, styles.statusButton]}
+              onPress={handleStatusPress}
+            >
+              <Text style={styles.statusButtonText}>
+                {item.status === 'pending' ? 'Start' : 'Complete'}
+              </Text>
+            </TouchableOpacity>
           )}
         </View>
-      )}
-
-      <View style={styles.activityActions}>
-        {item.status === 'in_progress' && (
-          <TouchableOpacity
-            style={[styles.actionButton, styles.progressButton]}
-            onPress={(e) => {
-              e.stopPropagation();
-              handleAddProgress(item);
-            }}
-          >
-            <Text style={styles.progressButtonText}>+ Add Progress</Text>
-          </TouchableOpacity>
-        )}
-        
-        {item.status !== 'completed' && (
-          <TouchableOpacity
-            style={[styles.actionButton, styles.statusButton]}
-            onPress={(e) => {
-              e.stopPropagation();
-              handleUpdateStatus(item);
-            }}
-          >
-            <Text style={styles.statusButtonText}>
-              {item.status === 'pending' ? 'Start' : 'Complete'}
-            </Text>
-          </TouchableOpacity>
-        )}
       </View>
-    </TouchableOpacity>
-  );
+    );
+  };
 
   return (
     <View style={styles.container}>

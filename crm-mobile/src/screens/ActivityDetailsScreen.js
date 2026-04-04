@@ -25,16 +25,24 @@ export default function ActivityDetailsScreen({ route, navigation }) {
 
   const fetchActivityDetails = async () => {
     try {
+      console.log('Fetching activity details for ID:', activityId);
       const response = await activitiesAPI.getAll();
+      console.log('Total activities fetched:', response.data.length);
+      
       const activityData = response.data.find(a => a.id === activityId);
+      
       if (activityData) {
+        console.log('Activity found:', activityData.title);
         setActivity(activityData);
       } else {
-        Alert.alert('Error', 'Activity not found');
-        navigation.goBack();
+        console.error('Activity not found with ID:', activityId);
+        Alert.alert('Error', 'Activity not found', [
+          { text: 'OK', onPress: () => navigation.goBack() }
+        ]);
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to fetch activity details');
+      console.error('Error fetching activity details:', error);
+      Alert.alert('Error', 'Failed to fetch activity details: ' + (error.message || 'Unknown error'));
     } finally {
       setLoading(false);
       setRefreshing(false);

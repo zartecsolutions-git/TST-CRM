@@ -10,30 +10,51 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { activitiesAPI, usersAPI } from '../services/api';
+import { activitiesAPI, usersAPI, customersAPI } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
 import { colors } from '../utils/colors';
 import { Picker } from '@react-native-picker/picker';
 
 export default function CreateActivityScreen({ navigation }) {
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState([]);
+  const [customers, setCustomers] = useState([]);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     assigned_to: '',
+    customer_id: '',
     status: 'pending',
+    priority: 'medium',
+    activity_type: 'others',
   });
 
   useEffect(() => {
     fetchUsers();
+    fetchCustomers();
   }, []);
 
   const fetchUsers = async () => {
     try {
       const response = await usersAPI.getAll();
       setUsers(response.data);
+      
+      // Auto-assign to current user if support role
+      if (user?.role === 'support' && user?.id) {
+        setFormData(prev => ({ ...prev, assigned_to: user.id }));
+      }
     } catch (error) {
       console.error('Error fetching users:', error);
+    }
+  };
+
+  const fetchCustomers = async () => {
+    try {
+      const response = await customersAPI.getAll();
+      setCustomers(response.data);
+    } catch (error) {
+      console.error('Error fetching customers:', error);
     }
   };
 
@@ -43,14 +64,39 @@ export default function CreateActivityScreen({ navigation }) {
       return;
     }
 
+    if (!formData.assigned_to) {
+      Alert.alert('Required', 'Please assign the activity to a user');
+      return;
+    }
+
     setLoading(true);
     try {
-      await activitiesAPI.create(formData);
+      // Clean up empty fields
+      const payload = {
+        title: formData.title,
+        description: formData.description || null,
+        assigned_to: formData.assigned_to,
+        customer_id: formData.customer_id || null,
+        status: formData.status,
+        priority: formData.priority,
+        activity_type: formData.activity_type,
+      };
+
+      await activitiesAPI.create(payload);
       Alert.alert('Success', 'Activity created successfully', [
-        { text: 'OK', onPress: () => navigation.goBack() },
+        { 
+          text: 'OK', 
+          onPress: () => {
+            navigation.goBack();
+            // Optionally navigate to Activities screen
+            navigation.navigate('Activities');
+          }
+        },
       ]);
     } catch (error) {
-      Alert.alert('Error', error.response?.data?.detail || 'Failed to create activity');
+      console.error('Create activity error:', error);
+      const errorMessage = error.response?.data?.detail || error.message || 'Failed to create activity';
+      Alert.alert('Error', errorMessage);
     } finally {
       setLoading(false);
     }
@@ -96,19 +142,62 @@ export default function CreateActivityScreen({ navigation }) {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Assign To</Text>
+            <Text style={styles.label}>Activity Type</Text>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={formData.activity_type}
+                onValueChange={(value) => setFormData({ ...formData, activity_type: value })}
+                style={styles.picker}
+              >
+                <Picker.Item label="Demo/POC" value="demo_poc" />
+                <Picker.Item label="Warranty" value="warranty" />
+                <Picker.Item label="Service Call" value="service_call" />
+                <Picker.Item label="Maintenance" value="maintenance" />
+                <Picker.Item label="Installation" value="installation" />
+                <Picker.Item label="Training" value="training" />
+                <Picker.Item label="Others" value="others" />
+              </Picker>
+            </View>
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Assign To *</Text>
             <View style={styles.pickerContainer}>
               <Picker
                 selectedValue={formData.assigned_to}
                 onValueChange={(value) => setFormData({ ...formData, assigned_to: value })}
                 style={styles.picker}
+                enabled={user?.role !== 'support'}
               >
                 <Picker.Item label="Select User" value="" />
-                {users.map((user) => (
+                {users.map((u) => (
                   <Picker.Item
-                    key={user.id}
-                    label={`${user.name} (${user.role})`}
-                    value={user.id}
+                    key={u.id}
+                    label={`${u.name} (${u.role})`}
+                    value={u.id}
+                  />
+                ))}
+              </Picker>
+            </View>
+            {user?.role === 'support' && (
+              <Text style={styles.helpText}>Auto-assigned to you</Text>
+            )}
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Customer</Text>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={formData.customer_id}
+                onValueChange={(value) => setFormData({ ...formData, customer_id: value })}
+                style={styles.picker}
+              >
+                <Picker.Item label="Select Customer (Optional)" value="" />
+                {customers.map((customer) => (
+                  <Picker.Item
+                    key={customer.id}
+                    label={customer.name}
+                    value={customer.id}
                   />
                 ))}
               </Picker>
@@ -116,7 +205,22 @@ export default function CreateActivityScreen({ navigation }) {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Status</Text>
+            <Text style={styles.label}>Priority</Text>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={formData.priority}
+                onValueChange={(value) => setFormData({ ...formData, priority: value })}
+                style={styles.picker}
+              >
+                <Picker.Item label="Low" value="low" />
+                <Picker.Item label="Medium" value="medium" />
+                <Picker.Item label="High" value="high" />
+              </Picker>
+            </View>
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Initial Status</Text>
             <View style={styles.pickerContainer}>
               <Picker
                 selectedValue={formData.status}
@@ -214,6 +318,12 @@ const styles = StyleSheet.create({
   },
   picker: {
     height: 50,
+  },
+  helpText: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginTop: 4,
+    fontStyle: 'italic',
   },
   submitButton: {
     marginTop: 20,
