@@ -6,7 +6,7 @@ import axios from 'axios';
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
 export default function Leads() {
-  const { formatAmount, companySettings } = useCurrency();
+  const { formatAmount, calculateTotal, companySettings } = useCurrency();
   const [leads, setLeads] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [users, setUsers] = useState([]);
@@ -75,11 +75,15 @@ export default function Leads() {
     return foundUser ? foundUser.name : 'Unknown';
   };
 
-  // Calculate overall statistics
+  // Calculate overall statistics (with tax)
   const totalQuoteValue = leads.reduce((sum, lead) => sum + (lead.quote_value || 0), 0);
   const totalProjectValue = leads
     .filter(lead => lead.status === 'closed_won')
     .reduce((sum, lead) => sum + (lead.project_value || 0), 0);
+  
+  // Calculate values with tax
+  const totalQuoteWithTax = calculateTotal(totalQuoteValue);
+  const totalProjectWithTax = calculateTotal(totalProjectValue);
 
   // Calculate sales rep-wise statistics
   const salesRepStats = {};
@@ -250,12 +254,13 @@ export default function Leads() {
           </div>
           <div className="bg-white rounded-lg shadow p-6 border-l-4 border-orange-500">
             <h3 className="text-sm font-semibold text-gray-600 uppercase mb-2">Total Quote Value</h3>
-            <p className="text-3xl font-bold text-orange-600">${totalQuoteValue.toLocaleString()}</p>
+            <p className="text-3xl font-bold text-orange-600">{formatAmount(totalQuoteWithTax)}</p>
+            <p className="text-xs text-gray-500 mt-1">Incl. {companySettings?.tax_percentage || 0}% tax</p>
           </div>
           <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
             <h3 className="text-sm font-semibold text-gray-600 uppercase mb-2">Total Project Value</h3>
-            <p className="text-3xl font-bold text-green-600">${totalProjectValue.toLocaleString()}</p>
-            <p className="text-xs text-gray-500 mt-1">From closed won deals</p>
+            <p className="text-3xl font-bold text-green-600">{formatAmount(totalProjectWithTax)}</p>
+            <p className="text-xs text-gray-500 mt-1">From closed won deals (Incl. {companySettings?.tax_percentage || 0}% tax)</p>
           </div>
         </div>
 
@@ -350,7 +355,7 @@ export default function Leads() {
                       <option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option>
                     </select>
                   </div>
-                  <div><label className="block text-sm mb-1">Estimated Value ($)</label>
+                  <div><label className="block text-sm mb-1">Estimated Value ({companySettings?.currency || 'USD'})</label>
                     <input type="number" value={formData.estimated_value} onChange={(e) => setFormData({...formData, estimated_value: e.target.value})} className="w-full border rounded px-3 py-2" />
                   </div>
                   <div><label className="block text-sm mb-1">Expected Close Date</label>
@@ -466,7 +471,7 @@ export default function Leads() {
                             <strong>Changes:</strong>
                             {update.changes.status && <span className="bg-purple-100 px-2 py-1 rounded">Status → <strong>{update.changes.status}</strong></span>}
                             {update.changes.quote_ref && <span className="bg-green-100 px-2 py-1 rounded">Quote Ref → <strong>{update.changes.quote_ref}</strong></span>}
-                            {update.changes.quote_value && <span className="bg-green-100 px-2 py-1 rounded">Quote Value → <strong>${update.changes.quote_value}</strong></span>}
+                            {update.changes.quote_value && <span className="bg-green-100 px-2 py-1 rounded">Quote Value → <strong>{formatAmount(update.changes.quote_value)}</strong></span>}
                             {update.changes.quote_date && <span className="bg-green-100 px-2 py-1 rounded">Quote Date → <strong>{update.changes.quote_date}</strong></span>}
                           </div>
                         )}
@@ -514,7 +519,7 @@ export default function Leads() {
                   <div><label className="block text-sm mb-1">Quote Reference</label>
                     <input type="text" value={updateData.quote_ref} onChange={(e) => setUpdateData({...updateData, quote_ref: e.target.value})} className="w-full border rounded px-3 py-2" />
                   </div>
-                  <div><label className="block text-sm mb-1">Quote Value ($)</label>
+                  <div><label className="block text-sm mb-1">Quote Value ({companySettings?.currency || 'USD'})</label>
                     <input type="number" value={updateData.quote_value} onChange={(e) => setUpdateData({...updateData, quote_value: e.target.value})} className="w-full border rounded px-3 py-2" />
                   </div>
                   <div><label className="block text-sm mb-1">Quote Date</label>
@@ -583,7 +588,7 @@ export default function Leads() {
                       </span>
                     </td>
                     <td className="px-4 py-3 font-mono text-sm">{lead.quote_ref || '-'}</td>
-                    <td className="px-4 py-3">{lead.quote_value ? `$${lead.quote_value.toLocaleString()}` : '-'}</td>
+                    <td className="px-4 py-3">{lead.quote_value ? formatAmount(lead.quote_value) : '-'}</td>
                     <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                       {lead.status === 'closed_won' ? (
                         <span className="text-gray-400 text-sm font-medium cursor-not-allowed">🔒 Locked</span>

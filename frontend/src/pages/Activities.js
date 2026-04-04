@@ -11,7 +11,8 @@ import { Badge } from '@/components/ui/badge';
 
 const Activities = () => {
   const { user: currentUser } = useAuth();
-  const { formatAmount, getTaxBreakdown, companySettings } = useCurrency();
+  // Import calculateTotal from useCurrency
+  const { formatAmount, getTaxBreakdown, calculateTotal, companySettings } = useCurrency();
   const [activities, setActivities] = useState([]);
   const [users, setUsers] = useState([]);
   const [customers, setCustomers] = useState([]);
@@ -286,8 +287,8 @@ const Activities = () => {
           </div>
           <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
             <h3 className="text-sm font-semibold text-gray-600 uppercase mb-2">Total Value</h3>
-            <p className="text-3xl font-bold text-green-600">${totalValue.toLocaleString()}</p>
-            <p className="text-xs text-gray-500 mt-1">From completed activities</p>
+            <p className="text-3xl font-bold text-green-600">{formatAmount(totalValue)}</p>
+            <p className="text-xs text-gray-500 mt-1">From completed activities (Incl. {companySettings?.tax_percentage || 0}% tax)</p>
           </div>
         </div>
 
@@ -767,7 +768,7 @@ const Activities = () => {
                           />
                         </div>
                         <div>
-                          <Label>Total Amount ($)</Label>
+                          <Label>Total Amount ({companySettings?.currency || 'USD'})</Label>
                           <Input
                             type="number"
                             value={newActivity.total_amount}
@@ -837,7 +838,7 @@ const Activities = () => {
                         />
                       </div>
                       <div>
-                        <Label>Total Amount ($)</Label>
+                        <Label>Total Amount ({companySettings?.currency || 'USD'})</Label>
                         <Input
                           type="number"
                           placeholder="0.00"
@@ -1035,7 +1036,7 @@ const Activities = () => {
                         <div>
                           <span className="text-gray-500">Total Amount:</span>
                           <span className="ml-2 font-medium text-green-600">
-                            ${parseFloat(selectedActivity.total_amount).toLocaleString()}
+                            {formatAmount(parseFloat(selectedActivity.total_amount))}
                           </span>
                         </div>
                       )}
