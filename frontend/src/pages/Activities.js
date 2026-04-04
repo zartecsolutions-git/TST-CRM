@@ -62,13 +62,53 @@ const Activities = () => {
   const handleAddActivity = async (e) => {
     e.preventDefault();
     try {
-      await api.post('/activities', newActivity);
+      console.log('Creating activity with data:', newActivity);
+      
+      const response = await api.post('/activities', newActivity);
+      console.log('Activity created:', response.data);
+      
       alert('Activity created successfully!');
-      setNewActivity({ title: '', description: '', assigned_to: '', customer_id: '', product_ids: [], status: 'pending', due_date: '' });
+      setNewActivity({ 
+        title: '', 
+        description: '', 
+        assigned_to: '', 
+        customer_id: '', 
+        product_ids: [], 
+        status: 'pending',
+        activity_type: 'others',
+        due_date: '',
+        invoice_number: '',
+        total_amount: ''
+      });
       setShowAddForm(false);
       fetchData();
     } catch (error) {
-      alert('Error creating activity: ' + (error.response?.data?.detail || error.message));
+      console.error('Full error object:', error);
+      console.error('Error response:', error.response);
+      
+      // Better error message extraction
+      let errorMessage = 'Error creating activity';
+      if (error.response) {
+        // Server responded with error
+        if (typeof error.response.data === 'string') {
+          errorMessage = error.response.data;
+        } else if (error.response.data?.detail) {
+          if (Array.isArray(error.response.data.detail)) {
+            // Pydantic validation errors
+            errorMessage = error.response.data.detail.map(err => `${err.loc.join('.')}: ${err.msg}`).join(', ');
+          } else {
+            errorMessage = error.response.data.detail;
+          }
+        } else if (error.response.data?.message) {
+          errorMessage = error.response.data.message;
+        } else {
+          errorMessage = `Error: ${error.response.status} - ${error.response.statusText}`;
+        }
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      alert('Error creating activity: ' + errorMessage);
     }
   };
 
