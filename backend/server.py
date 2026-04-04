@@ -1696,7 +1696,8 @@ async def get_default_company_branding():
         "name": default_company.get("name"),
         "logo_url": default_company.get("logo_url"),
         "country": default_company.get("country"),
-        "currency": default_company.get("currency")
+        "currency": default_company.get("currency"),
+        "tax_percentage": default_company.get("tax_percentage", 0)
     }
 
 
