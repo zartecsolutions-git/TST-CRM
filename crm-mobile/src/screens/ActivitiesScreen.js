@@ -143,12 +143,12 @@ export default function ActivitiesScreen({ navigation }) {
               <Text style={styles.statusText}>{getStatusText(item.status)}</Text>
             </View>
           </View>
+
+          <Text style={styles.tapHint}>👆 Tap to view full details</Text>
           
           {item.description && (
             <Text style={styles.activityDescription}>{item.description}</Text>
           )}
-
-          <Text style={styles.tapHint}>👆 Tap to view full details</Text>
 
           {/* Progress Updates */}
           {item.status === 'in_progress' && item.progress_updates && item.progress_updates.length > 0 && (

@@ -8,7 +8,10 @@ import {
   ActivityIndicator,
   Alert,
   RefreshControl,
+  Modal,
+  TextInput,
 } from 'react-native';
+import Slider from '@react-native-community/slider';
 import { LinearGradient } from 'expo-linear-gradient';
 import { activitiesAPI } from '../services/api';
 import { colors } from '../utils/colors';
@@ -18,6 +21,11 @@ export default function ActivityDetailsScreen({ route, navigation }) {
   const [activity, setActivity] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  
+  // Add Progress Modal State
+  const [showProgressModal, setShowProgressModal] = useState(false);
+  const [progressUpdate, setProgressUpdate] = useState({ update: '', percentage: 0 });
+  const [savingProgress, setSavingProgress] = useState(false);
 
   useEffect(() => {
     fetchActivityDetails();
@@ -52,6 +60,32 @@ export default function ActivityDetailsScreen({ route, navigation }) {
   const onRefresh = () => {
     setRefreshing(true);
     fetchActivityDetails();
+  };
+
+  const handleAddProgress = () => {
+    setProgressUpdate({ update: '', percentage: 0 });
+    setShowProgressModal(true);
+  };
+
+  const handleSaveProgress = async () => {
+    if (!progressUpdate.update.trim()) {
+      Alert.alert('Required', 'Please enter progress details');
+      return;
+    }
+
+    setSavingProgress(true);
+    try {
+      await activitiesAPI.addProgress(activityId, progressUpdate);
+      Alert.alert('Success', 'Progress update added');
+      setShowProgressModal(false);
+      setProgressUpdate({ update: '', percentage: 0 });
+      fetchActivityDetails(); // Refresh to show new progress
+    } catch (error) {
+      console.error('Error adding progress:', error);
+      Alert.alert('Error', error.response?.data?.detail || 'Failed to add progress');
+    } finally {
+      setSavingProgress(false);
+    }
   };
 
   const getStatusColor = (status) => {
@@ -108,7 +142,17 @@ export default function ActivityDetailsScreen({ route, navigation }) {
           <Text style={styles.backButton}>← Back</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Activity Details</Text>
-        <View style={{ width: 50 }} />
+        
+        {/* Add Progress Button in Header */}
+        {activity.status === 'in_progress' && (
+          <TouchableOpacity 
+            style={styles.headerAddButton}
+            onPress={handleAddProgress}
+          >
+            <Text style={styles.headerAddButtonText}>+ Progress</Text>
+          </TouchableOpacity>
+        )}
+        {activity.status !== 'in_progress' && <View style={{ width: 80 }} />}
       </LinearGradient>
 
       <ScrollView
@@ -224,9 +268,19 @@ export default function ActivityDetailsScreen({ route, navigation }) {
         {/* Progress Updates - Full History */}
         {activity.progress_updates && activity.progress_updates.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>
-              📊 Progress History ({activity.progress_updates.length} updates)
-            </Text>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>
+                📊 Progress History ({activity.progress_updates.length} updates)
+              </Text>
+              {activity.status === 'in_progress' && (
+                <TouchableOpacity 
+                  style={styles.addProgressSmallButton}
+                  onPress={handleAddProgress}
+                >
+                  <Text style={styles.addProgressSmallButtonText}>+ Add</Text>
+                </TouchableOpacity>
+              )}
+            </View>
             
             {activity.progress_updates.slice().reverse().map((update, index) => (
               <View key={index} style={styles.progressCard}>
@@ -251,6 +305,30 @@ export default function ActivityDetailsScreen({ route, navigation }) {
                 <Text style={styles.progressText}>{update.update}</Text>
               </View>
             ))}
+          </View>
+        )}
+
+        {/* Show "No Progress Yet" for in_progress activities without updates */}
+        {activity.status === 'in_progress' && (!activity.progress_updates || activity.progress_updates.length === 0) && (
+          <View style={styles.section}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>📊 Progress History</Text>
+              <TouchableOpacity 
+                style={styles.addProgressSmallButton}
+                onPress={handleAddProgress}
+              >
+                <Text style={styles.addProgressSmallButtonText}>+ Add</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.emptyProgressContainer}>
+              <Text style={styles.emptyProgressText}>No progress updates yet</Text>
+              <TouchableOpacity 
+                style={styles.emptyProgressButton}
+                onPress={handleAddProgress}
+              >
+                <Text style={styles.emptyProgressButtonText}>Add First Progress Update</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         )}
 
@@ -303,6 +381,65 @@ export default function ActivityDetailsScreen({ route, navigation }) {
         )}
 
       </ScrollView>
+
+      {/* Add Progress Modal */}
+      <Modal visible={showProgressModal} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Add Progress Update</Text>
+            
+            <TextInput
+              style={styles.modalTextArea}
+              placeholder="What have you completed? What's next?"
+              value={progressUpdate.update}
+              onChangeText={(text) => setProgressUpdate({ ...progressUpdate, update: text })}
+              multiline
+              numberOfLines={4}
+            />
+            
+            <View style={styles.sliderContainer}>
+              <Text style={styles.sliderLabel}>Completion Percentage</Text>
+              <View style={styles.sliderRow}>
+                <Slider
+                  style={styles.slider}
+                  minimumValue={0}
+                  maximumValue={100}
+                  step={5}
+                  value={progressUpdate.percentage}
+                  onValueChange={(value) => setProgressUpdate({ ...progressUpdate, percentage: value })}
+                  minimumTrackTintColor={colors.primary}
+                  maximumTrackTintColor={colors.border}
+                />
+                <Text style={styles.sliderValue}>{progressUpdate.percentage}%</Text>
+              </View>
+            </View>
+            
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalButtonCancel]}
+                onPress={() => {
+                  setShowProgressModal(false);
+                  setProgressUpdate({ update: '', percentage: 0 });
+                }}
+                disabled={savingProgress}
+              >
+                <Text style={styles.modalButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalButtonConfirm]}
+                onPress={handleSaveProgress}
+                disabled={savingProgress}
+              >
+                {savingProgress ? (
+                  <ActivityIndicator color="white" size="small" />
+                ) : (
+                  <Text style={[styles.modalButtonText, { color: 'white' }]}>Save Progress</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -330,6 +467,17 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: 'white',
   },
+  headerAddButton: {
+    backgroundColor: 'rgba(255,255,255,0.3)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  headerAddButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
   content: {
     flex: 1,
   },
@@ -353,6 +501,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 2,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
   },
   titleRow: {
     flexDirection: 'row',
@@ -387,6 +541,17 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: colors.text,
     marginBottom: 16,
+  },
+  addProgressSmallButton: {
+    backgroundColor: colors.primary,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  addProgressSmallButtonText: {
+    color: 'white',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
   infoRow: {
     flexDirection: 'row',
@@ -453,6 +618,26 @@ const styles = StyleSheet.create({
     color: colors.text,
     lineHeight: 20,
   },
+  emptyProgressContainer: {
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  emptyProgressText: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginBottom: 12,
+  },
+  emptyProgressButton: {
+    backgroundColor: colors.primary,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  emptyProgressButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
   historyCard: {
     backgroundColor: '#F9FAFB',
     padding: 14,
@@ -488,5 +673,76 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.text,
     lineHeight: 20,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    backgroundColor: colors.surface,
+    borderRadius: 16,
+    padding: 24,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: colors.text,
+    marginBottom: 20,
+  },
+  modalTextArea: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 14,
+    height: 100,
+    textAlignVertical: 'top',
+    marginBottom: 16,
+  },
+  sliderContainer: {
+    marginBottom: 20,
+  },
+  sliderLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 8,
+  },
+  sliderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  slider: {
+    flex: 1,
+    marginRight: 12,
+  },
+  sliderValue: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: colors.primary,
+    width: 50,
+    textAlign: 'right',
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  modalButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  modalButtonCancel: {
+    backgroundColor: colors.border,
+  },
+  modalButtonConfirm: {
+    backgroundColor: colors.primary,
+  },
+  modalButtonText: {
+    fontWeight: 'bold',
+    fontSize: 16,
   },
 });
