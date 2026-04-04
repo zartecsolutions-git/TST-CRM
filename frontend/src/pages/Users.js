@@ -77,18 +77,18 @@ const Users = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-cyan-50 to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-blue-100 to-blue-50">
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-3">
-              <div className="bg-gradient-to-r from-orange-500 to-cyan-500 p-2 rounded-xl">
+              <div className="bg-gradient-to-r from-orange-500 to-blue-600 p-2 rounded-xl">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                 </svg>
               </div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-cyan-500 bg-clip-text text-transparent">
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-blue-600 bg-clip-text text-transparent">
                 User Management
               </h1>
             </div>
@@ -106,7 +106,7 @@ const Users = () => {
             <Button
               onClick={() => setFilterRole('all')}
               variant={filterRole === 'all' ? 'default' : 'outline'}
-              className={filterRole === 'all' ? 'bg-gradient-to-r from-orange-500 to-cyan-500' : ''}
+              className={filterRole === 'all' ? 'bg-gradient-to-r from-orange-500 to-blue-600' : ''}
             >
               All Users
             </Button>
@@ -135,7 +135,7 @@ const Users = () => {
           {isAdmin && (
             <Button
               onClick={() => setShowAddForm(!showAddForm)}
-              className="bg-gradient-to-r from-orange-500 to-cyan-500"
+              className="bg-gradient-to-r from-orange-500 to-blue-600"
             >
               + Add User
             </Button>
@@ -191,7 +191,7 @@ const Users = () => {
                   </div>
                 </div>
                 <div className="flex space-x-2">
-                  <Button type="submit" className="bg-gradient-to-r from-orange-500 to-cyan-500">
+                  <Button type="submit" className="bg-gradient-to-r from-orange-500 to-blue-600">
                     Add User
                   </Button>
                   <Button type="button" variant="outline" onClick={() => setShowAddForm(false)}>

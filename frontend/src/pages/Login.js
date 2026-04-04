@@ -31,7 +31,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-cyan-50 to-blue-50">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-blue-100 to-blue-50">
       <div className="w-full max-w-md p-6">
         <Card className="shadow-2xl border-0">
           <CardHeader className="space-y-1 text-center">
@@ -42,7 +42,7 @@ const Login = () => {
                 className="h-40 w-auto"
               />
             </div>
-            <CardTitle className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-cyan-500 bg-clip-text text-transparent">
+            <CardTitle className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-blue-600 bg-clip-text text-transparent">
               Sales & Service CRM
             </CardTitle>
             <CardDescription className="text-base">
@@ -87,7 +87,7 @@ const Login = () => {
               
               <Button
                 type="submit"
-                className="w-full h-11 bg-gradient-to-r from-orange-500 to-cyan-500 hover:from-blue-700 hover:to-green-700"
+                className="w-full h-11 bg-gradient-to-r from-orange-500 to-blue-600 hover:from-blue-700 hover:to-green-700"
                 disabled={loading}
                 data-testid="login-submit-button"
               >

@@ -96,7 +96,7 @@ const LocationTracking = () => {
   // Check if user is admin - show access denied early
   if (user?.role !== 'admin') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-cyan-50 to-blue-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-blue-100 to-blue-50">
         <Card className="max-w-md">
           <CardContent className="p-12 text-center">
             <div className="bg-red-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
@@ -110,7 +110,7 @@ const LocationTracking = () => {
             </p>
             <Button
               onClick={() => window.location.href = '/dashboard'}
-              className="bg-gradient-to-r from-orange-500 to-cyan-500"
+              className="bg-gradient-to-r from-orange-500 to-blue-600"
             >
               Back to Dashboard
             </Button>
@@ -172,7 +172,7 @@ const LocationTracking = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-cyan-50 to-blue-50">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-blue-100 to-blue-50">
         <div className="text-center">
           <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600 mb-4"></div>
           <p className="text-gray-600">Loading map...</p>
@@ -182,20 +182,20 @@ const LocationTracking = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-cyan-50 to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-blue-100 to-blue-50">
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-3">
-              <div className="bg-gradient-to-r from-orange-500 to-cyan-500 p-2 rounded-xl">
+              <div className="bg-gradient-to-r from-orange-500 to-blue-600 p-2 rounded-xl">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
               </div>
               <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-cyan-500 bg-clip-text text-transparent">
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-blue-600 bg-clip-text text-transparent">
                   Real-Time Location Tracking
                 </h1>
               </div>
@@ -214,7 +214,7 @@ const LocationTracking = () => {
               {!tracking ? (
                 <Button
                   onClick={handleStartTracking}
-                  className="bg-gradient-to-r from-orange-500 to-cyan-500 hover:from-blue-700 hover:to-green-700"
+                  className="bg-gradient-to-r from-orange-500 to-blue-600 hover:from-blue-700 hover:to-green-700"
                 >
                   Start Tracking
                 </Button>

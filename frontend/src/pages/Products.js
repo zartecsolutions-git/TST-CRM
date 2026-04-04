@@ -220,7 +220,7 @@ export default function Products() {
   if (loading) return <div className="flex items-center justify-center min-h-screen"><div>Loading...</div></div>;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-cyan-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-100 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header with Actions */}
         <div className="flex justify-between items-center mb-6">
@@ -233,7 +233,7 @@ export default function Products() {
               <>
                 <button onClick={handleExport} className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">📥 Export CSV</button>
                 <button onClick={() => setShowImport(true)} className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">📤 Import CSV</button>
-                <button onClick={() => setShowForm(true)} className="bg-gradient-to-r from-orange-500 to-cyan-500 text-white px-6 py-2 rounded-lg">+ Add Product</button>
+                <button onClick={() => setShowForm(true)} className="bg-gradient-to-r from-orange-500 to-blue-600 text-white px-6 py-2 rounded-lg">+ Add Product</button>
               </>
             )}
           </div>
@@ -305,7 +305,7 @@ export default function Products() {
                 <div><label className="block text-sm mb-1">Specifications</label><textarea value={formData.specifications} onChange={(e) => setFormData({...formData, specifications: e.target.value})} className="w-full border rounded px-3 py-2" rows="2" placeholder="e.g., Power: 5kW, Pressure: 10 bar" /></div>
                 <div className="flex gap-2 justify-end">
                   <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 border rounded">Cancel</button>
-                  <button type="submit" className="px-4 py-2 bg-gradient-to-r from-orange-500 to-cyan-500 text-white rounded">Create</button>
+                  <button type="submit" className="px-4 py-2 bg-gradient-to-r from-orange-500 to-blue-600 text-white rounded">Create</button>
                 </div>
               </form>
             </div>
@@ -487,7 +487,7 @@ export default function Products() {
               </div>
 
               <div className="mt-6 flex justify-end print:hidden">
-                <button onClick={() => { setShowDetails(false); setIsEditMode(false); }} className="px-6 py-2 bg-gradient-to-r from-orange-500 to-cyan-500 text-white rounded-lg hover:shadow-lg">Close</button>
+                <button onClick={() => { setShowDetails(false); setIsEditMode(false); }} className="px-6 py-2 bg-gradient-to-r from-orange-500 to-blue-600 text-white rounded-lg hover:shadow-lg">Close</button>
               </div>
               </>
             ) : (
@@ -543,7 +543,7 @@ export default function Products() {
                 💡 Click on any product row to view full details
               </div>
               <table className="w-full">
-              <thead className="bg-gradient-to-r from-orange-500 to-cyan-500 text-white">
+              <thead className="bg-gradient-to-r from-orange-500 to-blue-600 text-white">
                 <tr>
                   <th className="px-4 py-3 text-left">Name</th>
                   <th className="px-4 py-3 text-left">Serial Number</th>

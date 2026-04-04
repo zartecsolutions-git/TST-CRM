@@ -26,20 +26,20 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-cyan-50 to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-blue-100 to-blue-50">
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-3">
-              <div className="bg-gradient-to-r from-orange-500 to-cyan-500 p-2 rounded-xl">
+              <div className="bg-gradient-to-r from-orange-500 to-blue-600 p-2 rounded-xl">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
               </div>
               <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-cyan-500 bg-clip-text text-transparent">
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-blue-600 bg-clip-text text-transparent">
                   Sales & Service CRM
                 </h1>
               </div>
@@ -48,7 +48,7 @@ const Dashboard = () => {
               {user?.role === 'admin' && (
                 <Button
                   onClick={() => window.location.href = '/location-tracking'}
-                  className="bg-gradient-to-r from-orange-500 to-cyan-500 hover:from-blue-700 hover:to-green-700"
+                  className="bg-gradient-to-r from-orange-500 to-blue-600 hover:from-blue-700 hover:to-green-700"
                   data-testid="location-tracking-button"
                 >
                   <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

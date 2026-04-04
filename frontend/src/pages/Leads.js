@@ -167,7 +167,7 @@ export default function Leads() {
   if (loading) return <div className="flex items-center justify-center min-h-screen"><div>Loading...</div></div>;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-cyan-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-blue-100 p-6">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">🎯 Leads Management</h1>
@@ -175,7 +175,7 @@ export default function Leads() {
             <button onClick={() => window.location.href = '/dashboard'} className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
               Back to Dashboard
             </button>
-            <button onClick={() => setShowForm(true)} className="bg-gradient-to-r from-orange-500 to-cyan-500 text-white px-6 py-2 rounded-lg">+ Add Lead</button>
+            <button onClick={() => setShowForm(true)} className="bg-gradient-to-r from-orange-500 to-blue-600 text-white px-6 py-2 rounded-lg">+ Add Lead</button>
           </div>
         </div>
 
@@ -226,7 +226,7 @@ export default function Leads() {
                 </div>
                 <div className="flex gap-2 justify-end">
                   <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 border rounded">Cancel</button>
-                  <button type="submit" className="px-4 py-2 bg-gradient-to-r from-orange-500 to-cyan-500 text-white rounded">Create Lead</button>
+                  <button type="submit" className="px-4 py-2 bg-gradient-to-r from-orange-500 to-blue-600 text-white rounded">Create Lead</button>
                 </div>
               </form>
             </div>
@@ -244,7 +244,7 @@ export default function Leads() {
               </div>
               
               {/* Lead Information Grid */}
-              <div className="grid grid-cols-2 gap-4 mb-6 p-4 bg-gradient-to-br from-orange-50 to-cyan-50 rounded-lg">
+              <div className="grid grid-cols-2 gap-4 mb-6 p-4 bg-gradient-to-br from-orange-50 to-blue-100 rounded-lg">
                 <div className="space-y-3">
                   <div><span className="font-semibold text-gray-700">Customer:</span> <span className="text-gray-900">{customers.find(c => c.id === selectedLead.customer_id)?.name || 'Unknown'}</span></div>
                   <div><span className="font-semibold text-gray-700">Sales Rep:</span> <span className="text-blue-600 font-semibold">👤 {getUserName(selectedLead.created_by)}</span></div>
@@ -324,7 +324,7 @@ export default function Leads() {
                 <button onClick={() => setShowDetailModal(false)} className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
                   Close
                 </button>
-                <button onClick={() => { setShowDetailModal(false); openUpdateModal(selectedLead); }} className="px-6 py-2 bg-gradient-to-r from-orange-500 to-cyan-500 text-white rounded-lg hover:from-blue-700 hover:to-green-700 flex items-center">
+                <button onClick={() => { setShowDetailModal(false); openUpdateModal(selectedLead); }} className="px-6 py-2 bg-gradient-to-r from-orange-500 to-blue-600 text-white rounded-lg hover:from-blue-700 hover:to-green-700 flex items-center">
                   <span className="mr-2">✏️</span> Edit Lead
                 </button>
               </div>
@@ -380,7 +380,7 @@ export default function Leads() {
             <div className="p-8 text-center text-gray-500">{searchQuery ? 'No leads found' : 'No leads yet'}</div>
           ) : (
             <table className="w-full">
-              <thead className="bg-gradient-to-r from-orange-500 to-cyan-500 text-white">
+              <thead className="bg-gradient-to-r from-orange-500 to-blue-600 text-white">
                 <tr>
                   <th className="px-4 py-3 text-left">Customer</th>
                   <th className="px-4 py-3 text-left">Lead Title</th>
