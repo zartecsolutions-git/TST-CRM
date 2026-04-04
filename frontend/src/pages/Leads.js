@@ -5,7 +5,7 @@ import axios from 'axios';
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
 export default function Leads() {
-  const { formatAmount } = useCurrency();
+  const { formatAmount, companySettings } = useCurrency();
   const [leads, setLeads] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [users, setUsers] = useState([]);

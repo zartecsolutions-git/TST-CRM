@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { fetchCompanySettings, getCurrencySymbol } from '../utils/currency';
+import api from '../utils/api';
 
 const CurrencyContext = createContext();
 
@@ -25,10 +26,44 @@ export const CurrencyProvider = ({ children }) => {
 
   const loadCompanySettings = async () => {
     try {
-      const settings = await fetchCompanySettings();
+      let settings;
+      try {
+        // Try to get current user's company settings
+        const response = await api.get('/companies/current/settings');
+        settings = response.data;
+      } catch (error) {
+        console.log('No user company found, fetching first available company...');
+        // If that fails, try to get the first company from the list
+        try {
+          const response = await api.get('/companies');
+          if (response.data && response.data.length > 0) {
+            settings = response.data[0];
+          } else {
+            // No companies exist, use defaults
+            settings = {
+              currency: 'USD',
+              tax_percentage: 0,
+              name: 'CRM System'
+            };
+          }
+        } catch (listError) {
+          console.log('Could not fetch companies list, using defaults');
+          settings = {
+            currency: 'USD',
+            tax_percentage: 0,
+            name: 'CRM System'
+          };
+        }
+      }
       setCompanySettings(settings);
     } catch (error) {
       console.error('Error loading company settings:', error);
+      // Fallback to defaults
+      setCompanySettings({
+        currency: 'USD',
+        tax_percentage: 0,
+        name: 'CRM System'
+      });
     } finally {
       setLoading(false);
     }
