@@ -461,7 +461,7 @@ const Activities = () => {
         {/* Create Activity Modal */}
         {showAddForm && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-            <Card className="w-full max-w-4xl my-8">
+            <Card className="w-full max-w-6xl my-8">
               <CardHeader className="sticky top-0 bg-white z-10 border-b">
                 <div className="flex justify-between items-center">
                   <CardTitle className="text-2xl">Create New Activity</CardTitle>
