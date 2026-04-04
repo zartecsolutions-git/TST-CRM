@@ -9,11 +9,9 @@ const Dashboard = () => {
   const { user, logout } = useAuth();
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [inProgressActivities, setInProgressActivities] = useState([]);
 
   useEffect(() => {
     fetchStats();
-    fetchInProgressActivities();
   }, []);
 
   const fetchStats = async () => {
@@ -24,16 +22,6 @@ const Dashboard = () => {
       console.error('Error fetching stats:', error);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchInProgressActivities = async () => {
-    try {
-      const response = await api.get('/activities');
-      const inProgress = response.data.filter(activity => activity.status === 'in_progress');
-      setInProgressActivities(inProgress.slice(0, 5)); // Show only first 5
-    } catch (error) {
-      console.error('Error fetching in-progress activities:', error);
     }
   };
 
@@ -318,12 +306,16 @@ const Dashboard = () => {
                       <span className="text-2xl font-bold text-amber-600">{stats?.pending_activities || 0}</span>
                     </div>
                     <div className="flex justify-between items-center">
+                      <span className="text-gray-600">In Progress</span>
+                      <span className="text-2xl font-bold text-blue-600">{stats?.in_progress_activities || 0}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
                       <span className="text-gray-600">Completed</span>
                       <span className="text-2xl font-bold text-green-600">{stats?.completed_activities || 0}</span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-gray-600">Total</span>
-                      <span className="text-2xl font-bold text-blue-600">{stats?.total_activities || 0}</span>
+                      <span className="text-2xl font-bold text-purple-600">{stats?.total_activities || 0}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -349,81 +341,6 @@ const Dashboard = () => {
                   </CardContent>
                 </Card>
               )}
-            </div>
-
-            {/* In Progress Tasks Section */}
-            <div className="mt-8">
-              <Card>
-                <CardHeader>
-                  <div className="flex justify-between items-center">
-                    <CardTitle className="text-xl">📋 In Progress Tasks</CardTitle>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => window.location.href = '/activities'}
-                    >
-                      View All
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {inProgressActivities.length === 0 ? (
-                    <div className="text-center py-8 text-gray-500">
-                      <svg className="mx-auto h-12 w-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                      <p className="font-medium">No tasks in progress</p>
-                      <p className="text-sm mt-1">All caught up! 🎉</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {inProgressActivities.map((activity) => (
-                        <div 
-                          key={activity.id} 
-                          className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border border-blue-200 hover:shadow-md transition-shadow cursor-pointer"
-                          onClick={() => window.location.href = '/activities'}
-                        >
-                          <div className="flex-1">
-                            <h4 className="font-semibold text-gray-900">{activity.title}</h4>
-                            {activity.description && (
-                              <p className="text-sm text-gray-600 mt-1 line-clamp-1">{activity.description}</p>
-                            )}
-                            <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
-                              <span>👤 Assigned to: <strong>{activity.assigned_to}</strong></span>
-                              {activity.due_date && (
-                                <span>📅 Due: <strong>{new Date(activity.due_date).toLocaleDateString()}</strong></span>
-                              )}
-                              {activity.activity_type && (
-                                <span>🏷️ {activity.activity_type}</span>
-                              )}
-                            </div>
-                            {activity.progress_updates && activity.progress_updates.length > 0 && (
-                              <div className="mt-2">
-                                <div className="flex items-center gap-2">
-                                  <div className="flex-1 bg-gray-200 rounded-full h-2">
-                                    <div 
-                                      className="bg-gradient-to-r from-blue-600 to-cyan-600 h-2 rounded-full transition-all"
-                                      style={{ width: `${activity.progress_updates[activity.progress_updates.length - 1]?.percentage || 0}%` }}
-                                    ></div>
-                                  </div>
-                                  <span className="text-xs font-bold text-blue-600">
-                                    {activity.progress_updates[activity.progress_updates.length - 1]?.percentage || 0}%
-                                  </span>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                          <div className="ml-4">
-                            <Badge className="bg-blue-600 text-white">
-                              IN PROGRESS
-                            </Badge>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
             </div>
           </>
         )}
