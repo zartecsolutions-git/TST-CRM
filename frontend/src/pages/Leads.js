@@ -72,11 +72,33 @@ export default function Leads() {
     return foundUser ? foundUser.name : 'Unknown';
   };
 
-  // Calculate statistics
+  // Calculate overall statistics
   const totalQuoteValue = leads.reduce((sum, lead) => sum + (lead.quote_value || 0), 0);
   const totalProjectValue = leads
     .filter(lead => lead.status === 'closed_won')
     .reduce((sum, lead) => sum + (lead.project_value || 0), 0);
+
+  // Calculate sales rep-wise statistics
+  const salesRepStats = {};
+  leads.forEach(lead => {
+    const repId = lead.created_by;
+    if (!salesRepStats[repId]) {
+      salesRepStats[repId] = {
+        name: getUserName(repId),
+        totalLeads: 0,
+        totalQuoteValue: 0,
+        totalProjectValue: 0
+      };
+    }
+    salesRepStats[repId].totalLeads += 1;
+    salesRepStats[repId].totalQuoteValue += (lead.quote_value || 0);
+    if (lead.status === 'closed_won') {
+      salesRepStats[repId].totalProjectValue += (lead.project_value || 0);
+    }
+  });
+
+  // Convert to array and sort by total leads
+  const salesRepArray = Object.values(salesRepStats).sort((a, b) => b.totalLeads - a.totalLeads);
 
   // Enhanced search - includes customer name, title, status, quote ref, AND sales rep
   const filteredLeads = leads.filter(lead => {
@@ -205,6 +227,62 @@ export default function Leads() {
             <h3 className="text-sm font-semibold text-gray-600 uppercase mb-2">Total Project Value</h3>
             <p className="text-3xl font-bold text-green-600">${totalProjectValue.toLocaleString()}</p>
             <p className="text-xs text-gray-500 mt-1">From closed won deals</p>
+          </div>
+        </div>
+
+        {/* Sales Rep-wise Performance Table */}
+        <div className="bg-white rounded-lg shadow mb-6 overflow-hidden">
+          <div className="bg-gradient-to-r from-orange-500 to-sky-500 px-6 py-4">
+            <h2 className="text-xl font-bold text-white">📊 Sales Rep Performance</h2>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-100 border-b-2 border-gray-200">
+                <tr>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Sales Rep</th>
+                  <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">Total Leads</th>
+                  <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">Total Quote Value</th>
+                  <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">Total Project Value</th>
+                </tr>
+              </thead>
+              <tbody>
+                {salesRepArray.length > 0 ? (
+                  salesRepArray.map((rep, idx) => (
+                    <tr key={idx} className="border-b hover:bg-blue-50 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-r from-orange-400 to-sky-400 flex items-center justify-center text-white font-bold mr-3">
+                            {rep.name.charAt(0).toUpperCase()}
+                          </div>
+                          <span className="font-semibold text-gray-900">{rep.name}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <span className="inline-block bg-blue-100 text-blue-800 px-4 py-2 rounded-full font-bold">
+                          {rep.totalLeads}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <span className="font-semibold text-orange-600 text-lg">
+                          ${rep.totalQuoteValue.toLocaleString()}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <span className="font-semibold text-green-600 text-lg">
+                          ${rep.totalProjectValue.toLocaleString()}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="4" className="px-6 py-8 text-center text-gray-500">
+                      No sales rep data available
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
 
