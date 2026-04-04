@@ -141,7 +141,7 @@ const Reports = () => {
                 <img 
                   src={companySettings.logo_url} 
                   alt={companySettings.name} 
-                  className="w-12 h-12 rounded-lg object-cover border-2 border-orange-200"
+                  className="h-16 w-auto max-w-[200px] rounded-lg object-contain border-2 border-orange-200 bg-white p-1"
                 />
               ) : (
                 <div className="bg-gradient-to-r from-orange-500 to-sky-500 p-2 rounded-xl">

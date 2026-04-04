@@ -392,7 +392,11 @@ const CompanySettings = () => {
                       )}
                     </div>
                     {company.logo_url && (
-                      <img src={company.logo_url} alt="Logo" className="w-12 h-12 rounded object-cover" />
+                      <img 
+                        src={company.logo_url} 
+                        alt="Logo" 
+                        className="h-16 w-auto max-w-[120px] rounded object-contain border border-gray-200 bg-white p-1" 
+                      />
                     )}
                   </div>
                 </div>
@@ -416,7 +420,11 @@ const CompanySettings = () => {
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Company Logo</label>
                 <div className="flex items-center gap-4">
                   {formData.logo_url && (
-                    <img src={formData.logo_url} alt="Logo Preview" className="w-24 h-24 rounded-lg object-cover border-2 border-gray-200" />
+                    <img 
+                      src={formData.logo_url} 
+                      alt="Logo Preview" 
+                      className="h-24 w-auto max-w-[200px] rounded-lg object-contain border-2 border-gray-200 bg-white p-2" 
+                    />
                   )}
                   <div className="flex-1">
                     <input
@@ -426,7 +434,7 @@ const CompanySettings = () => {
                       disabled={!isEditing && selectedCompany}
                       className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100 disabled:opacity-50"
                     />
-                    <p className="text-xs text-gray-500 mt-1">PNG, JPG up to 2MB</p>
+                    <p className="text-xs text-gray-500 mt-1">PNG, JPG up to 2MB. Recommended: 200x80px or wider for best visibility</p>
                   </div>
                 </div>
               </div>
