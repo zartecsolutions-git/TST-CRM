@@ -30,7 +30,10 @@ const Activities = () => {
     customer_id: '',
     product_ids: [],
     status: 'pending',
-    due_date: ''
+    activity_type: 'others',
+    due_date: '',
+    invoice_number: '',
+    total_amount: ''
   });
 
   useEffect(() => {
@@ -149,6 +152,12 @@ const Activities = () => {
     return user ? user.name : 'Unassigned';
   };
 
+  // Calculate statistics
+  const totalActivitiesByUser = activities.length;
+  const totalValue = activities
+    .filter(act => act.status === 'completed' && act.total_amount)
+    .reduce((sum, act) => sum + (parseFloat(act.total_amount) || 0), 0);
+
   const filteredActivities = activities.filter(activity => {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
@@ -188,6 +197,20 @@ const Activities = () => {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Statistics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
+            <h3 className="text-sm font-semibold text-gray-600 uppercase mb-2">Total Activities</h3>
+            <p className="text-3xl font-bold text-blue-600">{totalActivitiesByUser}</p>
+            <p className="text-xs text-gray-500 mt-1">All your activities</p>
+          </div>
+          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
+            <h3 className="text-sm font-semibold text-gray-600 uppercase mb-2">Total Value</h3>
+            <p className="text-3xl font-bold text-green-600">${totalValue.toLocaleString()}</p>
+            <p className="text-xs text-gray-500 mt-1">From completed activities</p>
+          </div>
+        </div>
+
         <div className="flex justify-between items-center mb-6">
           <div className="flex space-x-2">
             <Button
@@ -342,6 +365,20 @@ const Activities = () => {
                     </select>
                   </div>
                   <div>
+                    <Label>Activity Type</Label>
+                    <select
+                      className="w-full border rounded-md p-2"
+                      value={newActivity.activity_type}
+                      onChange={(e) => setNewActivity({...newActivity, activity_type: e.target.value})}
+                    >
+                      <option value="demo_poc">Demo/POC</option>
+                      <option value="warranty">Warranty</option>
+                      <option value="service_call">Service Call</option>
+                      <option value="periodic_visit">Periodic Visit</option>
+                      <option value="others">Others</option>
+                    </select>
+                  </div>
+                  <div>
                     <Label>Due Date (Optional)</Label>
                     <Input
                       type="date"
@@ -349,6 +386,27 @@ const Activities = () => {
                       onChange={(e) => setNewActivity({...newActivity, due_date: e.target.value})}
                     />
                   </div>
+                  {newActivity.status === 'completed' && (
+                    <>
+                      <div>
+                        <Label>Invoice Number</Label>
+                        <Input
+                          value={newActivity.invoice_number}
+                          onChange={(e) => setNewActivity({...newActivity, invoice_number: e.target.value})}
+                          placeholder="INV-2024-001"
+                        />
+                      </div>
+                      <div>
+                        <Label>Total Amount ($)</Label>
+                        <Input
+                          type="number"
+                          value={newActivity.total_amount}
+                          onChange={(e) => setNewActivity({...newActivity, total_amount: e.target.value})}
+                          placeholder="0.00"
+                        />
+                      </div>
+                    </>
+                  )}
                 </div>
                 <div className="flex space-x-2">
                   <Button type="submit" className="bg-gradient-to-r from-orange-500 to-sky-500">

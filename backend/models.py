@@ -79,6 +79,13 @@ class Location(LocationCreate):
     user_id: str
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
+class ActivityType(str, Enum):
+    demo_poc = "demo_poc"
+    warranty = "warranty"
+    service_call = "service_call"
+    periodic_visit = "periodic_visit"
+    others = "others"
+
 # Activity Models
 class ActivityCreate(BaseModel):
     title: str
@@ -89,10 +96,13 @@ class ActivityCreate(BaseModel):
     product_ids: Optional[List[str]] = []  # Multiple products
     status: ActivityStatus = ActivityStatus.pending
     priority: ActivityPriority = ActivityPriority.medium
+    activity_type: Optional[str] = "others"  # New field
     due_date: Optional[datetime] = None
     location_lat: Optional[float] = None
     location_lng: Optional[float] = None
-    maintenance_report: Optional[str] = None  # NEW: Maintenance work report after completion
+    maintenance_report: Optional[str] = None
+    invoice_number: Optional[str] = None  # For completed activities
+    total_amount: Optional[float] = None  # For completed activities
 
 class Activity(ActivityCreate):
     model_config = ConfigDict(extra="ignore")
@@ -113,11 +123,14 @@ class ActivityUpdate(BaseModel):
     product_ids: Optional[List[str]] = None  # Multiple products
     status: Optional[ActivityStatus] = None
     priority: Optional[ActivityPriority] = None
+    activity_type: Optional[str] = None  # New field
     due_date: Optional[datetime] = None
     location_lat: Optional[float] = None
     location_lng: Optional[float] = None
     notes: Optional[str] = None  # Status update notes
     maintenance_report: Optional[str] = None  # NEW: Maintenance work report
+    invoice_number: Optional[str] = None  # For completed activities
+    total_amount: Optional[float] = None  # For completed activities
 
 # Team Models
 class TeamCreate(BaseModel):
