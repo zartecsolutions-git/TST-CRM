@@ -405,6 +405,16 @@ const Activities = () => {
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2">
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        setSelectedActivity(activity);
+                        setShowDetailModal(true);
+                      }}
+                      className="bg-gradient-to-r from-orange-500 to-sky-500 hover:from-orange-600 hover:to-sky-600"
+                    >
+                      👁️ View Details
+                    </Button>
                     {activity.status === 'pending' && (
                       <Button
                         size="sm"
@@ -741,6 +751,267 @@ const Activities = () => {
                       Cancel
                     </Button>
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Activity Details Modal */}
+        {showDetailModal && selectedActivity && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+              <CardHeader className="sticky top-0 bg-white z-10 border-b">
+                <div className="flex justify-between items-start">
+                  <div className="flex-1">
+                    <CardTitle className="text-2xl">{selectedActivity.title}</CardTitle>
+                    <Badge className={`${getStatusBadge(selectedActivity.status)} mt-2`}>
+                      {selectedActivity.status.replace('_', ' ').toUpperCase()}
+                    </Badge>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    onClick={() => setShowDetailModal(false)}
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    ✕
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="p-6 space-y-6">
+                {/* Description */}
+                {selectedActivity.description && (
+                  <div>
+                    <h4 className="font-semibold text-gray-700 mb-2">Description</h4>
+                    <p className="text-gray-600">{selectedActivity.description}</p>
+                  </div>
+                )}
+
+                {/* Activity Information */}
+                <div>
+                  <h4 className="font-semibold text-gray-700 mb-3">📋 Information</h4>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="text-gray-500">Type:</span>
+                      <span className="ml-2 font-medium">{selectedActivity.activity_type || 'N/A'}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Priority:</span>
+                      <span className="ml-2 font-medium">{selectedActivity.priority || 'N/A'}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Created by:</span>
+                      <span className="ml-2 font-medium text-blue-600">{getUserName(selectedActivity.created_by)}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-500">Assigned to:</span>
+                      <span className="ml-2 font-medium">{getUserName(selectedActivity.assigned_to)}</span>
+                    </div>
+                    {selectedActivity.support_staff && (
+                      <div>
+                        <span className="text-gray-500">Support Staff:</span>
+                        <span className="ml-2 font-medium">{getUserName(selectedActivity.support_staff)}</span>
+                      </div>
+                    )}
+                    {selectedActivity.customer_id && (
+                      <div>
+                        <span className="text-gray-500">Customer:</span>
+                        <span className="ml-2 font-medium text-cyan-600">
+                          {customers.find(c => c.id === selectedActivity.customer_id)?.name || 'Unknown'}
+                        </span>
+                      </div>
+                    )}
+                    <div>
+                      <span className="text-gray-500">Created:</span>
+                      <span className="ml-2 font-medium">
+                        {new Date(selectedActivity.created_at).toLocaleString()}
+                      </span>
+                    </div>
+                    {selectedActivity.due_date && (
+                      <div>
+                        <span className="text-gray-500">Due Date:</span>
+                        <span className="ml-2 font-medium">
+                          {new Date(selectedActivity.due_date).toLocaleString()}
+                        </span>
+                      </div>
+                    )}
+                    {selectedActivity.completion_date && (
+                      <div>
+                        <span className="text-gray-500">Completed:</span>
+                        <span className="ml-2 font-medium text-green-600">
+                          {new Date(selectedActivity.completion_date).toLocaleString()}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Financial Details */}
+                {selectedActivity.status === 'completed' && (selectedActivity.invoice_number || selectedActivity.work_order_no || selectedActivity.total_amount) && (
+                  <div>
+                    <h4 className="font-semibold text-gray-700 mb-3">💰 Financial Details</h4>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      {selectedActivity.invoice_number && (
+                        <div>
+                          <span className="text-gray-500">Invoice #:</span>
+                          <span className="ml-2 font-medium">{selectedActivity.invoice_number}</span>
+                        </div>
+                      )}
+                      {selectedActivity.work_order_no && (
+                        <div>
+                          <span className="text-gray-500">Work Order #:</span>
+                          <span className="ml-2 font-medium">{selectedActivity.work_order_no}</span>
+                        </div>
+                      )}
+                      {selectedActivity.total_amount && (
+                        <div>
+                          <span className="text-gray-500">Total Amount:</span>
+                          <span className="ml-2 font-medium text-green-600">
+                            ${parseFloat(selectedActivity.total_amount).toLocaleString()}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Progress History */}
+                {selectedActivity.progress_updates && selectedActivity.progress_updates.length > 0 && (
+                  <div>
+                    <div className="flex justify-between items-center mb-3">
+                      <h4 className="font-semibold text-gray-700">
+                        📊 Progress History ({selectedActivity.progress_updates.length} updates)
+                      </h4>
+                      {selectedActivity.status === 'in_progress' && (
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            setShowDetailModal(false);
+                            handleAddProgressUpdate(selectedActivity.id);
+                          }}
+                          className="bg-purple-600 hover:bg-purple-700"
+                        >
+                          + Add Progress
+                        </Button>
+                      )}
+                    </div>
+                    <div className="space-y-3">
+                      {selectedActivity.progress_updates.slice().reverse().map((update, idx) => (
+                        <div key={idx} className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
+                          <div className="flex justify-between items-start mb-2">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-lg font-bold text-blue-600">{update.percentage}%</span>
+                                <div className="flex-1 bg-blue-200 rounded-full h-2">
+                                  <div 
+                                    className="bg-blue-600 h-2 rounded-full transition-all"
+                                    style={{ width: `${update.percentage}%` }}
+                                  ></div>
+                                </div>
+                              </div>
+                              <p className="text-sm text-gray-700">{update.update}</p>
+                            </div>
+                            <span className="text-xs text-gray-500 ml-4 whitespace-nowrap">
+                              {new Date(update.timestamp).toLocaleString()}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Show "No Progress" for in_progress activities */}
+                {selectedActivity.status === 'in_progress' && (!selectedActivity.progress_updates || selectedActivity.progress_updates.length === 0) && (
+                  <div>
+                    <div className="flex justify-between items-center mb-3">
+                      <h4 className="font-semibold text-gray-700">📊 Progress History</h4>
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          setShowDetailModal(false);
+                          handleAddProgressUpdate(selectedActivity.id);
+                        }}
+                        className="bg-purple-600 hover:bg-purple-700"
+                      >
+                        + Add First Progress
+                      </Button>
+                    </div>
+                    <div className="bg-gray-50 p-6 rounded-lg text-center">
+                      <p className="text-gray-500">No progress updates yet</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Status History */}
+                {selectedActivity.status_history && selectedActivity.status_history.length > 0 && (
+                  <div>
+                    <h4 className="font-semibold text-gray-700 mb-3">
+                      🔄 Status History ({selectedActivity.status_history.length} changes)
+                    </h4>
+                    <div className="space-y-2">
+                      {selectedActivity.status_history.slice().reverse().map((history, idx) => (
+                        <div key={idx} className="bg-gray-50 p-3 rounded-lg">
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <Badge className={getStatusBadge(history.status)}>
+                                {history.status.replace('_', ' ').toUpperCase()}
+                              </Badge>
+                              {history.notes && (
+                                <p className="text-sm text-gray-600 mt-2">{history.notes}</p>
+                              )}
+                            </div>
+                            <span className="text-xs text-gray-500 ml-4 whitespace-nowrap">
+                              {new Date(history.timestamp).toLocaleString()}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Action Buttons */}
+                <div className="flex flex-wrap gap-2 pt-4 border-t">
+                  {selectedActivity.status === 'pending' && (
+                    <Button
+                      onClick={() => {
+                        setShowDetailModal(false);
+                        handleStatusChange(selectedActivity, 'in_progress');
+                      }}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      Start Activity
+                    </Button>
+                  )}
+                  {selectedActivity.status === 'in_progress' && (
+                    <>
+                      <Button
+                        onClick={() => {
+                          setShowDetailModal(false);
+                          handleAddProgressUpdate(selectedActivity.id);
+                        }}
+                        className="bg-purple-600 hover:bg-purple-700"
+                      >
+                        Add Progress
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          setShowDetailModal(false);
+                          handleStatusChange(selectedActivity, 'completed');
+                        }}
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        Mark Complete
+                      </Button>
+                    </>
+                  )}
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowDetailModal(false)}
+                  >
+                    Close
+                  </Button>
                 </div>
               </CardContent>
             </Card>
