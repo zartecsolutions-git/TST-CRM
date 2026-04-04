@@ -227,6 +227,11 @@ const Activities = () => {
     return styles[status] || 'bg-gray-100 text-gray-800';
   };
 
+  const handleStatusChange = (activity, newStatus) => {
+    setSelectedActivity({ ...activity, newStatus });
+    setShowStatusModal(true);
+  };
+
   const getUserName = (userId) => {
     const user = users.find(u => u.id === userId);
     return user ? user.name : 'Unassigned';
