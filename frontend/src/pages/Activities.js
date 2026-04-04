@@ -245,10 +245,7 @@ const Activities = () => {
   const totalActivitiesByUser = activities.length;
   const totalValue = activities
     .filter(act => act.status === 'completed' && act.total_amount)
-    .reduce((sum, act) => {
-      const breakdown = getTaxBreakdown(parseFloat(act.total_amount) || 0);
-      return sum + breakdown.total;
-    }, 0);
+    .reduce((sum, act) => sum + (parseFloat(act.total_amount) || 0), 0);
 
   // Get support users for dropdown
   const supportUsers = users.filter(u => u.role === 'support');
@@ -288,7 +285,7 @@ const Activities = () => {
           <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
             <h3 className="text-sm font-semibold text-gray-600 uppercase mb-2">Total Value</h3>
             <p className="text-3xl font-bold text-green-600">{formatAmount(totalValue)}</p>
-            <p className="text-xs text-gray-500 mt-1">From completed activities (Incl. {companySettings?.tax_percentage || 0}% tax)</p>
+            <p className="text-xs text-gray-500 mt-1">From completed activities</p>
           </div>
         </div>
 
@@ -395,8 +392,7 @@ const Activities = () => {
                         if (activity.invoice_number) performanceMap[userName].invoices++;
                         if (activity.work_order_no) performanceMap[userName].workOrders++;
                         if (activity.total_amount) {
-                          const breakdown = getTaxBreakdown(parseFloat(activity.total_amount));
-                          performanceMap[userName].totalValue += breakdown.total;
+                          performanceMap[userName].totalValue += parseFloat(activity.total_amount);
                         }
                       }
                       

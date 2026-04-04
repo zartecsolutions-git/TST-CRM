@@ -75,15 +75,11 @@ export default function Leads() {
     return foundUser ? foundUser.name : 'Unknown';
   };
 
-  // Calculate overall statistics (with tax)
+  // Calculate overall statistics (base values without tax)
   const totalQuoteValue = leads.reduce((sum, lead) => sum + (lead.quote_value || 0), 0);
   const totalProjectValue = leads
     .filter(lead => lead.status === 'closed_won')
     .reduce((sum, lead) => sum + (lead.project_value || 0), 0);
-  
-  // Calculate values with tax
-  const totalQuoteWithTax = calculateTotal(totalQuoteValue);
-  const totalProjectWithTax = calculateTotal(totalProjectValue);
 
   // Calculate sales rep-wise statistics
   const salesRepStats = {};
@@ -98,10 +94,10 @@ export default function Leads() {
       };
     }
     salesRepStats[repId].totalLeads += 1;
-    // Apply tax to quote and project values
-    salesRepStats[repId].totalQuoteValue += calculateTotal(lead.quote_value || 0);
+    // Base values without tax
+    salesRepStats[repId].totalQuoteValue += (lead.quote_value || 0);
     if (lead.status === 'closed_won') {
-      salesRepStats[repId].totalProjectValue += calculateTotal(lead.project_value || 0);
+      salesRepStats[repId].totalProjectValue += (lead.project_value || 0);
     }
   });
 
@@ -255,13 +251,12 @@ export default function Leads() {
           </div>
           <div className="bg-white rounded-lg shadow p-6 border-l-4 border-orange-500">
             <h3 className="text-sm font-semibold text-gray-600 uppercase mb-2">Total Quote Value</h3>
-            <p className="text-3xl font-bold text-orange-600">{formatAmount(totalQuoteWithTax)}</p>
-            <p className="text-xs text-gray-500 mt-1">Incl. {companySettings?.tax_percentage || 0}% tax</p>
+            <p className="text-3xl font-bold text-orange-600">{formatAmount(totalQuoteValue)}</p>
           </div>
           <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
             <h3 className="text-sm font-semibold text-gray-600 uppercase mb-2">Total Project Value</h3>
-            <p className="text-3xl font-bold text-green-600">{formatAmount(totalProjectWithTax)}</p>
-            <p className="text-xs text-gray-500 mt-1">From closed won deals (Incl. {companySettings?.tax_percentage || 0}% tax)</p>
+            <p className="text-3xl font-bold text-green-600">{formatAmount(totalProjectValue)}</p>
+            <p className="text-xs text-gray-500 mt-1">From closed won deals</p>
           </div>
         </div>
 
