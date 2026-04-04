@@ -17,7 +17,8 @@ const Users = () => {
     name: '',
     email: '',
     password: '',
-    role: 'agent'
+    phone: '',
+    role: 'sales'
   });
 
   useEffect(() => {
@@ -70,6 +71,9 @@ const Users = () => {
   const getRoleBadgeColor = (role) => {
     switch (role) {
       case 'admin': return 'bg-purple-100 text-purple-800';
+      case 'sales': return 'bg-blue-100 text-blue-800';
+      case 'support': return 'bg-green-100 text-green-800';
+      // Legacy support for old role names
       case 'agent': return 'bg-blue-100 text-blue-800';
       case 'client': return 'bg-green-100 text-green-800';
       default: return 'bg-gray-100 text-gray-800';
@@ -118,18 +122,18 @@ const Users = () => {
               Admins
             </Button>
             <Button
-              onClick={() => setFilterRole('agent')}
-              variant={filterRole === 'agent' ? 'default' : 'outline'}
-              className={filterRole === 'agent' ? 'bg-blue-600' : ''}
+              onClick={() => setFilterRole('sales')}
+              variant={filterRole === 'sales' ? 'default' : 'outline'}
+              className={filterRole === 'sales' ? 'bg-blue-600' : ''}
             >
-              Agents
+              Sales
             </Button>
             <Button
-              onClick={() => setFilterRole('client')}
-              variant={filterRole === 'client' ? 'default' : 'outline'}
-              className={filterRole === 'client' ? 'bg-green-600' : ''}
+              onClick={() => setFilterRole('support')}
+              variant={filterRole === 'support' ? 'default' : 'outline'}
+              className={filterRole === 'support' ? 'bg-green-600' : ''}
             >
-              Clients
+              Support
             </Button>
           </div>
           {isAdmin && (
@@ -147,52 +151,66 @@ const Users = () => {
           <Card className="mb-6">
             <CardHeader>
               <CardTitle>Add New User</CardTitle>
+              <p className="text-sm text-gray-600 mt-2">Create new sales or support team members</p>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleAddUser} className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <Label>Name</Label>
+                    <Label>Full Name *</Label>
                     <Input
+                      placeholder="John Doe"
                       value={newUser.name}
                       onChange={(e) => setNewUser({...newUser, name: e.target.value})}
                       required
                     />
                   </div>
                   <div>
-                    <Label>Email</Label>
+                    <Label>Email Address *</Label>
                     <Input
                       type="email"
+                      placeholder="john@example.com"
                       value={newUser.email}
                       onChange={(e) => setNewUser({...newUser, email: e.target.value})}
                       required
                     />
                   </div>
                   <div>
-                    <Label>Password</Label>
+                    <Label>Phone Number</Label>
                     <Input
-                      type="password"
-                      value={newUser.password}
-                      onChange={(e) => setNewUser({...newUser, password: e.target.value})}
-                      required
+                      type="tel"
+                      placeholder="+1234567890"
+                      value={newUser.phone}
+                      onChange={(e) => setNewUser({...newUser, phone: e.target.value})}
                     />
                   </div>
                   <div>
-                    <Label>Role</Label>
+                    <Label>Password *</Label>
+                    <Input
+                      type="password"
+                      placeholder="Min 8 characters"
+                      value={newUser.password}
+                      onChange={(e) => setNewUser({...newUser, password: e.target.value})}
+                      required
+                      minLength={8}
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <Label>Role *</Label>
                     <select
-                      className="w-full border rounded-md p-2"
+                      className="w-full border rounded-md p-2 bg-white"
                       value={newUser.role}
                       onChange={(e) => setNewUser({...newUser, role: e.target.value})}
                     >
-                      <option value="agent">Agent</option>
-                      <option value="client">Client</option>
-                      <option value="admin">Admin</option>
+                      <option value="sales">Sales - Can manage customers and leads</option>
+                      <option value="support">Support - Can manage activities and customers</option>
+                      <option value="admin">Admin - Full system access</option>
                     </select>
                   </div>
                 </div>
-                <div className="flex space-x-2">
+                <div className="flex space-x-2 pt-4 border-t">
                   <Button type="submit" className="bg-gradient-to-r from-orange-500 to-sky-500">
-                    Add User
+                    ✓ Create User
                   </Button>
                   <Button type="button" variant="outline" onClick={() => setShowAddForm(false)}>
                     Cancel
@@ -217,11 +235,11 @@ const Users = () => {
                     <div className="flex items-center space-x-3">
                       <div className={`w-12 h-12 rounded-full ${
                         user.role === 'admin' ? 'bg-purple-100' :
-                        user.role === 'agent' ? 'bg-blue-100' : 'bg-green-100'
+                        user.role === 'sales' ? 'bg-blue-100' : 'bg-green-100'
                       } flex items-center justify-center`}>
                         <span className={`text-xl font-bold ${
                           user.role === 'admin' ? 'text-purple-600' :
-                          user.role === 'agent' ? 'text-blue-600' : 'text-green-600'
+                          user.role === 'sales' ? 'text-blue-600' : 'text-green-600'
                         }`}>
                           {user.name.charAt(0).toUpperCase()}
                         </span>
@@ -234,7 +252,7 @@ const Users = () => {
                   </div>
                   <div className="mt-4 flex items-center justify-between">
                     <Badge className={getRoleBadgeColor(user.role)}>
-                      {user.role}
+                      {user.role === 'sales' ? 'Sales' : user.role === 'support' ? 'Support' : user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                     </Badge>
                     {isAdmin && user.id !== currentUser?.id && (
                       <Button
@@ -246,6 +264,11 @@ const Users = () => {
                       </Button>
                     )}
                   </div>
+                  {user.phone && (
+                    <div className="mt-2 text-xs text-gray-600">
+                      📞 {user.phone}
+                    </div>
+                  )}
                   {user.team_id && (
                     <div className="mt-2 text-xs text-gray-500">
                       Team ID: {user.team_id}
