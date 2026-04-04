@@ -93,17 +93,17 @@ const Teams = () => {
   const isAdmin = currentUser?.role === 'admin';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-blue-100 to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-sky-100 to-sky-50">
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-3">
-              <div className="bg-gradient-to-r from-orange-500 to-blue-600 p-2 rounded-xl">
+              <div className="bg-gradient-to-r from-orange-500 to-sky-500 p-2 rounded-xl">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-blue-600 bg-clip-text text-transparent">
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-sky-500 bg-clip-text text-transparent">
                 Teams Management
               </h1>
             </div>
@@ -120,7 +120,7 @@ const Teams = () => {
           {isAdmin && (
             <Button
               onClick={() => setShowAddForm(!showAddForm)}
-              className="bg-gradient-to-r from-orange-500 to-blue-600"
+              className="bg-gradient-to-r from-orange-500 to-sky-500"
             >
               + Create Team
             </Button>
@@ -152,7 +152,7 @@ const Teams = () => {
                   />
                 </div>
                 <div className="flex space-x-2">
-                  <Button type="submit" className="bg-gradient-to-r from-orange-500 to-blue-600">
+                  <Button type="submit" className="bg-gradient-to-r from-orange-500 to-sky-500">
                     Create Team
                   </Button>
                   <Button type="button" variant="outline" onClick={() => setShowAddForm(false)}>
