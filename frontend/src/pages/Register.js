@@ -55,19 +55,19 @@ const Register = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-green-50 to-blue-100 py-12">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-cyan-50 to-blue-50 py-12">
       <div className="w-full max-w-md p-6">
         <Card className="shadow-2xl border-0">
           <CardHeader className="space-y-1 text-center">
             <div className="flex items-center justify-center mb-4">
-              <div className="bg-gradient-to-r from-blue-600 to-green-600 p-3 rounded-2xl">
+              <div className="bg-gradient-to-r from-orange-500 to-cyan-500 p-3 rounded-2xl">
                 <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
               </div>
             </div>
-            <CardTitle className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
+            <CardTitle className="text-3xl font-bold bg-gradient-to-r from-orange-500 to-cyan-500 bg-clip-text text-transparent">
               Create Account
             </CardTitle>
             <CardDescription>
@@ -167,7 +167,7 @@ const Register = () => {
               
               <Button
                 type="submit"
-                className="w-full h-11 bg-gradient-to-r from-blue-600 to-green-600 hover:from-blue-700 hover:to-green-700"
+                className="w-full h-11 bg-gradient-to-r from-orange-500 to-cyan-500 hover:from-blue-700 hover:to-green-700"
                 disabled={loading}
                 data-testid="register-submit-button"
               >

@@ -166,17 +166,17 @@ const Activities = () => {
   const canCreateActivity = true; // All users can create activities
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-100">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-cyan-50 to-blue-50">
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-3">
-              <div className="bg-gradient-to-r from-blue-600 to-green-600 p-2 rounded-xl">
+              <div className="bg-gradient-to-r from-orange-500 to-cyan-500 p-2 rounded-xl">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
               </div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-green-600 bg-clip-text text-transparent">
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-cyan-500 bg-clip-text text-transparent">
                 Activities Management
               </h1>
             </div>
@@ -193,7 +193,7 @@ const Activities = () => {
             <Button
               onClick={() => setFilterStatus('all')}
               variant={filterStatus === 'all' ? 'default' : 'outline'}
-              className={filterStatus === 'all' ? 'bg-gradient-to-r from-blue-600 to-green-600' : ''}
+              className={filterStatus === 'all' ? 'bg-gradient-to-r from-orange-500 to-cyan-500' : ''}
             >
               All
             </Button>
@@ -222,7 +222,7 @@ const Activities = () => {
           {canCreateActivity && (
             <Button
               onClick={() => setShowAddForm(!showAddForm)}
-              className="bg-gradient-to-r from-blue-600 to-green-600"
+              className="bg-gradient-to-r from-orange-500 to-cyan-500"
             >
               + Create Activity
             </Button>
@@ -351,7 +351,7 @@ const Activities = () => {
                   </div>
                 </div>
                 <div className="flex space-x-2">
-                  <Button type="submit" className="bg-gradient-to-r from-blue-600 to-green-600">
+                  <Button type="submit" className="bg-gradient-to-r from-orange-500 to-cyan-500">
                     Create Activity
                   </Button>
                   <Button type="button" variant="outline" onClick={() => setShowAddForm(false)}>
@@ -389,7 +389,7 @@ const Activities = () => {
                   <div className="flex space-x-2">
                     <Button 
                       onClick={handleConfirmStatusUpdate}
-                      className="bg-gradient-to-r from-blue-600 to-green-600"
+                      className="bg-gradient-to-r from-orange-500 to-cyan-500"
                     >
                       Confirm Update
                     </Button>
@@ -450,7 +450,7 @@ const Activities = () => {
                   <div className="flex space-x-2">
                     <Button 
                       onClick={handleConfirmProgressUpdate}
-                      className="bg-gradient-to-r from-blue-600 to-green-600"
+                      className="bg-gradient-to-r from-orange-500 to-cyan-500"
                     >
                       Add Progress
                     </Button>
@@ -475,7 +475,7 @@ const Activities = () => {
         {showDetailModal && selectedActivity && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto p-4">
             <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-              <CardHeader className="border-b bg-gradient-to-r from-blue-50 to-green-50">
+              <CardHeader className="border-b bg-gradient-to-r from-orange-50 to-cyan-50">
                 <div className="flex justify-between items-start">
                   <div>
                     <CardTitle className="text-2xl mb-2">📋 Activity Details</CardTitle>
@@ -624,7 +624,7 @@ const Activities = () => {
                 <div className="flex justify-end pt-4 border-t">
                   <Button 
                     onClick={() => setShowDetailModal(false)}
-                    className="bg-gradient-to-r from-blue-600 to-green-600"
+                    className="bg-gradient-to-r from-orange-500 to-cyan-500"
                   >
                     Close
                   </Button>
