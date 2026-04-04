@@ -334,6 +334,7 @@ class CompanyBase(BaseModel):
     phone: Optional[str] = None
     email: Optional[EmailStr] = None
     timezone: str = "UTC"
+    is_default: bool = False
 
 class CompanyCreate(CompanyBase):
     logo_url: Optional[str] = None
@@ -356,3 +357,4 @@ class CompanyUpdate(BaseModel):
     email: Optional[EmailStr] = None
     logo_url: Optional[str] = None
     timezone: Optional[str] = None
+    is_default: Optional[bool] = None

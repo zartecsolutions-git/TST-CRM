@@ -32,12 +32,21 @@ export const CurrencyProvider = ({ children }) => {
         const response = await api.get('/companies/current/settings');
         settings = response.data;
       } catch (error) {
-        console.log('No user company found, fetching first available company...');
-        // If that fails, try to get the first company from the list
+        console.log('No user company found, fetching default or first company...');
+        // If that fails, try to get companies list
         try {
           const response = await api.get('/companies');
           if (response.data && response.data.length > 0) {
-            settings = response.data[0];
+            // First, look for a company marked as default
+            const defaultCompany = response.data.find(c => c.is_default === true);
+            if (defaultCompany) {
+              settings = defaultCompany;
+              console.log('Loaded default company:', defaultCompany.name);
+            } else {
+              // Fallback to first company
+              settings = response.data[0];
+              console.log('No default company set, using first company:', settings.name);
+            }
           } else {
             // No companies exist, use defaults
             settings = {

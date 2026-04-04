@@ -1688,6 +1688,13 @@ async def update_company(
     if not update_data:
         raise HTTPException(status_code=400, detail="No fields to update")
     
+    # If setting this company as default, unset all other companies' default flag
+    if update_data.get('is_default') == True:
+        await db.companies.update_many(
+            {"id": {"$ne": company_id}},
+            {"$set": {"is_default": False}}
+        )
+    
     update_data['updated_at'] = datetime.now(timezone.utc).isoformat()
     
     await db.companies.update_one(
@@ -1704,6 +1711,32 @@ async def update_company(
         updated_company['updated_at'] = datetime.fromisoformat(updated_company['updated_at'])
     
     return Company(**updated_company)
+
+@api_router.post("/companies/{company_id}/set-default")
+async def set_default_company(
+    company_id: str,
+    current_user_id: str = Depends(get_current_user)
+):
+    """Set a company as default (Admin only)"""
+    await require_admin(current_user_id)
+    
+    company = await db.companies.find_one({"id": company_id}, {"_id": 0})
+    if not company:
+        raise HTTPException(status_code=404, detail="Company not found")
+    
+    # Unset all other companies' default flag
+    await db.companies.update_many(
+        {"id": {"$ne": company_id}},
+        {"$set": {"is_default": False}}
+    )
+    
+    # Set this company as default
+    await db.companies.update_one(
+        {"id": company_id},
+        {"$set": {"is_default": True, "updated_at": datetime.now(timezone.utc).isoformat()}}
+    )
+    
+    return {"message": "Default company set successfully", "company_id": company_id}
 
 @api_router.delete("/companies/{company_id}")
 async def delete_company(

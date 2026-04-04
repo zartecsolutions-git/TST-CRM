@@ -263,6 +263,18 @@ const CompanySettings = () => {
     setIsEditing(true);
   };
 
+  const handleSetDefault = async (companyId) => {
+    try {
+      await api.post(`/companies/${companyId}/set-default`);
+      alert('Default company set successfully!');
+      fetchCompanies(); // Refresh the list
+      window.location.reload(); // Reload to update company branding
+    } catch (error) {
+      console.error('Error setting default company:', error);
+      alert('Failed to set default company. Please try again.');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -342,12 +354,19 @@ const CompanySettings = () => {
                     setFormData(company);
                     setIsEditing(false);
                   }}
-                  className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                  className={`p-4 border-2 rounded-lg cursor-pointer transition-all relative ${
                     selectedCompany?.id === company.id
                       ? 'border-orange-500 bg-orange-50'
                       : 'border-gray-200 hover:border-orange-300'
                   }`}
                 >
+                  {company.is_default && (
+                    <div className="absolute top-2 right-2">
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-green-500 text-white">
+                        ⭐ DEFAULT
+                      </span>
+                    </div>
+                  )}
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <h3 className="font-bold text-gray-900">{company.name}</h3>
@@ -360,6 +379,17 @@ const CompanySettings = () => {
                           Tax: {company.tax_percentage}%
                         </span>
                       </div>
+                      {!company.is_default && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSetDefault(company.id);
+                          }}
+                          className="mt-2 text-xs text-orange-600 hover:text-orange-700 font-semibold"
+                        >
+                          Set as Default
+                        </button>
+                      )}
                     </div>
                     {company.logo_url && (
                       <img src={company.logo_url} alt="Logo" className="w-12 h-12 rounded object-cover" />
