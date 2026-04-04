@@ -734,7 +734,7 @@ const Activities = () => {
                     </div>
                   </div>
                   <div className="flex space-x-2">
-                    <Button onClick={handleSaveProgress} className="bg-gradient-to-r from-orange-500 to-sky-500">
+                    <Button onClick={handleConfirmProgressUpdate} className="bg-gradient-to-r from-orange-500 to-sky-500">
                       Save Progress
                     </Button>
                     <Button variant="outline" onClick={() => setShowProgressModal(false)}>

@@ -57,4 +57,25 @@ export const usersAPI = {
   getAll: () => api.get('/users'),
 };
 
+export const customersAPI = {
+  getAll: () => api.get('/customers'),
+  create: (data) => api.post('/customers', data),
+  update: (id, data) => api.put(`/customers/${id}`, data),
+  delete: (id) => api.delete(`/customers/${id}`),
+};
+
+export const productsAPI = {
+  getAll: () => api.get('/products'),
+  create: (data) => api.post('/products', data),
+  update: (id, data) => api.put(`/products/${id}`, data),
+  delete: (id) => api.delete(`/products/${id}`),
+};
+
+export const leadsAPI = {
+  getAll: (params) => api.get('/leads', { params }),
+  create: (data) => api.post('/leads', data),
+  update: (id, data) => api.put(`/leads/${id}`, data),
+  delete: (id) => api.delete(`/leads/${id}`),
+};
+
 export default api;

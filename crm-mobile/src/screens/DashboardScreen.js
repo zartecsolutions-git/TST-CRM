@@ -159,6 +159,60 @@ export default function DashboardScreen({ navigation }) {
           </LinearGradient>
         </TouchableOpacity>
 
+        <TouchableOpacity
+          style={styles.actionCard}
+          onPress={() => navigation.navigate('Customers')}
+        >
+          <LinearGradient
+            colors={['#10B981', '#059669']}
+            style={styles.actionGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <Text style={styles.actionIcon}>\ud83d\udcc1</Text>
+            <Text style={styles.actionTitle}>Customers</Text>
+            <Text style={styles.actionDescription}>
+              View and manage customer database
+            </Text>
+          </LinearGradient>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.actionCard}
+          onPress={() => navigation.navigate('Products')}
+        >
+          <LinearGradient
+            colors={['#F59E0B', '#D97706']}
+            style={styles.actionGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <Text style={styles.actionIcon}>\ud83d\udce6</Text>
+            <Text style={styles.actionTitle}>Products</Text>
+            <Text style={styles.actionDescription}>
+              Browse and manage product catalog
+            </Text>
+          </LinearGradient>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.actionCard}
+          onPress={() => navigation.navigate('Leads')}
+        >
+          <LinearGradient
+            colors={['#8B5CF6', '#7C3AED']}
+            style={styles.actionGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          >
+            <Text style={styles.actionIcon}>\ud83c\udfaf</Text>
+            <Text style={styles.actionTitle}>Leads</Text>
+            <Text style={styles.actionDescription}>
+              Track sales pipeline and opportunities
+            </Text>
+          </LinearGradient>
+        </TouchableOpacity>
+
         {/* Logout Button */}
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Text style={styles.logoutButtonText}>Logout</Text>
