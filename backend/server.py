@@ -838,6 +838,17 @@ async def get_dashboard_stats(current_user_id: str = Depends(get_current_user)):
     total_geofences = await db.geofences.count_documents({})
     total_leads = await db.leads.count_documents({})
     
+    # Get closed won leads count
+    closed_won_leads = await db.leads.count_documents({"status": "closed_won"})
+    
+    # Calculate total project value from closed won leads
+    closed_won_pipeline = [
+        {"$match": {"status": "closed_won", "project_value": {"$exists": True, "$ne": None}}},
+        {"$group": {"_id": None, "total": {"$sum": "$project_value"}}}
+    ]
+    project_value_result = await db.leads.aggregate(closed_won_pipeline).to_list(1)
+    total_project_value = project_value_result[0]['total'] if project_value_result else 0
+    
     # Get active users (users with locations in last 24 hours)
     yesterday = (datetime.now(timezone.utc) - timedelta(days=1)).isoformat()
     active_users_pipeline = [
@@ -859,7 +870,9 @@ async def get_dashboard_stats(current_user_id: str = Depends(get_current_user)):
         "completed_activities": completed_activities,
         "total_teams": total_teams,
         "total_geofences": total_geofences,
-        "total_leads": total_leads
+        "total_leads": total_leads,
+        "closed_won_leads": closed_won_leads,
+        "total_project_value": total_project_value
     }
 
 # ============================================================================

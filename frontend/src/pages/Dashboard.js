@@ -255,7 +255,7 @@ const Dashboard = () => {
               {user?.role !== 'support' && (
                 <Card className="hover:shadow-lg transition-shadow" data-testid="stat-total-leads">
                   <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between mb-4">
                       <div>
                         <p className="text-sm font-medium text-gray-600">Total Leads</p>
                         <h3 className="text-3xl font-bold mt-2 text-cyan-600">{stats?.total_leads || 0}</h3>
@@ -264,6 +264,18 @@ const Dashboard = () => {
                         <svg className="w-6 h-6 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                         </svg>
+                      </div>
+                    </div>
+                    <div className="space-y-2 pt-3 border-t border-gray-200">
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">🎯 Closed Won</span>
+                        <span className="text-lg font-bold text-green-600">{stats?.closed_won_leads || 0}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">💰 Project Value</span>
+                        <span className="text-lg font-bold text-green-600">
+                          ${(stats?.total_project_value || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                        </span>
                       </div>
                     </div>
                   </CardContent>
@@ -321,8 +333,8 @@ const Dashboard = () => {
                 </CardContent>
               </Card>
 
-              {/* Monitoring - Hidden for Support Users */}
-              {user?.role !== 'support' && (
+              {/* Monitoring - Hidden for Support and Sales Users, Only for Admin */}
+              {user?.role === 'admin' && (
                 <Card>
                   <CardHeader>
                     <CardTitle>Monitoring</CardTitle>
