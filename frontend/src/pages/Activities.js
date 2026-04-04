@@ -62,9 +62,20 @@ const Activities = () => {
   const handleAddActivity = async (e) => {
     e.preventDefault();
     try {
-      console.log('Creating activity with data:', newActivity);
+      // Clean up data - convert empty strings to null for number fields
+      const submitData = { ...newActivity };
+      if (submitData.total_amount === '' || !submitData.total_amount) {
+        delete submitData.total_amount;
+      } else {
+        submitData.total_amount = parseFloat(submitData.total_amount);
+      }
+      if (submitData.invoice_number === '') {
+        delete submitData.invoice_number;
+      }
       
-      const response = await api.post('/activities', newActivity);
+      console.log('Creating activity with data:', submitData);
+      
+      const response = await api.post('/activities', submitData);
       console.log('Activity created:', response.data);
       
       alert('Activity created successfully!');
