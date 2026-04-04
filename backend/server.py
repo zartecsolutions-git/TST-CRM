@@ -869,6 +869,14 @@ async def get_dashboard_stats(current_user_id: str = Depends(get_current_user)):
     project_value_result = await db.leads.aggregate(closed_won_pipeline).to_list(1)
     total_project_value = project_value_result[0]['total'] if project_value_result else 0
     
+    # Calculate total value from completed activities
+    completed_activities_pipeline = [
+        {"$match": {"status": "completed", "total_amount": {"$exists": True, "$ne": None}}},
+        {"$group": {"_id": None, "total": {"$sum": {"$toDouble": "$total_amount"}}}}
+    ]
+    activities_value_result = await db.activities.aggregate(completed_activities_pipeline).to_list(1)
+    total_activities_value = activities_value_result[0]['total'] if activities_value_result else 0
+    
     # Get active users (users with locations in last 24 hours)
     yesterday = (datetime.now(timezone.utc) - timedelta(days=1)).isoformat()
     active_users_pipeline = [
@@ -888,6 +896,7 @@ async def get_dashboard_stats(current_user_id: str = Depends(get_current_user)):
         "pending_activities": pending_activities,
         "in_progress_activities": in_progress_activities,
         "completed_activities": completed_activities,
+        "total_activities_value": total_activities_value,
         "total_teams": total_teams,
         "total_geofences": total_geofences,
         "total_leads": total_leads,
