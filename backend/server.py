@@ -1672,6 +1672,34 @@ async def get_current_company_settings(
     
     return Company(**company)
 
+@api_router.get("/companies/default/branding")
+async def get_default_company_branding():
+    """Get default company branding for login page (PUBLIC - no auth required)"""
+    # Find the default company
+    default_company = await db.companies.find_one({"is_default": True}, {"_id": 0})
+    
+    # If no default, get the first company
+    if not default_company:
+        default_company = await db.companies.find_one({}, {"_id": 0})
+    
+    if not default_company:
+        # Return minimal fallback
+        return {
+            "name": "Sales & Service CRM",
+            "logo_url": None,
+            "country": None,
+            "currency": "USD"
+        }
+    
+    # Return only public branding info
+    return {
+        "name": default_company.get("name"),
+        "logo_url": default_company.get("logo_url"),
+        "country": default_company.get("country"),
+        "currency": default_company.get("currency")
+    }
+
+
 @api_router.put("/companies/{company_id}", response_model=Company)
 async def update_company(
     company_id: str,

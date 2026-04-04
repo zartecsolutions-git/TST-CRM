@@ -24,12 +24,8 @@ const Login = () => {
 
   const fetchDefaultCompany = async () => {
     try {
-      const response = await axios.get(`${API_URL}/api/companies`);
-      if (response.data && response.data.length > 0) {
-        // Find default company or use first one
-        const defaultCompany = response.data.find(c => c.is_default === true) || response.data[0];
-        setCompanyInfo(defaultCompany);
-      }
+      const response = await axios.get(`${API_URL}/api/companies/default/branding`);
+      setCompanyInfo(response.data);
     } catch (error) {
       console.log('Could not fetch company info for login page');
     }
