@@ -317,23 +317,26 @@ const Dashboard = () => {
                 </CardContent>
               </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Monitoring</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Geofences</span>
-                      <span className="text-2xl font-bold text-purple-600">{stats?.total_geofences || 0}</span>
+              {/* Monitoring - Hidden for Support Users */}
+              {user?.role !== 'support' && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Monitoring</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600">Geofences</span>
+                        <span className="text-2xl font-bold text-purple-600">{stats?.total_geofences || 0}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600">Active Today</span>
+                        <span className="text-2xl font-bold text-green-600">{stats?.active_users || 0}</span>
+                      </div>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Active Today</span>
-                      <span className="text-2xl font-bold text-green-600">{stats?.active_users || 0}</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </>
         )}
