@@ -478,9 +478,16 @@ export default function Leads() {
                 <button onClick={() => setShowDetailModal(false)} className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
                   Close
                 </button>
-                <button onClick={() => { setShowDetailModal(false); openUpdateModal(selectedLead); }} className="px-6 py-2 bg-gradient-to-r from-orange-500 to-sky-500 text-white rounded-lg hover:from-blue-700 hover:to-green-700 flex items-center">
-                  <span className="mr-2">✏️</span> Edit Lead
-                </button>
+                {selectedLead.status !== 'closed_won' && (
+                  <button onClick={() => { setShowDetailModal(false); openUpdateModal(selectedLead); }} className="px-6 py-2 bg-gradient-to-r from-orange-500 to-sky-500 text-white rounded-lg hover:from-blue-700 hover:to-green-700 flex items-center">
+                    <span className="mr-2">✏️</span> Edit Lead
+                  </button>
+                )}
+                {selectedLead.status === 'closed_won' && (
+                  <div className="px-6 py-2 bg-gray-300 text-gray-500 rounded-lg flex items-center cursor-not-allowed">
+                    <span className="mr-2">🔒</span> Deal Closed - Cannot Edit
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -573,9 +580,13 @@ export default function Leads() {
                     <td className="px-4 py-3 font-mono text-sm">{lead.quote_ref || '-'}</td>
                     <td className="px-4 py-3">{lead.quote_value ? `$${lead.quote_value.toLocaleString()}` : '-'}</td>
                     <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                      <button onClick={() => openUpdateModal(lead)} className="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                        ✏️ Update
-                      </button>
+                      {lead.status === 'closed_won' ? (
+                        <span className="text-gray-400 text-sm font-medium cursor-not-allowed">🔒 Locked</span>
+                      ) : (
+                        <button onClick={() => openUpdateModal(lead)} className="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                          ✏️ Update
+                        </button>
+                      )}
                     </td>
                   </tr>
                 ))}
