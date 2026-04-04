@@ -384,9 +384,12 @@ const Activities = () => {
                       <h3 className="text-lg font-semibold text-gray-900 mb-2">{activity.title}</h3>
                       <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 mb-2">
                         <span>👤 Created by: <strong className="text-blue-600">{getUserName(activity.created_by)}</strong></span>
-                        <span>Assigned to: <strong>{getUserName(activity.assigned_to)}</strong></span>
+                        <span>📋 Assigned to: <strong className="text-purple-600">{getUserName(activity.assigned_to)}</strong></span>
                         {activity.due_date && (
-                          <span>Due: {new Date(activity.due_date).toLocaleDateString()}</span>
+                          <span>📅 Due: {new Date(activity.due_date).toLocaleDateString()}</span>
+                        )}
+                        {activity.activity_type && (
+                          <span>🏷️ Type: <strong>{activity.activity_type}</strong></span>
                         )}
                       </div>
                       {activity.description && (
@@ -394,8 +397,34 @@ const Activities = () => {
                       )}
                       {activity.customer_id && (
                         <p className="text-sm text-gray-600 mt-2">
-                          Customer: <strong className="text-cyan-600">{customers.find(c => c.id === activity.customer_id)?.name}</strong>
+                          🏢 Customer: <strong className="text-cyan-600">{customers.find(c => c.id === activity.customer_id)?.name}</strong>
                         </p>
+                      )}
+                      
+                      {/* Financial Details - Show for completed activities */}
+                      {activity.status === 'completed' && (activity.invoice_number || activity.work_order_no || activity.total_amount) && (
+                        <div className="mt-3 p-3 bg-green-50 rounded-lg border border-green-200">
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
+                            {activity.invoice_number && (
+                              <div>
+                                <span className="text-gray-600">📄 Invoice #:</span>
+                                <span className="ml-2 font-semibold text-green-700">{activity.invoice_number}</span>
+                              </div>
+                            )}
+                            {activity.work_order_no && (
+                              <div>
+                                <span className="text-gray-600">🔧 Work Order #:</span>
+                                <span className="ml-2 font-semibold text-green-700">{activity.work_order_no}</span>
+                              </div>
+                            )}
+                            {activity.total_amount && (
+                              <div>
+                                <span className="text-gray-600">💰 Total Value:</span>
+                                <span className="ml-2 font-bold text-green-700">${parseFloat(activity.total_amount).toLocaleString()}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       )}
                     </div>
                     <div className="ml-4">
