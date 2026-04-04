@@ -832,6 +832,7 @@ async def get_dashboard_stats(current_user_id: str = Depends(get_current_user)):
     total_support = await db.users.count_documents({"role": "support"})
     total_activities = await db.activities.count_documents({})
     pending_activities = await db.activities.count_documents({"status": "pending"})
+    in_progress_activities = await db.activities.count_documents({"status": "in_progress"})
     completed_activities = await db.activities.count_documents({"status": "completed"})
     total_teams = await db.teams.count_documents({})
     total_geofences = await db.geofences.count_documents({})
@@ -854,6 +855,7 @@ async def get_dashboard_stats(current_user_id: str = Depends(get_current_user)):
         "active_users": active_users,
         "total_activities": total_activities,
         "pending_activities": pending_activities,
+        "in_progress_activities": in_progress_activities,
         "completed_activities": completed_activities,
         "total_teams": total_teams,
         "total_geofences": total_geofences,
