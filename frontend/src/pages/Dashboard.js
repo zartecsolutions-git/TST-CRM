@@ -202,18 +202,21 @@ const Dashboard = () => {
               </div>
             </Button>
           )}
-          <Button
-            onClick={() => window.location.href = '/teams'}
-            className="bg-white hover:bg-gray-50 text-gray-900 border border-gray-200 h-auto py-4"
-            data-testid="teams-button"
-          >
-            <div className="flex flex-col items-center">
-              <svg className="w-8 h-8 mb-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-              <span className="font-semibold">{user?.role === 'admin' ? 'Manage Teams' : 'My Team'}</span>
-            </div>
-          </Button>
+          {/* Teams - Hidden for Sales Users */}
+          {user?.role !== 'sales' && (
+            <Button
+              onClick={() => window.location.href = '/teams'}
+              className="bg-white hover:bg-gray-50 text-gray-900 border border-gray-200 h-auto py-4"
+              data-testid="teams-button"
+            >
+              <div className="flex flex-col items-center">
+                <svg className="w-8 h-8 mb-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <span className="font-semibold">{user?.role === 'admin' ? 'Manage Teams' : 'My Team'}</span>
+              </div>
+            </Button>
+          )}
         </div>
 
         {loading ? (
@@ -224,42 +227,47 @@ const Dashboard = () => {
           <>
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-              {/* Total Users */}
-              <Card className="hover:shadow-lg transition-shadow" data-testid="stat-total-users">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Total Users</p>
-                      <h3 className="text-3xl font-bold mt-2 text-blue-600">{stats?.total_users || 0}</h3>
+              {/* Total Users - Hidden for Sales Users */}
+              {user?.role !== 'sales' && (
+                <Card className="hover:shadow-lg transition-shadow" data-testid="stat-total-users">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-600">Total Users</p>
+                        <h3 className="text-3xl font-bold mt-2 text-blue-600">{stats?.total_users || 0}</h3>
+                      </div>
+                      <div className="p-3 rounded-xl bg-blue-100">
+                        <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                        </svg>
+                      </div>
                     </div>
-                    <div className="p-3 rounded-xl bg-blue-100">
-                      <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                      </svg>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              )}
 
-              {/* Active Users */}
-              <Card className="hover:shadow-lg transition-shadow" data-testid="stat-active-users">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Active Users</p>
-                      <h3 className="text-3xl font-bold mt-2 text-green-600">{stats?.active_users || 0}</h3>
+              {/* Active Users - Hidden for Sales Users */}
+              {user?.role !== 'sales' && (
+                <Card className="hover:shadow-lg transition-shadow" data-testid="stat-active-users">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-600">Active Users</p>
+                        <h3 className="text-3xl font-bold mt-2 text-green-600">{stats?.active_users || 0}</h3>
+                      </div>
+                      <div className="p-3 rounded-xl bg-green-100">
+                        <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
                     </div>
-                    <div className="p-3 rounded-xl bg-green-100">
-                      <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              )}
 
-              {/* Total Activities */}
-              <Card className="hover:shadow-lg transition-shadow" data-testid="stat-total-activities">
+              {/* Total Activities - Hidden for Sales Users */}
+              {user?.role !== 'sales' && (
+                <Card className="hover:shadow-lg transition-shadow" data-testid="stat-total-activities">
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-4">
                     <div>
@@ -292,6 +300,7 @@ const Dashboard = () => {
                   </div>
                 </CardContent>
               </Card>
+              )}
 
               {/* Total Leads - Hidden for Support Users */}
               {user?.role !== 'support' && (
@@ -327,27 +336,30 @@ const Dashboard = () => {
 
             {/* Additional Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Team Overview</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Sales Team</span>
-                      <span className="text-2xl font-bold text-blue-600">{stats?.total_sales || 0}</span>
+              {/* Team Overview - Hidden for Sales Users */}
+              {user?.role !== 'sales' && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Team Overview</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600">Sales Team</span>
+                        <span className="text-2xl font-bold text-blue-600">{stats?.total_sales || 0}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600">Support Team</span>
+                        <span className="text-2xl font-bold text-green-600">{stats?.total_support || 0}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600">Teams</span>
+                        <span className="text-2xl font-bold text-purple-600">{stats?.total_teams || 0}</span>
+                      </div>
                     </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Support Team</span>
-                      <span className="text-2xl font-bold text-green-600">{stats?.total_support || 0}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Teams</span>
-                      <span className="text-2xl font-bold text-purple-600">{stats?.total_teams || 0}</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              )}
 
               <Card>
                 <CardHeader>
