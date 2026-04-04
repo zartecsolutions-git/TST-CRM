@@ -98,9 +98,10 @@ export default function Leads() {
       };
     }
     salesRepStats[repId].totalLeads += 1;
-    salesRepStats[repId].totalQuoteValue += (lead.quote_value || 0);
+    // Apply tax to quote and project values
+    salesRepStats[repId].totalQuoteValue += calculateTotal(lead.quote_value || 0);
     if (lead.status === 'closed_won') {
-      salesRepStats[repId].totalProjectValue += (lead.project_value || 0);
+      salesRepStats[repId].totalProjectValue += calculateTotal(lead.project_value || 0);
     }
   });
 
