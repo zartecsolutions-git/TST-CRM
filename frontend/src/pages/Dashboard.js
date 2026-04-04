@@ -250,6 +250,23 @@ const Dashboard = () => {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Total Leads */}
+              <Card className="hover:shadow-lg transition-shadow" data-testid="stat-total-leads">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-gray-600">Total Leads</p>
+                      <h3 className="text-3xl font-bold mt-2 text-cyan-600">{stats?.total_leads || 0}</h3>
+                    </div>
+                    <div className="p-3 rounded-xl bg-cyan-100">
+                      <svg className="w-6 h-6 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                      </svg>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
 
             {/* Additional Stats */}

@@ -264,6 +264,7 @@ class LeadCreate(BaseModel):
     quote_date: Optional[str] = None  # Accept as string, convert to datetime in endpoint
     expected_close_date: Optional[str] = None  # Accept as string
     notes: Optional[str] = None
+    project_value: Optional[float] = None  # Actual project value when closed_won
 
 class Lead(LeadCreate):
     model_config = ConfigDict(extra="ignore")
@@ -288,6 +289,7 @@ class LeadUpdate(BaseModel):
     quote_date: Optional[str] = None  # Accept as string
     expected_close_date: Optional[str] = None  # Accept as string
     notes: Optional[str] = None
+    project_value: Optional[float] = None  # Actual project value when closed_won
     lost_reason: Optional[str] = None
     update_note: Optional[str] = None  # Note for this specific update
     update_date: Optional[str] = None  # Date when this update was made

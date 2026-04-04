@@ -835,6 +835,7 @@ async def get_dashboard_stats(current_user_id: str = Depends(get_current_user)):
     completed_activities = await db.activities.count_documents({"status": "completed"})
     total_teams = await db.teams.count_documents({})
     total_geofences = await db.geofences.count_documents({})
+    total_leads = await db.leads.count_documents({})
     
     # Get active users (users with locations in last 24 hours)
     yesterday = (datetime.now(timezone.utc) - timedelta(days=1)).isoformat()
@@ -855,7 +856,8 @@ async def get_dashboard_stats(current_user_id: str = Depends(get_current_user)):
         "pending_activities": pending_activities,
         "completed_activities": completed_activities,
         "total_teams": total_teams,
-        "total_geofences": total_geofences
+        "total_geofences": total_geofences,
+        "total_leads": total_leads
     }
 
 # ============================================================================

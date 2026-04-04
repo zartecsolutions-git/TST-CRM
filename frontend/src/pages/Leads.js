@@ -19,7 +19,8 @@ export default function Leads() {
     quote_ref: '', quote_value: '', quote_date: '', expected_close_date: '', notes: ''
   });
   const [updateData, setUpdateData] = useState({
-    status: '', quote_ref: '', quote_value: '', quote_date: '', notes: '', update_note: '', lost_reason: '', update_date: ''
+    status: '', quote_ref: '', quote_value: '', quote_date: '', notes: '', 
+    update_note: '', lost_reason: '', update_date: '', project_value: ''
   });
 
   const token = localStorage.getItem('token');
@@ -70,6 +71,28 @@ export default function Leads() {
     const foundUser = users.find(u => u.id === userId);
     return foundUser ? foundUser.name : 'Unknown';
   };
+
+  // Calculate statistics
+  const totalQuoteValue = leads.reduce((sum, lead) => sum + (lead.quote_value || 0), 0);
+  const totalProjectValue = leads
+    .filter(lead => lead.status === 'closed_won')
+    .reduce((sum, lead) => sum + (lead.project_value || 0), 0);
+
+  // Enhanced search - includes customer name, title, status, quote ref, AND sales rep
+  const filteredLeads = leads.filter(lead => {
+    if (!searchQuery) return true;
+    const query = searchQuery.toLowerCase();
+    const customerName = customers.find(c => c.id === lead.customer_id)?.name?.toLowerCase() || '';
+    const salesRepName = getUserName(lead.created_by).toLowerCase();
+    
+    return (
+      lead.lead_title?.toLowerCase().includes(query) ||
+      lead.status?.toLowerCase().includes(query) ||
+      lead.quote_ref?.toLowerCase().includes(query) ||
+      customerName.includes(query) ||
+      salesRepName.includes(query)
+    );
+  });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -129,7 +152,8 @@ export default function Leads() {
       notes: lead.notes || '',
       update_note: '',
       lost_reason: lead.lost_reason || '',
-      update_date: new Date().toISOString().split('T')[0]
+      update_date: new Date().toISOString().split('T')[0],
+      project_value: lead.project_value || ''
     });
     setShowUpdateModal(true);
   };
@@ -138,18 +162,6 @@ export default function Leads() {
     setSelectedLead(lead);
     setShowDetailModal(true);
   };
-
-  const filteredLeads = leads.filter(lead => {
-    if (!searchQuery) return true;
-    const query = searchQuery.toLowerCase();
-    const customerName = customers.find(c => c.id === lead.customer_id)?.name?.toLowerCase() || '';
-    return (
-      customerName.includes(query) ||
-      lead.lead_title?.toLowerCase().includes(query) ||
-      lead.status?.toLowerCase().includes(query) ||
-      lead.quote_ref?.toLowerCase().includes(query)
-    );
-  });
 
   const getStatusColor = (status) => {
     const colors = {
@@ -179,10 +191,27 @@ export default function Leads() {
           </div>
         </div>
 
+        {/* Statistics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
+            <h3 className="text-sm font-semibold text-gray-600 uppercase mb-2">Total Leads</h3>
+            <p className="text-3xl font-bold text-blue-600">{leads.length}</p>
+          </div>
+          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-orange-500">
+            <h3 className="text-sm font-semibold text-gray-600 uppercase mb-2">Total Quote Value</h3>
+            <p className="text-3xl font-bold text-orange-600">${totalQuoteValue.toLocaleString()}</p>
+          </div>
+          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
+            <h3 className="text-sm font-semibold text-gray-600 uppercase mb-2">Total Project Value</h3>
+            <p className="text-3xl font-bold text-green-600">${totalProjectValue.toLocaleString()}</p>
+            <p className="text-xs text-gray-500 mt-1">From closed won deals</p>
+          </div>
+        </div>
+
         <div className="mb-4">
           <input
             type="text"
-            placeholder="🔍 Search leads by customer, title, status, or quote ref..."
+            placeholder="🔍 Search leads by customer, title, status, quote ref, or sales rep..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -358,6 +387,20 @@ export default function Leads() {
                     <input type="date" required value={updateData.update_date} onChange={(e) => setUpdateData({...updateData, update_date: e.target.value})} className="w-full border rounded px-3 py-2" />
                   </div>
                 </div>
+                {updateData.status === 'closed_won' && (
+                  <div className="bg-green-50 p-4 rounded-lg border-2 border-green-500">
+                    <label className="block text-sm font-semibold mb-2 text-green-700">💰 Project Value * (Final Won Value)</label>
+                    <input
+                      type="number"
+                      value={updateData.project_value}
+                      onChange={(e) => setUpdateData({...updateData, project_value: e.target.value})}
+                      className="w-full border rounded px-3 py-2 border-green-500 focus:ring-2 focus:ring-green-500"
+                      placeholder="Enter final project value"
+                      required={updateData.status === 'closed_won'}
+                    />
+                    <p className="text-xs text-green-600 mt-1">Enter the actual value of the won project</p>
+                  </div>
+                )}
                 {updateData.status === 'closed_lost' && (
                   <div><label className="block text-sm mb-1">Lost Reason</label>
                     <textarea value={updateData.lost_reason} onChange={(e) => setUpdateData({...updateData, lost_reason: e.target.value})} className="w-full border rounded px-3 py-2" rows="2" />
