@@ -1,18 +1,39 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import axios from 'axios';
+
+const API_URL = process.env.REACT_APP_BACKEND_URL;
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [companyInfo, setCompanyInfo] = useState(null);
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchDefaultCompany();
+  }, []);
+
+  const fetchDefaultCompany = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/api/companies`);
+      if (response.data && response.data.length > 0) {
+        // Find default company or use first one
+        const defaultCompany = response.data.find(c => c.is_default === true) || response.data[0];
+        setCompanyInfo(defaultCompany);
+      }
+    } catch (error) {
+      console.log('Could not fetch company info for login page');
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -36,17 +57,25 @@ const Login = () => {
         <Card className="shadow-2xl border-0">
           <CardHeader className="space-y-1 text-center">
             <div className="flex items-center justify-center mb-6">
-              <img 
-                src="https://customer-assets.emergentagent.com/job_dept-action-crm-1/artifacts/frezorc8_Plugiins%20.png" 
-                alt="Plugiins Logo" 
-                className="h-40 w-auto"
-              />
+              {companyInfo?.logo_url ? (
+                <img 
+                  src={companyInfo.logo_url} 
+                  alt={companyInfo.name || 'Company Logo'} 
+                  className="h-32 w-auto max-w-[300px] object-contain"
+                />
+              ) : (
+                <div className="bg-gradient-to-r from-orange-500 to-sky-500 p-4 rounded-2xl">
+                  <svg className="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                </div>
+              )}
             </div>
             <CardTitle className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-sky-500 bg-clip-text text-transparent">
-              Sales & Service CRM
+              {companyInfo?.name || 'Sales & Service CRM'}
             </CardTitle>
             <CardDescription className="text-base">
-              Track activities, manage teams, and monitor performance
+              {companyInfo?.country && `${companyInfo.country} • `}Track activities, manage teams, and monitor performance
             </CardDescription>
           </CardHeader>
           <CardContent>
