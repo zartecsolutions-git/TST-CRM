@@ -351,6 +351,89 @@ const Activities = () => {
           )}
         </div>
 
+        {/* Activities List */}
+        <div className="space-y-4">
+          {loading ? (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+              <p className="mt-4 text-gray-600">Loading activities...</p>
+            </div>
+          ) : filteredActivities.length === 0 ? (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+                <h3 className="mt-2 text-sm font-medium text-gray-900">No activities found</h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  {searchQuery ? 'Try adjusting your search' : 'Get started by creating a new activity'}
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            filteredActivities.map((activity) => (
+              <Card key={activity.id} className="hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">{activity.title}</h3>
+                      <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 mb-2">
+                        <span>👤 Created by: <strong className="text-blue-600">{getUserName(activity.created_by)}</strong></span>
+                        <span>Assigned to: <strong>{getUserName(activity.assigned_to)}</strong></span>
+                        {activity.due_date && (
+                          <span>Due: {new Date(activity.due_date).toLocaleDateString()}</span>
+                        )}
+                      </div>
+                      {activity.description && (
+                        <p className="text-gray-600 text-sm mt-2">{activity.description}</p>
+                      )}
+                      {activity.customer_id && (
+                        <p className="text-sm text-gray-600 mt-2">
+                          Customer: <strong className="text-cyan-600">{customers.find(c => c.id === activity.customer_id)?.name}</strong>
+                        </p>
+                      )}
+                    </div>
+                    <div className="ml-4">
+                      <Badge className={getStatusBadge(activity.status)}>
+                        {activity.status.replace('_', ' ').toUpperCase()}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {activity.status === 'pending' && (
+                      <Button
+                        size="sm"
+                        onClick={() => handleStatusChange(activity, 'in_progress')}
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        Start
+                      </Button>
+                    )}
+                    {activity.status === 'in_progress' && (
+                      <Button
+                        size="sm"
+                        onClick={() => handleStatusChange(activity, 'completed')}
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        Complete
+                      </Button>
+                    )}
+                    {isAdmin && (
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => handleDeleteActivity(activity.id)}
+                      >
+                        Delete
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
+        </div>
+
         {showAddForm && (
           <Card className="mb-6">
             <CardHeader>
