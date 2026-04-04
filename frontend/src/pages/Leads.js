@@ -393,6 +393,29 @@ export default function Leads() {
                 </div>
               </div>
 
+              {/* Closed Won Details - Show for closed won leads */}
+              {selectedLead.status === 'closed_won' && (
+                <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border-2 border-green-300">
+                  <h3 className="font-bold text-lg text-green-700 mb-3 flex items-center">
+                    <span className="mr-2">🎉</span> Deal Closed!
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <span className="font-semibold text-gray-700">💰 Project Value:</span>
+                      <span className="ml-2 text-2xl font-bold text-green-700">
+                        {selectedLead.project_value ? `$${parseFloat(selectedLead.project_value).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}` : '-'}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="font-semibold text-gray-700">📅 Closed Date:</span>
+                      <span className="ml-2 text-lg font-semibold text-green-700">
+                        {selectedLead.closed_at ? new Date(selectedLead.closed_at).toLocaleDateString() : 'Not recorded'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Description */}
               {selectedLead.description && (
                 <div className="mb-6 p-4 bg-gray-50 rounded-lg">
