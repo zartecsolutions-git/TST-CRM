@@ -13,6 +13,7 @@ import Geofences from './pages/Geofences';
 import Customers from './pages/Customers';
 import Products from './pages/Products';
 import Leads from './pages/Leads';
+import CompanySettings from './pages/CompanySettings';
 import '@/App.css';
 
 // Protected Route Component
@@ -153,6 +154,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Leads />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <ProtectedRoute>
+                  <CompanySettings />
                 </ProtectedRoute>
               }
             />
