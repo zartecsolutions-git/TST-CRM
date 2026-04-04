@@ -28,35 +28,18 @@ export const CurrencyProvider = ({ children }) => {
     try {
       let settings;
       try {
-        // Try to get current user's company settings
+        // Try to get current user's company settings (authenticated endpoint)
         const response = await api.get('/companies/current/settings');
         settings = response.data;
       } catch (error) {
-        console.log('No user company found, fetching default or first company...');
-        // If that fails, try to get companies list
+        console.log('No user company found, fetching default company via public endpoint...');
+        // If that fails, use the public branding endpoint (no auth required)
         try {
-          const response = await api.get('/companies');
-          if (response.data && response.data.length > 0) {
-            // First, look for a company marked as default
-            const defaultCompany = response.data.find(c => c.is_default === true);
-            if (defaultCompany) {
-              settings = defaultCompany;
-              console.log('Loaded default company:', defaultCompany.name);
-            } else {
-              // Fallback to first company
-              settings = response.data[0];
-              console.log('No default company set, using first company:', settings.name);
-            }
-          } else {
-            // No companies exist, use defaults
-            settings = {
-              currency: 'USD',
-              tax_percentage: 0,
-              name: 'CRM System'
-            };
-          }
-        } catch (listError) {
-          console.log('Could not fetch companies list, using defaults');
+          const response = await api.get('/companies/default/branding');
+          settings = response.data;
+          console.log('Loaded default company via public endpoint:', settings.name);
+        } catch (publicError) {
+          console.log('Could not fetch default company branding, using defaults');
           settings = {
             currency: 'USD',
             tax_percentage: 0,
