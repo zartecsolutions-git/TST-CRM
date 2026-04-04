@@ -94,7 +94,7 @@ const Teams = () => {
   const isAdmin = currentUser?.role === 'admin';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-green-100 to-green-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-50">
       <PageHeader title="Teams Management">
         <Button onClick={() => window.location.href = '/dashboard'} variant="outline">
           Back to Dashboard
@@ -107,7 +107,7 @@ const Teams = () => {
           {isAdmin && (
             <Button
               onClick={() => setShowAddForm(!showAddForm)}
-              className="bg-gradient-to-r from-teal-600 to-green-600"
+              className="bg-gradient-to-r from-blue-500 to-green-500"
             >
               + Create Team
             </Button>
@@ -139,7 +139,7 @@ const Teams = () => {
                   />
                 </div>
                 <div className="flex space-x-2">
-                  <Button type="submit" className="bg-gradient-to-r from-teal-600 to-green-600">
+                  <Button type="submit" className="bg-gradient-to-r from-blue-500 to-green-500">
                     Create Team
                   </Button>
                   <Button type="button" variant="outline" onClick={() => setShowAddForm(false)}>

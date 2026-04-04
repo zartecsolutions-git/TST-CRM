@@ -270,7 +270,7 @@ const Activities = () => {
   const canCreateActivity = true; // All users can create activities
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-teal-50 via-green-100 to-green-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-50">
       <PageHeader title="📋 Activities Management">
         <Button onClick={() => window.location.href = '/dashboard'} variant="outline">
           Back to Dashboard
@@ -302,7 +302,7 @@ const Activities = () => {
             <Button
               onClick={() => setFilterStatus('all')}
               variant={filterStatus === 'all' ? 'default' : 'outline'}
-              className={filterStatus === 'all' ? 'bg-gradient-to-r from-teal-600 to-green-600' : ''}
+              className={filterStatus === 'all' ? 'bg-gradient-to-r from-blue-500 to-green-500' : ''}
             >
               All
             </Button>
@@ -331,7 +331,7 @@ const Activities = () => {
           {canCreateActivity && (
             <Button
               onClick={() => setShowAddForm(!showAddForm)}
-              className="bg-gradient-to-r from-teal-600 to-green-600"
+              className="bg-gradient-to-r from-blue-500 to-green-500"
             >
               + Create Activity
             </Button>
@@ -419,7 +419,7 @@ const Activities = () => {
                         <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
                           <td className="py-3 px-4">
                             <div className="flex items-center">
-                              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-teal-600 to-green-600 flex items-center justify-center text-white font-bold mr-3">
+                              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-green-500 flex items-center justify-center text-white font-bold mr-3">
                                 {perf.name.charAt(0).toUpperCase()}
                               </div>
                               <span className="font-medium text-gray-900">{perf.name}</span>
@@ -571,7 +571,7 @@ const Activities = () => {
                         setSelectedActivity(activity);
                         setShowDetailModal(true);
                       }}
-                      className="bg-gradient-to-r from-teal-600 to-green-600 hover:from-orange-600 hover:to-sky-600"
+                      className="bg-gradient-to-r from-blue-500 to-green-500 hover:from-orange-600 hover:to-sky-600"
                     >
                       👁️ View Details
                     </Button>
@@ -787,7 +787,7 @@ const Activities = () => {
                     <Button type="button" variant="outline" onClick={() => setShowAddForm(false)}>
                       Cancel
                     </Button>
-                    <Button type="submit" className="bg-gradient-to-r from-teal-600 to-green-600">
+                    <Button type="submit" className="bg-gradient-to-r from-blue-500 to-green-500">
                       Create Activity
                     </Button>
                   </div>
@@ -856,7 +856,7 @@ const Activities = () => {
                   <div className="flex space-x-2">
                     <Button 
                       onClick={handleConfirmStatusUpdate}
-                      className="bg-gradient-to-r from-teal-600 to-green-600"
+                      className="bg-gradient-to-r from-blue-500 to-green-500"
                     >
                       Confirm Update
                     </Button>
@@ -917,7 +917,7 @@ const Activities = () => {
                     </div>
                   </div>
                   <div className="flex space-x-2">
-                    <Button onClick={handleConfirmProgressUpdate} className="bg-gradient-to-r from-teal-600 to-green-600">
+                    <Button onClick={handleConfirmProgressUpdate} className="bg-gradient-to-r from-blue-500 to-green-500">
                       Save Progress
                     </Button>
                     <Button variant="outline" onClick={() => setShowProgressModal(false)}>

@@ -102,7 +102,7 @@ export default function Customers() {
           <button onClick={() => window.location.href = '/dashboard'} className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
             Dashboard
           </button>
-          <button onClick={() => setShowForm(true)} className="bg-gradient-to-r from-teal-600 to-green-600 text-white px-6 py-2 rounded-lg">+ Add Customer</button>
+          <button onClick={() => setShowForm(true)} className="bg-gradient-to-r from-blue-500 to-green-500 text-white px-6 py-2 rounded-lg">+ Add Customer</button>
         </div>
       </PageHeader>
 
@@ -140,7 +140,7 @@ export default function Customers() {
                 <div><label className="block text-sm mb-1">Address</label><textarea value={formData.address} onChange={(e) => setFormData({...formData, address: e.target.value})} className="w-full border rounded px-3 py-2" rows="2" /></div>
                 <div className="flex gap-2 justify-end">
                   <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 border rounded">Cancel</button>
-                  <button type="submit" className="px-4 py-2 bg-gradient-to-r from-teal-600 to-green-600 text-white rounded">Create</button>
+                  <button type="submit" className="px-4 py-2 bg-gradient-to-r from-blue-500 to-green-500 text-white rounded">Create</button>
                 </div>
               </form>
             </div>
@@ -178,7 +178,7 @@ export default function Customers() {
             </div>
           ) : (
             <table className="w-full">
-              <thead className="bg-gradient-to-r from-teal-600 to-green-600 text-white">
+              <thead className="bg-gradient-to-r from-blue-500 to-green-500 text-white">
                 <tr>
                   <th className="px-4 py-3 text-left">Name</th>
                   <th className="px-4 py-3 text-left">Email</th>
