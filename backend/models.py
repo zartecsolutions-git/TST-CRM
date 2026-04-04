@@ -97,11 +97,13 @@ class ActivityCreate(BaseModel):
     status: ActivityStatus = ActivityStatus.pending
     priority: ActivityPriority = ActivityPriority.medium
     activity_type: Optional[str] = "others"  # New field
+    support_staff: Optional[str] = None  # Support staff user_id
     due_date: Optional[datetime] = None
     location_lat: Optional[float] = None
     location_lng: Optional[float] = None
     maintenance_report: Optional[str] = None
     invoice_number: Optional[str] = None  # For completed activities
+    work_order_no: Optional[str] = None  # For completed activities
     total_amount: Optional[float] = None  # For completed activities
 
 class Activity(ActivityCreate):
@@ -124,12 +126,14 @@ class ActivityUpdate(BaseModel):
     status: Optional[ActivityStatus] = None
     priority: Optional[ActivityPriority] = None
     activity_type: Optional[str] = None  # New field
+    support_staff: Optional[str] = None  # Support staff user_id
     due_date: Optional[datetime] = None
     location_lat: Optional[float] = None
     location_lng: Optional[float] = None
     notes: Optional[str] = None  # Status update notes
     maintenance_report: Optional[str] = None  # NEW: Maintenance work report
     invoice_number: Optional[str] = None  # For completed activities
+    work_order_no: Optional[str] = None  # For completed activities
     total_amount: Optional[float] = None  # For completed activities
 
 # Team Models

@@ -24,6 +24,7 @@ const Activities = () => {
   const [statusUpdateNote, setStatusUpdateNote] = useState('');
   const [completionData, setCompletionData] = useState({
     invoice_number: '',
+    work_order_no: '',
     total_amount: ''
   });
   const [progressUpdate, setProgressUpdate] = useState({ update: '', percentage: 0 });
@@ -35,8 +36,10 @@ const Activities = () => {
     product_ids: [],
     status: 'pending',
     activity_type: 'others',
+    support_staff: '',
     due_date: '',
     invoice_number: '',
+    work_order_no: '',
     total_amount: ''
   });
 
@@ -75,6 +78,12 @@ const Activities = () => {
       }
       if (submitData.invoice_number === '') {
         delete submitData.invoice_number;
+      }
+      if (submitData.work_order_no === '') {
+        delete submitData.work_order_no;
+      }
+      if (submitData.support_staff === '') {
+        delete submitData.support_staff;
       }
       
       console.log('Creating activity with data:', submitData);
@@ -146,6 +155,9 @@ const Activities = () => {
       
       // Add invoice and amount if completing
       if (selectedActivity.newStatus === 'completed') {
+        if (completionData.work_order_no) {
+          updateData.work_order_no = completionData.work_order_no;
+        }
         if (completionData.invoice_number) {
           updateData.invoice_number = completionData.invoice_number;
         }
@@ -158,7 +170,7 @@ const Activities = () => {
       alert('Activity status updated successfully!');
       setShowStatusModal(false);
       setStatusUpdateNote('');
-      setCompletionData({ invoice_number: '', total_amount: '' });
+      setCompletionData({ invoice_number: '', work_order_no: '', total_amount: '' });
       setSelectedActivity(null);
       fetchData();
     } catch (error) {
@@ -225,6 +237,9 @@ const Activities = () => {
   const totalValue = activities
     .filter(act => act.status === 'completed' && act.total_amount)
     .reduce((sum, act) => sum + (parseFloat(act.total_amount) || 0), 0);
+
+  // Get support users for dropdown
+  const supportUsers = users.filter(u => u.role === 'support');
 
   const filteredActivities = activities.filter(activity => {
     if (!searchQuery) return true;
@@ -362,6 +377,19 @@ const Activities = () => {
                       <option value="">Select User</option>
                       {users.map(user => (
                         <option key={user.id} value={user.id}>{user.name} ({user.role})</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <Label>Support Staff</Label>
+                    <select
+                      className="w-full border rounded-md p-2"
+                      value={newActivity.support_staff}
+                      onChange={(e) => setNewActivity({...newActivity, support_staff: e.target.value})}
+                    >
+                      <option value="">Select Support Staff</option>
+                      {supportUsers.map(user => (
+                        <option key={user.id} value={user.id}>{user.name}</option>
                       ))}
                     </select>
                   </div>
@@ -518,6 +546,14 @@ const Activities = () => {
                     <div className="border-t pt-4 space-y-4">
                       <h4 className="font-semibold text-green-700">💰 Completion Details</h4>
                       <div>
+                        <Label>Work Order No.</Label>
+                        <Input
+                          placeholder="WO-2024-001"
+                          value={completionData.work_order_no}
+                          onChange={(e) => setCompletionData({...completionData, work_order_no: e.target.value})}
+                        />
+                      </div>
+                      <div>
                         <Label>Invoice Number</Label>
                         <Input
                           placeholder="INV-2024-001"
@@ -549,7 +585,7 @@ const Activities = () => {
                       onClick={() => {
                         setShowStatusModal(false);
                         setStatusUpdateNote('');
-                        setCompletionData({ invoice_number: '', total_amount: '' });
+                        setCompletionData({ invoice_number: '', work_order_no: '', total_amount: '' });
                         setSelectedActivity(null);
                       }}
                     >
@@ -588,32 +624,23 @@ const Activities = () => {
                   <div>
                     <Label>Completion Percentage</Label>
                     <div className="flex items-center space-x-2">
-                      <Input
-                        type="range"
+                              <input
+                        type="number"
                         min="0"
                         max="100"
+                        className="w-full border rounded-md p-2"
                         value={progressUpdate.percentage}
-                        onChange={(e) => setProgressUpdate({...progressUpdate, percentage: parseInt(e.target.value)})}
-                        className="flex-1"
+                        onChange={(e) => setProgressUpdate({...progressUpdate, percentage: e.target.value})}
+                        required
                       />
-                      <span className="font-semibold text-blue-600 w-12">{progressUpdate.percentage}%</span>
+                      <span className="text-sm text-gray-600">%</span>
                     </div>
                   </div>
                   <div className="flex space-x-2">
-                    <Button 
-                      onClick={handleConfirmProgressUpdate}
-                      className="bg-gradient-to-r from-orange-500 to-sky-500"
-                    >
-                      Add Progress
+                    <Button onClick={handleSaveProgress} className="bg-gradient-to-r from-orange-500 to-sky-500">
+                      Save Progress
                     </Button>
-                    <Button 
-                      variant="outline" 
-                      onClick={() => {
-                        setShowProgressModal(false);
-                        setProgressUpdate({ update: '', percentage: 0 });
-                        setSelectedActivity(null);
-                      }}
-                    >
+                    <Button variant="outline" onClick={() => setShowProgressModal(false)}>
                       Cancel
                     </Button>
                   </div>
@@ -622,289 +649,9 @@ const Activities = () => {
             </Card>
           </div>
         )}
-
-        {/* Activity Detail Modal */}
-        {showDetailModal && selectedActivity && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto p-4">
-            <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-              <CardHeader className="border-b bg-gradient-to-r from-orange-50 to-sky-100">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className="text-2xl mb-2">📋 Activity Details</CardTitle>
-                    <h3 className="text-xl font-bold text-gray-900">{selectedActivity.title}</h3>
-                  </div>
-                  <button 
-                    onClick={() => setShowDetailModal(false)}
-                    className="text-gray-500 hover:text-gray-700 text-3xl leading-none"
-                  >
-                    &times;
-                  </button>
-                </div>
-              </CardHeader>
-              <CardContent className="p-6 space-y-6">
-                {/* Status Badge */}
-                <div className="flex items-center gap-4">
-                  <Badge className={`${getStatusBadge(selectedActivity.status)} text-sm px-4 py-2`}>
-                    {selectedActivity.status.replace('_', ' ').toUpperCase()}
-                  </Badge>
-                  <span className="text-sm text-gray-600">
-                    Priority: <span className="font-semibold text-gray-900">{selectedActivity.priority || 'Medium'}</span>
-                  </span>
-                </div>
-
-                {/* Description */}
-                {selectedActivity.description && (
-                  <div>
-                    <h4 className="font-semibold text-gray-700 mb-2">📝 Description:</h4>
-                    <p className="text-gray-600 bg-gray-50 p-3 rounded">{selectedActivity.description}</p>
-                  </div>
-                )}
-
-                {/* User Information */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-blue-50 rounded-lg">
-                  <div>
-                    <span className="text-sm text-gray-600">👤 Created by:</span>
-                    <p className="font-semibold text-blue-600">{getUserName(selectedActivity.created_by)}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm text-gray-600">Assigned to:</span>
-                    <p className="font-semibold text-gray-900">{getUserName(selectedActivity.assigned_to)}</p>
-                  </div>
-                  <div>
-                    <span className="text-sm text-gray-600">Created at:</span>
-                    <p className="font-semibold text-gray-900">{new Date(selectedActivity.created_at).toLocaleString()}</p>
-                  </div>
-                  {selectedActivity.due_date && (
-                    <div>
-                      <span className="text-sm text-gray-600">Due date:</span>
-                      <p className="font-semibold text-gray-900">{new Date(selectedActivity.due_date).toLocaleString()}</p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Customer & Products */}
-                {(selectedActivity.customer_id || (selectedActivity.product_ids && selectedActivity.product_ids.length > 0)) && (
-                  <div className="border-t pt-4">
-                    <h4 className="font-semibold text-gray-700 mb-3">🏢 Related Information:</h4>
-                    {selectedActivity.customer_id && (
-                      <div className="mb-3">
-                        <span className="text-sm text-gray-600">Customer:</span>
-                        <p className="font-semibold text-cyan-600">
-                          {customers.find(c => c.id === selectedActivity.customer_id)?.name || 'Unknown'}
-                        </p>
-                      </div>
-                    )}
-                    {selectedActivity.product_ids && selectedActivity.product_ids.length > 0 && (
-                      <div>
-                        <span className="text-sm text-gray-600">Products ({selectedActivity.product_ids.length}):</span>
-                        <div className="space-y-2 mt-2">
-                          {selectedActivity.product_ids.map(pid => {
-                            const product = products.find(p => p.id === pid);
-                            return product ? (
-                              <div key={pid} className="bg-orange-50 p-2 rounded flex justify-between">
-                                <span className="font-semibold">{product.name}</span>
-                                <span className="text-gray-600 text-sm">SN: {product.serial_number}</span>
-                              </div>
-                            ) : null;
-                          })}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Progress Updates */}
-                {selectedActivity.progress_updates && selectedActivity.progress_updates.length > 0 && (
-                  <div className="border-t pt-4">
-                    <h4 className="font-semibold text-gray-700 mb-3">📊 Progress Updates ({selectedActivity.progress_updates.length}):</h4>
-                    <div className="space-y-3">
-                      {selectedActivity.progress_updates.slice().reverse().map((update, idx) => (
-                        <div key={idx} className="bg-blue-50 p-4 rounded-lg">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="font-semibold text-blue-600 text-lg">{update.percentage}% Complete</span>
-                            <span className="text-gray-500 text-sm">{new Date(update.timestamp).toLocaleString()}</span>
-                          </div>
-                          <p className="text-gray-700">{update.update}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Status History */}
-                {selectedActivity.status_history && selectedActivity.status_history.length > 0 && (
-                  <div className="border-t pt-4">
-                    <h4 className="font-semibold text-gray-700 mb-3">🕒 Status History ({selectedActivity.status_history.length}):</h4>
-                    <div className="space-y-3">
-                      {selectedActivity.status_history.slice().reverse().map((hist, idx) => (
-                        <div key={idx} className="bg-gray-50 p-4 rounded-lg border-l-4 border-blue-500">
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-2">
-                              <Badge className={getStatusBadge(hist.status)}>
-                                {hist.status.replace('_', ' ')}
-                              </Badge>
-                              <span className="text-sm text-gray-600">by {getUserName(hist.updated_by)}</span>
-                            </div>
-                            <span className="text-gray-500 text-sm">{new Date(hist.timestamp).toLocaleString()}</span>
-                          </div>
-                          {hist.note && <p className="text-gray-700 text-sm mt-2">Note: {hist.note}</p>}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Maintenance Report */}
-                {selectedActivity.maintenance_report && (
-                  <div className="border-t pt-4">
-                    <h4 className="font-semibold text-gray-700 mb-2">🔧 Maintenance Report:</h4>
-                    <div className="bg-green-50 p-4 rounded-lg">
-                      <p className="text-gray-700 whitespace-pre-line">{selectedActivity.maintenance_report}</p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Completion Info */}
-                {selectedActivity.completion_date && (
-                  <div className="bg-green-50 p-4 rounded-lg">
-                    <span className="text-sm text-gray-600">✅ Completed on:</span>
-                    <p className="font-semibold text-green-700">{new Date(selectedActivity.completion_date).toLocaleString()}</p>
-                  </div>
-                )}
-
-                {/* Close Button */}
-                <div className="flex justify-end pt-4 border-t">
-                  <Button 
-                    onClick={() => setShowDetailModal(false)}
-                    className="bg-gradient-to-r from-orange-500 to-sky-500"
-                  >
-                    Close
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
-
-        {loading ? (
-          <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-600"></div>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {filteredActivities.map((activity) => (
-              <Card 
-                key={activity.id} 
-                className="hover:shadow-lg transition-shadow cursor-pointer"
-                onClick={() => openDetailModal(activity)}
-              >
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-3 mb-2">
-                        <h3 className="text-lg font-bold text-gray-900">{activity.title}</h3>
-                        <Badge className={getStatusBadge(activity.status)}>
-                          {activity.status.replace('_', ' ')}
-                        </Badge>
-                      </div>
-                      {activity.description && (
-                        <p className="text-gray-600 mb-3">{activity.description}</p>
-                      )}
-                      <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 mb-2">
-                        <span>👤 Created by: <strong className="text-blue-600">{getUserName(activity.created_by)}</strong></span>
-                        <span>Assigned to: <strong>{getUserName(activity.assigned_to)}</strong></span>
-                        {activity.due_date && (
-                          <span>Due: {new Date(activity.due_date).toLocaleDateString()}</span>
-                        )}
-                      </div>
-                      
-                      {/* Customer and Products Section */}
-                      {(activity.customer_id || (activity.product_ids && activity.product_ids.length > 0)) && (
-                        <div className="flex flex-wrap items-center gap-4 text-sm mb-2">
-                          {activity.customer_id && (
-                            <span className="bg-cyan-100 text-cyan-800 px-2 py-1 rounded">
-                              Customer: <strong>{customers.find(c => c.id === activity.customer_id)?.name || 'Unknown'}</strong>
-                            </span>
-                          )}
-                          {activity.product_ids && activity.product_ids.length > 0 && (
-                            <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded">
-                              Products: <strong>{activity.product_ids.length}</strong>
-                              {activity.product_ids.map(pid => {
-                                const product = products.find(p => p.id === pid);
-                                return product ? ` ${product.name} (${product.serial_number})` : '';
-                              }).join(', ')}
-                            </span>
-                          )}
-                        </div>
-                      )}
-                      
-                      {/* Progress Updates Section */}
-                      {activity.status === 'in_progress' && activity.progress_updates && activity.progress_updates.length > 0 && (
-                        <div className="mt-4 border-t pt-3">
-                          <h4 className="text-sm font-semibold text-gray-700 mb-2">Progress Updates:</h4>
-                          <div className="space-y-2 max-h-40 overflow-y-auto">
-                            {activity.progress_updates.slice().reverse().map((update, idx) => (
-                              <div key={idx} className="bg-blue-50 p-2 rounded text-xs">
-                                <div className="flex items-center justify-between mb-1">
-                                  <span className="font-semibold text-blue-600">{update.percentage}% Complete</span>
-                                  <span className="text-gray-500">{new Date(update.timestamp).toLocaleString()}</span>
-                                </div>
-                                <p className="text-gray-700">{update.update}</p>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex flex-col space-y-2" onClick={(e) => e.stopPropagation()}>
-                      {activity.status === 'in_progress' && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleAddProgressUpdate(activity.id)}
-                          className="border-blue-600 text-blue-600 hover:bg-blue-50"
-                        >
-                          + Add Progress
-                        </Button>
-                      )}
-                      {activity.status !== 'completed' && (
-                        <Button
-                          size="sm"
-                          onClick={() => handleUpdateStatus(activity.id, activity.status === 'pending' ? 'in_progress' : 'completed')}
-                          className="bg-blue-600"
-                        >
-                          {activity.status === 'pending' ? 'Start' : 'Complete'}
-                        </Button>
-                      )}
-                      {isAdmin && (
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => handleDeleteActivity(activity.id)}
-                        >
-                          Delete
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-
-        {!loading && filteredActivities.length === 0 && (
-          <Card>
-            <CardContent className="p-12 text-center">
-              <p className="text-gray-500">
-                {searchQuery ? 'No activities found matching your search' : 'No activities found'}
-              </p>
-            </CardContent>
-          </Card>
-        )}
       </div>
     </div>
   );
-};
+}
 
 export default Activities;
