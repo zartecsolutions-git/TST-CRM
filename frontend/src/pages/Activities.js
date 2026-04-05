@@ -349,7 +349,8 @@ const Activities = () => {
   const filteredActivities = activities.filter(activity => {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
-    const userName = getUserName(activity.assigned_to).toLowerCase();
+    const assignedUserName = getUserName(activity.assigned_to).toLowerCase();
+    const createdByUserName = getUserName(activity.created_by).toLowerCase();
     const customerName = customers.find(c => c.id === activity.customer_id)?.name?.toLowerCase() || '';
     const serialNumber = activity.serial_number?.toLowerCase() || '';
     const invoiceNumber = activity.invoice_number?.toLowerCase() || '';
@@ -358,7 +359,8 @@ const Activities = () => {
     return (
       activity.title?.toLowerCase().includes(query) ||
       activity.description?.toLowerCase().includes(query) ||
-      userName.includes(query) ||
+      assignedUserName.includes(query) ||
+      createdByUserName.includes(query) ||
       customerName.includes(query) ||
       serialNumber.includes(query) ||
       invoiceNumber.includes(query) ||

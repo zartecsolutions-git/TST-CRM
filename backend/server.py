@@ -477,12 +477,22 @@ async def get_activities(
         ).to_list(100)
         product_ids = [p['id'] for p in product_docs]
         
-        # Search by work order number OR product serial number OR customer_id OR product_ids
+        # Get users matching search (for assigned_to and created_by)
+        user_docs = await db.users.find(
+            {"name": {"$regex": search, "$options": "i"}},
+            {"id": 1, "_id": 0}
+        ).to_list(100)
+        user_ids = [u['id'] for u in user_docs]
+        
+        # Search by invoice number, work order number, product serial number, customer, product, or assigned user
         query["$or"] = [
+            {"invoice_number": {"$regex": search, "$options": "i"}},
             {"work_order_no": {"$regex": search, "$options": "i"}},
             {"serial_number": {"$regex": search, "$options": "i"}},
             {"customer_id": {"$in": customer_ids}},
-            {"product_ids": {"$in": product_ids}}
+            {"product_ids": {"$in": product_ids}},
+            {"assigned_to": {"$in": user_ids}},
+            {"created_by": {"$in": user_ids}}
         ]
     
     activities = await db.activities.find(query, {"_id": 0}).to_list(1000)
