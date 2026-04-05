@@ -690,31 +690,36 @@ const Activities = () => {
                     >
                       👁️ View Details
                     </Button>
-                    {activity.status === 'pending' && (
-                      <Button
-                        size="sm"
-                        onClick={() => handleStatusChange(activity, 'in_progress')}
-                        className="bg-blue-600 hover:bg-blue-700"
-                      >
-                        Start
-                      </Button>
-                    )}
-                    {activity.status === 'in_progress' && (
+                    {/* Only creator, assignee, or admin can modify activity */}
+                    {(currentUser?.role === 'admin' || activity.created_by === currentUser?.id || activity.assigned_to === currentUser?.id) && (
                       <>
-                        <Button
-                          size="sm"
-                          onClick={() => handleAddProgressUpdate(activity.id)}
-                          className="bg-purple-600 hover:bg-purple-700"
-                        >
-                          Add Progress
-                        </Button>
-                        <Button
-                          size="sm"
-                          onClick={() => handleStatusChange(activity, 'completed')}
-                          className="bg-green-600 hover:bg-green-700"
-                        >
-                          Complete
-                        </Button>
+                        {activity.status === 'pending' && (
+                          <Button
+                            size="sm"
+                            onClick={() => handleStatusChange(activity, 'in_progress')}
+                            className="bg-blue-600 hover:bg-blue-700"
+                          >
+                            Start
+                          </Button>
+                        )}
+                        {activity.status === 'in_progress' && (
+                          <>
+                            <Button
+                              size="sm"
+                              onClick={() => handleAddProgressUpdate(activity.id)}
+                              className="bg-purple-600 hover:bg-purple-700"
+                            >
+                              Add Progress
+                            </Button>
+                            <Button
+                              size="sm"
+                              onClick={() => handleStatusChange(activity, 'completed')}
+                              className="bg-green-600 hover:bg-green-700"
+                            >
+                              Complete
+                            </Button>
+                          </>
+                        )}
                       </>
                     )}
                     {isAdmin && (
@@ -1381,8 +1386,8 @@ const Activities = () => {
 
                 {/* Action Buttons */}
                 <div className="flex flex-wrap gap-2 pt-4 border-t">
-                  {/* Only show edit/update buttons if user is the creator or admin */}
-                  {(currentUser?.role === 'admin' || selectedActivity.created_by === currentUser?.id) && (
+                  {/* Only show edit/update buttons if user is admin, creator, or assignee */}
+                  {(currentUser?.role === 'admin' || selectedActivity.created_by === currentUser?.id || selectedActivity.assigned_to === currentUser?.id) && (
                     <>
                       {selectedActivity.status === 'pending' && (
                         <Button
@@ -1421,9 +1426,9 @@ const Activities = () => {
                   )}
                   
                   {/* Show message if user cannot edit */}
-                  {currentUser?.role !== 'admin' && selectedActivity.created_by !== currentUser?.id && (
+                  {currentUser?.role !== 'admin' && selectedActivity.created_by !== currentUser?.id && selectedActivity.assigned_to !== currentUser?.id && (
                     <p className="text-sm text-gray-500 italic">
-                      ℹ️ Only the creator can edit this activity
+                      ℹ️ Only the creator, assignee, or admin can edit this activity
                     </p>
                   )}
                   <Button
