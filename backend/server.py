@@ -536,11 +536,13 @@ async def update_activity(
     # Get current user data to check role
     user_data = await get_current_user_data(current_user_id)
     
-    # Only the creator can edit/update the activity (unless admin)
-    if user_data['role'] != 'admin' and activity_doc.get('created_by') != current_user_id:
+    # Admin, creator, or assignee can edit/update the activity
+    if (user_data['role'] != 'admin' and 
+        activity_doc.get('created_by') != current_user_id and 
+        activity_doc.get('assigned_to') != current_user_id):
         raise HTTPException(
             status_code=403, 
-            detail="You can only edit activities that you created"
+            detail="You can only edit activities that you created or are assigned to"
         )
     
     update_data = activity_update.model_dump(exclude_unset=True)
