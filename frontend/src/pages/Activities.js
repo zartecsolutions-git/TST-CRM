@@ -343,7 +343,7 @@ const Activities = () => {
             <div className="relative">
               <input
                 type="text"
-                placeholder="Search by Product Serial # or Customer..."
+                placeholder="Search by Product Serial #, Product Name, or Customer..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="px-4 py-2 border border-gray-300 rounded-lg w-80 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -1025,6 +1025,17 @@ const Activities = () => {
                         <span className="ml-2 font-semibold text-blue-600">{selectedActivity.serial_number}</span>
                       </div>
                     )}
+                    <div className="col-span-2">
+                      <span className="text-gray-500">📦 Products:</span>
+                      <span className="ml-2 font-medium">
+                        {selectedActivity.product_ids && selectedActivity.product_ids.length > 0
+                          ? selectedActivity.product_ids.map(pid => {
+                              const product = products.find(p => p.id === pid);
+                              return product?.name || pid;
+                            }).join(', ')
+                          : 'No products selected'}
+                      </span>
+                    </div>
                     <div>
                       <span className="text-gray-500">Created by:</span>
                       <span className="ml-2 font-medium text-blue-600">{getUserName(selectedActivity.created_by)}</span>
