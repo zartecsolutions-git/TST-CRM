@@ -143,21 +143,39 @@ export default function ProductsEnhanced() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // Clean up formData - convert empty strings to null for optional fields
+      const cleanedData = {
+        name: formData.name,
+        category: formData.category || 'others',
+        sub_category: formData.sub_category || null,
+        description: formData.description || null,
+        model: formData.model || null,
+        specifications: formData.specifications || null,
+        supplier_warranty_period: formData.supplier_warranty_period || null,
+        license_code: formData.license_code || null,
+        price: formData.price ? parseFloat(formData.price) : null,
+        purchase_date: formData.purchase_date || null,
+        installation_date: formData.installation_date || null,
+        serial_numbers: formData.serial_numbers,
+      };
+      
       if (isEditMode && selectedProduct) {
         // Update existing product
-        await api.put(`/products/${selectedProduct.id}`, formData);
+        await api.put(`/products/${selectedProduct.id}`, cleanedData);
         alert('Product updated successfully!');
       } else {
         // Create new product
-        await api.post('/products', formData);
+        await api.post('/products', cleanedData);
         alert('Product created successfully!');
       }
       
       resetForm();
       fetchData();
     } catch (error) {
-      console.error('Error:', error);
-      alert(isEditMode ? 'Failed to update product' : 'Failed to create product');
+      console.error('Full error:', error);
+      console.error('Error response:', error.response);
+      const errorMsg = error.response?.data?.detail || error.message || 'Unknown error';
+      alert(isEditMode ? `Failed to update product: ${errorMsg}` : `Failed to create product: ${errorMsg}`);
     }
   };
 
