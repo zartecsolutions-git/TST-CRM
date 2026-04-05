@@ -12,7 +12,7 @@ import Activities from './pages/Activities';
 import Teams from './pages/Teams';
 import Geofences from './pages/Geofences';
 import Customers from './pages/Customers';
-import Products from './pages/Products';
+import Products from './pages/ProductsEnhanced';
 import Leads from './pages/Leads';
 import CompanySettings from './pages/CompanySettings';
 import Reports from './pages/Reports';

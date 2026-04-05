@@ -1089,20 +1089,20 @@ async def create_product(
     # Only Admin can create products
     await require_admin(current_user_id)
     
-    # Check if serial number already exists
-    existing = await db.products.find_one({"serial_number": product_data.serial_number})
-    if existing:
-        raise HTTPException(status_code=400, detail="Product with this serial number already exists")
+    # Check if any serial numbers already exist
+    if product_data.serial_numbers:
+        for serial_obj in product_data.serial_numbers:
+            existing = await db.products.find_one({
+                "serial_numbers.serial_number": serial_obj.serial_number
+            })
+            if existing:
+                raise HTTPException(
+                    status_code=400, 
+                    detail=f"Serial number {serial_obj.serial_number} already exists"
+                )
     
     # Create product instance
     product = Product(**product_data.model_dump(), created_by=current_user_id)
-    
-    # Calculate warranty_finished_date if purchase_date and warranty_period are provided
-    if product.purchase_date and product.warranty_period:
-        product.warranty_finished_date = calculate_warranty_finished_date(
-            product.purchase_date, 
-            product.warranty_period
-        )
     
     product_dict = product.model_dump()
     product_dict['created_at'] = product_dict['created_at'].isoformat()
@@ -1111,10 +1111,16 @@ async def create_product(
         product_dict['purchase_date'] = product_dict['purchase_date'].isoformat()
     if product_dict.get('installation_date'):
         product_dict['installation_date'] = product_dict['installation_date'].isoformat()
-    if product_dict.get('next_maintenance_date'):
-        product_dict['next_maintenance_date'] = product_dict['next_maintenance_date'].isoformat()
-    if product_dict.get('warranty_finished_date'):
-        product_dict['warranty_finished_date'] = product_dict['warranty_finished_date'].isoformat()
+    
+    # Convert serial_numbers datetime fields to ISO format
+    if product_dict.get('serial_numbers'):
+        for serial in product_dict['serial_numbers']:
+            if serial.get('sale_date'):
+                serial['sale_date'] = serial['sale_date'].isoformat()
+            if serial.get('customer_warranty_end_date'):
+                serial['customer_warranty_end_date'] = serial['customer_warranty_end_date'].isoformat()
+            if serial.get('next_maintenance_date'):
+                serial['next_maintenance_date'] = serial['next_maintenance_date'].isoformat()
     
     await db.products.insert_one(product_dict)
     return product
@@ -1174,20 +1180,44 @@ async def update_product(
     if not update_data:
         raise HTTPException(status_code=400, detail="No fields to update")
     
-    # Check if serial number is being updated and if it already exists
-    if 'serial_number' in update_data:
-        existing = await db.products.find_one({
-            "serial_number": update_data['serial_number'],
-            "id": {"$ne": product_id}
-        })
-        if existing:
-            raise HTTPException(status_code=400, detail="Product with this serial number already exists")
+    # Check if any serial numbers in the update already exist in other products
+    if 'serial_numbers' in update_data and update_data['serial_numbers']:
+        for serial_obj in update_data['serial_numbers']:
+            if isinstance(serial_obj, dict) and 'serial_number' in serial_obj:
+                serial_num = serial_obj['serial_number']
+            else:
+                serial_num = serial_obj.serial_number if hasattr(serial_obj, 'serial_number') else None
+            
+            if serial_num:
+                existing = await db.products.find_one({
+                    "serial_numbers.serial_number": serial_num,
+                    "id": {"$ne": product_id}
+                })
+                if existing:
+                    raise HTTPException(
+                        status_code=400, 
+                        detail=f"Serial number {serial_num} already exists in another product"
+                    )
     
     update_data['updated_at'] = datetime.now(timezone.utc).isoformat()
     if update_data.get('purchase_date'):
         update_data['purchase_date'] = update_data['purchase_date'].isoformat()
     if update_data.get('installation_date'):
         update_data['installation_date'] = update_data['installation_date'].isoformat()
+    
+    # Convert serial_numbers datetime fields to ISO format
+    if update_data.get('serial_numbers'):
+        for serial in update_data['serial_numbers']:
+            if isinstance(serial, dict):
+                if serial.get('sale_date'):
+                    if not isinstance(serial['sale_date'], str):
+                        serial['sale_date'] = serial['sale_date'].isoformat()
+                if serial.get('customer_warranty_end_date'):
+                    if not isinstance(serial['customer_warranty_end_date'], str):
+                        serial['customer_warranty_end_date'] = serial['customer_warranty_end_date'].isoformat()
+                if serial.get('next_maintenance_date'):
+                    if not isinstance(serial['next_maintenance_date'], str):
+                        serial['next_maintenance_date'] = serial['next_maintenance_date'].isoformat()
     
     result = await db.products.update_one(
         {"id": product_id},
