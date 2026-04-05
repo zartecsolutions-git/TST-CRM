@@ -1005,12 +1005,18 @@ export default function ProductsEnhanced() {
               </div>
               
               {bulkAssignData.sale_date && bulkAssignData.customer_warranty_period && (
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <p className="text-sm text-blue-800">
-                    <strong>Warranty Expiry Date (Auto-calculated):</strong>{' '}
-                    {new Date(new Date(bulkAssignData.sale_date).setMonth(
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-blue-700">Customer Warranty End Date (Auto-calculated)</label>
+                  <input
+                    type="text"
+                    value={new Date(new Date(bulkAssignData.sale_date).setMonth(
                       new Date(bulkAssignData.sale_date).getMonth() + parseInt(bulkAssignData.customer_warranty_period || 0)
                     )).toLocaleDateString()}
+                    disabled
+                    className="w-full border rounded px-3 py-2 bg-blue-50 font-semibold text-blue-800"
+                  />
+                  <p className="text-xs text-blue-600 mt-1">
+                    Formula: Sales Date ({new Date(bulkAssignData.sale_date).toLocaleDateString()}) + Warranty Period ({bulkAssignData.customer_warranty_period} months)
                   </p>
                 </div>
               )}
