@@ -46,7 +46,8 @@ export default function ProductsEnhanced() {
     customer_id: '',
     sale_date: '',
     customer_warranty_period: '12',
-    next_maintenance_date: ''
+    next_maintenance_date: '',
+    license_code: ''
   });
 
   const user = JSON.parse(localStorage.getItem('user') || '{}');
@@ -204,7 +205,8 @@ export default function ProductsEnhanced() {
           sale_date: bulkAssignData.sale_date,
           customer_warranty_period: warrantyMonths,
           customer_warranty_end_date: warrantyEndDate.toISOString(),
-          next_maintenance_date: bulkAssignData.next_maintenance_date || null
+          next_maintenance_date: bulkAssignData.next_maintenance_date || null,
+          license_code: bulkAssignData.license_code || null
         };
       });
 
@@ -218,7 +220,8 @@ export default function ProductsEnhanced() {
         customer_id: '',
         sale_date: '',
         customer_warranty_period: '12',
-        next_maintenance_date: ''
+        next_maintenance_date: '',
+        license_code: ''
       });
       setSelectedSerialIndexes([]);
       fetchData();
@@ -790,6 +793,11 @@ export default function ProductsEnhanced() {
                       <div className="flex justify-between items-start">
                         <div>
                           <p className="font-mono font-medium">{serial.serial_number}</p>
+                          {serial.license_code && (
+                            <p className="text-sm text-purple-600 mt-1">
+                              License: <span className="font-mono">{serial.license_code}</span>
+                            </p>
+                          )}
                           {serial.customer_name && (
                             <div className="text-sm text-gray-600 mt-1">
                               <p>Customer: {serial.customer_name}</p>
@@ -1036,6 +1044,20 @@ export default function ProductsEnhanced() {
                 />
                 <p className="text-xs text-gray-500 mt-1">
                   This date is automatically fetched from the latest activity record for this product
+                </p>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">License Code</label>
+                <input
+                  type="text"
+                  value={bulkAssignData.license_code}
+                  onChange={(e) => setBulkAssignData({...bulkAssignData, license_code: e.target.value})}
+                  placeholder="e.g., LIC-2024-XYZ"
+                  className="w-full border rounded px-3 py-2"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Optional license or activation code for this serial number
                 </p>
               </div>
             </div>

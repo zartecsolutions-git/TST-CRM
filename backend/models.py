@@ -242,6 +242,7 @@ class SerialNumberAssignment(BaseModel):
     customer_warranty_period: Optional[int] = None  # in months
     customer_warranty_end_date: Optional[datetime] = None
     next_maintenance_date: Optional[datetime] = None
+    license_code: Optional[str] = None
     status: str = "in_stock"  # in_stock, sold
 
 # Product Models
