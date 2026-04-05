@@ -351,11 +351,18 @@ const Activities = () => {
     const query = searchQuery.toLowerCase();
     const userName = getUserName(activity.assigned_to).toLowerCase();
     const customerName = customers.find(c => c.id === activity.customer_id)?.name?.toLowerCase() || '';
+    const serialNumber = activity.serial_number?.toLowerCase() || '';
+    const invoiceNumber = activity.invoice_number?.toLowerCase() || '';
+    const workOrderNumber = activity.work_order_no?.toLowerCase() || '';
+    
     return (
       activity.title?.toLowerCase().includes(query) ||
       activity.description?.toLowerCase().includes(query) ||
       userName.includes(query) ||
-      customerName.includes(query)
+      customerName.includes(query) ||
+      serialNumber.includes(query) ||
+      invoiceNumber.includes(query) ||
+      workOrderNumber.includes(query)
     );
   });
 
@@ -427,7 +434,7 @@ const Activities = () => {
             <div className="relative">
               <input
                 type="text"
-                placeholder="Search by Product Serial #, Product Name, or Customer..."
+                placeholder="Search by Serial #, Customer, Invoice #, Work Order #..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="px-4 py-2 border border-gray-300 rounded-lg w-80 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -457,7 +464,7 @@ const Activities = () => {
         <div className="mb-6">
           <input
             type="text"
-            placeholder="🔍 Search activities by title, description, assigned user, or customer..."
+            placeholder="🔍 Search by Serial #, Customer, Assigned To, Invoice #, Work Order #, Title..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
