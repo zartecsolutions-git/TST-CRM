@@ -1,19 +1,21 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import PageHeader from '../components/PageHeader';
 import { useCurrency } from '../contexts/CurrencyContext';
 import api from '../utils/api';
 
 export default function ProductsEnhanced() {
+  const navigate = useNavigate();
   const { formatAmount } = useCurrency();
   const [products, setProducts] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
-  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [showBulkAssignModal, setShowBulkAssignModal] = useState(false);
   const [showImport, setShowImport] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [selectedSerial, setSelectedSerial] = useState(null);
+  const [selectedSerialIndexes, setSelectedSerialIndexes] = useState([]);
   const [isEditMode, setIsEditMode] = useState(false);
   const [csvFile, setCsvFile] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -34,10 +36,10 @@ export default function ProductsEnhanced() {
   });
   
   const [newSerial, setNewSerial] = useState('');
-  const [assignData, setAssignData] = useState({
+  const [bulkAssignData, setBulkAssignData] = useState({
     customer_id: '',
     sale_date: '',
-    customer_warranty_period: '',
+    customer_warranty_period: '12',
     next_maintenance_date: ''
   });
 
@@ -90,53 +92,98 @@ export default function ProductsEnhanced() {
     setFormData({ ...formData, serial_numbers: updated });
   };
 
-  const openAssignModal = (product, serialIndex) => {
+  const openBulkAssignModal = (product) => {
     setSelectedProduct(product);
-    setSelectedSerial(serialIndex);
-    setShowAssignModal(true);
+    setSelectedSerialIndexes([]);
+    
+    // Fetch next maintenance date from activities for this product
+    fetchNextMaintenanceFromActivities(product.id);
+    
+    setShowBulkAssignModal(true);
   };
 
-  const assignToCustomer = async () => {
-    if (!assignData.customer_id || !assignData.sale_date) {
+  const fetchNextMaintenanceFromActivities = async (productId) => {
+    try {
+      const response = await api.get('/activities');
+      const productActivities = response.data.filter(act => act.product_id === productId);
+      
+      // Get the most recent activity with next_maintenance_date
+      const latestActivity = productActivities
+        .filter(act => act.next_maintenance_date)
+        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
+      
+      if (latestActivity && latestActivity.next_maintenance_date) {
+        setBulkAssignData(prev => ({
+          ...prev,
+          next_maintenance_date: latestActivity.next_maintenance_date.split('T')[0]
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching maintenance date from activities:', error);
+    }
+  };
+
+  const toggleSerialSelection = (index) => {
+    setSelectedSerialIndexes(prev => {
+      if (prev.includes(index)) {
+        return prev.filter(i => i !== index);
+      } else {
+        return [...prev, index];
+      }
+    });
+  };
+
+  const bulkAssignToCustomer = async () => {
+    if (!bulkAssignData.customer_id || !bulkAssignData.sale_date) {
       alert('Please select customer and sale date');
       return;
     }
 
+    if (selectedSerialIndexes.length === 0) {
+      alert('Please select at least one serial number');
+      return;
+    }
+
     try {
-      const customer = customers.find(c => c.id === assignData.customer_id);
-      const saleDate = new Date(assignData.sale_date);
-      const warrantyMonths = parseInt(assignData.customer_warranty_period) || 0;
+      const customer = customers.find(c => c.id === bulkAssignData.customer_id);
+      const saleDate = new Date(bulkAssignData.sale_date);
+      const warrantyMonths = parseInt(bulkAssignData.customer_warranty_period) || 0;
       const warrantyEndDate = new Date(saleDate);
       warrantyEndDate.setMonth(warrantyEndDate.getMonth() + warrantyMonths);
 
       const updatedSerials = [...selectedProduct.serial_numbers];
-      updatedSerials[selectedSerial] = {
-        ...updatedSerials[selectedSerial],
-        status: 'sold',
-        customer_id: assignData.customer_id,
-        customer_name: customer?.name || '',
-        sale_date: assignData.sale_date,
-        customer_warranty_period: warrantyMonths,
-        customer_warranty_end_date: warrantyEndDate.toISOString(),
-        next_maintenance_date: assignData.next_maintenance_date || null
-      };
+      
+      // Update all selected serial numbers
+      selectedSerialIndexes.forEach(index => {
+        updatedSerials[index] = {
+          ...updatedSerials[index],
+          status: 'sold',
+          customer_id: bulkAssignData.customer_id,
+          customer_name: customer?.name || '',
+          sale_date: bulkAssignData.sale_date,
+          customer_warranty_period: warrantyMonths,
+          customer_warranty_end_date: warrantyEndDate.toISOString(),
+          next_maintenance_date: bulkAssignData.next_maintenance_date || null
+        };
+      });
 
       await api.put(`/products/${selectedProduct.id}`, {
         serial_numbers: updatedSerials
       });
 
-      alert('Serial number assigned to customer successfully!');
-      setShowAssignModal(false);
-      setAssignData({
+      alert(`Successfully assigned ${selectedSerialIndexes.length} serial number(s) to ${customer?.name}!`);
+      setShowBulkAssignModal(false);
+      setBulkAssignData({
         customer_id: '',
         sale_date: '',
-        customer_warranty_period: '',
+        customer_warranty_period: '12',
         next_maintenance_date: ''
       });
+      setSelectedSerialIndexes([]);
       fetchData();
     } catch (error) {
       console.error('Error:', error);
-      alert('Failed to assign serial number');
+      alert('Failed to assign serial numbers');
     }
   };
 
@@ -289,7 +336,16 @@ export default function ProductsEnhanced() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-50 p-8">
-      <PageHeader title="Products Master" />
+      <div className="flex justify-between items-center mb-6">
+        <PageHeader title="Products Master" />
+        <button
+          onClick={() => navigate('/dashboard')}
+          className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 shadow"
+        >
+          <span>←</span>
+          <span>Back to Dashboard</span>
+        </button>
+      </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 mt-6">
@@ -597,27 +653,13 @@ export default function ProductsEnhanced() {
                           </span>
                         )}
                       </div>
-                      <div className="flex gap-2">
-                        {isEditMode && serial.status === 'in_stock' && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              const product = { ...selectedProduct, serial_numbers: formData.serial_numbers };
-                              openAssignModal(product, index);
-                            }}
-                            className="text-blue-600 hover:text-blue-800 text-sm"
-                          >
-                            Assign
-                          </button>
-                        )}
-                        <button
-                          type="button"
-                          onClick={() => removeSerialNumber(index)}
-                          className="text-red-600 hover:text-red-800"
-                        >
-                          Remove
-                        </button>
-                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeSerialNumber(index)}
+                        className="text-red-600 hover:text-red-800"
+                      >
+                        Remove
+                      </button>
                     </div>
                   ))}
                   {formData.serial_numbers.length === 0 && (
@@ -751,7 +793,16 @@ export default function ProductsEnhanced() {
               </div>
             )}
 
-            <div className="mt-6 flex justify-end">
+            <div className="mt-6 flex justify-between">
+              <button
+                onClick={() => {
+                  setShowDetails(false);
+                  openBulkAssignModal(selectedProduct);
+                }}
+                className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+              >
+                Assign Serials to Customer
+              </button>
               <button
                 onClick={() => setShowDetails(false)}
                 className="px-6 py-2 bg-gradient-to-r from-blue-700 to-green-700 text-white rounded-lg hover:shadow-lg"
@@ -763,24 +814,54 @@ export default function ProductsEnhanced() {
         </div>
       )}
 
-      {/* Assign to Customer Modal */}
-      {showAssignModal && (
+      {/* Bulk Assign to Customer Modal */}
+      {showBulkAssignModal && selectedProduct && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-8 max-w-md w-full m-4">
-            <h2 className="text-2xl font-bold mb-6">Assign to Customer</h2>
+          <div className="bg-white rounded-lg p-8 max-w-3xl w-full m-4 max-h-[90vh] overflow-y-auto">
+            <h2 className="text-2xl font-bold mb-6">Assign Serial Numbers to Customer</h2>
             
-            <div className="mb-4">
-              <p className="text-sm text-gray-600 mb-2">
-                Serial Number: <span className="font-bold">{selectedProduct?.serial_numbers[selectedSerial]?.serial_number}</span>
+            <div className="mb-6">
+              <p className="text-sm text-gray-600 mb-4">
+                Product: <span className="font-bold">{selectedProduct.name}</span>
               </p>
+              
+              {/* Serial Numbers Selection */}
+              <div className="border rounded-lg p-4 mb-4 bg-gray-50">
+                <h3 className="font-semibold mb-3">Select Serial Numbers (In Stock Only)</h3>
+                <div className="space-y-2 max-h-60 overflow-y-auto">
+                  {selectedProduct.serial_numbers?.map((serial, index) => (
+                    serial.status === 'in_stock' && (
+                      <div key={index} className="flex items-center gap-3 p-2 bg-white rounded border">
+                        <input
+                          type="checkbox"
+                          checked={selectedSerialIndexes.includes(index)}
+                          onChange={() => toggleSerialSelection(index)}
+                          className="w-5 h-5"
+                        />
+                        <span className="font-mono font-medium flex-1">{serial.serial_number}</span>
+                        <span className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded">In Stock</span>
+                      </div>
+                    )
+                  ))}
+                  {selectedProduct.serial_numbers?.filter(s => s.status === 'in_stock').length === 0 && (
+                    <p className="text-gray-500 text-center py-4">No serial numbers available for assignment</p>
+                  )}
+                </div>
+                {selectedSerialIndexes.length > 0 && (
+                  <p className="mt-3 text-sm text-blue-600 font-medium">
+                    {selectedSerialIndexes.length} serial number(s) selected
+                  </p>
+                )}
+              </div>
             </div>
 
+            {/* Customer Assignment Form */}
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-1">Customer *</label>
                 <select
-                  value={assignData.customer_id}
-                  onChange={(e) => setAssignData({...assignData, customer_id: e.target.value})}
+                  value={bulkAssignData.customer_id}
+                  onChange={(e) => setBulkAssignData({...bulkAssignData, customer_id: e.target.value})}
                   className="w-full border rounded px-3 py-2"
                 >
                   <option value="">Select Customer</option>
@@ -791,57 +872,65 @@ export default function ProductsEnhanced() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium mb-1">Sale Date *</label>
+                <label className="block text-sm font-medium mb-1">Sales Date *</label>
                 <input
                   type="date"
-                  value={assignData.sale_date}
-                  onChange={(e) => setAssignData({...assignData, sale_date: e.target.value})}
+                  value={bulkAssignData.sale_date}
+                  onChange={(e) => setBulkAssignData({...bulkAssignData, sale_date: e.target.value})}
                   className="w-full border rounded px-3 py-2"
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium mb-1">Customer Warranty Period (months)</label>
+                <label className="block text-sm font-medium mb-1">Customer Warranty Period (months) *</label>
                 <input
                   type="number"
-                  value={assignData.customer_warranty_period}
-                  onChange={(e) => setAssignData({...assignData, customer_warranty_period: e.target.value})}
-                  placeholder="e.g., 12"
+                  value={bulkAssignData.customer_warranty_period}
+                  onChange={(e) => setBulkAssignData({...bulkAssignData, customer_warranty_period: e.target.value})}
+                  placeholder="Default: 12 months"
                   className="w-full border rounded px-3 py-2"
                 />
               </div>
               
-              {assignData.sale_date && assignData.customer_warranty_period && (
-                <div className="bg-blue-50 p-3 rounded">
+              {bulkAssignData.sale_date && bulkAssignData.customer_warranty_period && (
+                <div className="bg-blue-50 p-4 rounded-lg">
                   <p className="text-sm text-blue-800">
-                    <strong>Warranty End Date:</strong> {
-                      new Date(new Date(assignData.sale_date).setMonth(
-                        new Date(assignData.sale_date).getMonth() + parseInt(assignData.customer_warranty_period)
-                      )).toLocaleDateString()
-                    }
+                    <strong>Warranty Expiry Date (Auto-calculated):</strong>{' '}
+                    {new Date(new Date(bulkAssignData.sale_date).setMonth(
+                      new Date(bulkAssignData.sale_date).getMonth() + parseInt(bulkAssignData.customer_warranty_period || 0)
+                    )).toLocaleDateString()}
                   </p>
                 </div>
               )}
               
               <div>
-                <label className="block text-sm font-medium mb-1">Next Maintenance Date</label>
+                <label className="block text-sm font-medium mb-1">
+                  Next Maintenance Due Date
+                  {bulkAssignData.next_maintenance_date && (
+                    <span className="ml-2 text-xs text-green-600">(Fetched from Activities)</span>
+                  )}
+                </label>
                 <input
                   type="date"
-                  value={assignData.next_maintenance_date}
-                  onChange={(e) => setAssignData({...assignData, next_maintenance_date: e.target.value})}
+                  value={bulkAssignData.next_maintenance_date}
+                  onChange={(e) => setBulkAssignData({...bulkAssignData, next_maintenance_date: e.target.value})}
                   className="w-full border rounded px-3 py-2"
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  This date is automatically fetched from the latest activity record for this product
+                </p>
               </div>
             </div>
 
             <div className="flex justify-end gap-3 mt-6">
               <button
                 onClick={() => {
-                  setShowAssignModal(false);
-                  setAssignData({
+                  setShowBulkAssignModal(false);
+                  setSelectedSerialIndexes([]);
+                  setBulkAssignData({
                     customer_id: '',
                     sale_date: '',
-                    customer_warranty_period: '',
+                    customer_warranty_period: '12',
                     next_maintenance_date: ''
                   });
                 }}
@@ -850,10 +939,15 @@ export default function ProductsEnhanced() {
                 Cancel
               </button>
               <button
-                onClick={assignToCustomer}
-                className="px-6 py-2 bg-gradient-to-r from-blue-700 to-green-700 text-white rounded hover:shadow-lg"
+                onClick={bulkAssignToCustomer}
+                disabled={selectedSerialIndexes.length === 0}
+                className={`px-6 py-2 rounded ${
+                  selectedSerialIndexes.length === 0
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-blue-700 to-green-700 text-white hover:shadow-lg'
+                }`}
               >
-                Assign
+                Assign {selectedSerialIndexes.length > 0 ? `${selectedSerialIndexes.length} Serial(s)` : 'Serial Numbers'}
               </button>
             </div>
           </div>
