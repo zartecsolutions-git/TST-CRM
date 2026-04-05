@@ -32,7 +32,7 @@ const Activities = () => {
     total_amount: '',
     next_maintenance_date: ''
   });
-  const [progressUpdate, setProgressUpdate] = useState({ update: '', percentage: 0 });
+  const [progressUpdate, setProgressUpdate] = useState({ update: '' });
   const [newActivity, setNewActivity] = useState({
     title: '',
     description: '',
@@ -284,10 +284,13 @@ const Activities = () => {
     }
 
     try {
-      await api.post(`/activities/${selectedActivity.id}/progress`, progressUpdate);
+      await api.post(`/activities/${selectedActivity.id}/progress`, {
+        update: progressUpdate.update,
+        timestamp: new Date().toISOString()
+      });
       alert('Progress update added successfully!');
       setShowProgressModal(false);
-      setProgressUpdate({ update: '', percentage: 0 });
+      setProgressUpdate({ update: '' });
       setSelectedActivity(null);
       fetchData();
     } catch (error) {
@@ -1071,21 +1074,6 @@ const Activities = () => {
                       required
                     />
                   </div>
-                  <div>
-                    <Label>Completion Percentage</Label>
-                    <div className="flex items-center space-x-2">
-                              <input
-                        type="number"
-                        min="0"
-                        max="100"
-                        className="w-full border rounded-md p-2"
-                        value={progressUpdate.percentage}
-                        onChange={(e) => setProgressUpdate({...progressUpdate, percentage: e.target.value})}
-                        required
-                      />
-                      <span className="text-sm text-gray-600">%</span>
-                    </div>
-                  </div>
                   <div className="flex space-x-2">
                     <Button onClick={handleConfirmProgressUpdate} className="bg-gradient-to-r from-blue-700 to-green-700">
                       Save Progress
@@ -1306,15 +1294,6 @@ const Activities = () => {
                         <div key={idx} className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
                           <div className="flex justify-between items-start mb-2">
                             <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-1">
-                                <span className="text-lg font-bold text-blue-600">{update.percentage}%</span>
-                                <div className="flex-1 bg-blue-200 rounded-full h-2">
-                                  <div 
-                                    className="bg-blue-600 h-2 rounded-full transition-all"
-                                    style={{ width: `${update.percentage}%` }}
-                                  ></div>
-                                </div>
-                              </div>
                               <p className="text-sm text-gray-700">{update.update}</p>
                             </div>
                             <span className="text-xs text-gray-500 ml-4 whitespace-nowrap">
