@@ -853,19 +853,6 @@ const Activities = () => {
                       />
                     </div>
                     
-                    <div>
-                      <Label>Next Maintenance Date</Label>
-                      <Input
-                        type="date"
-                        value={newActivity.next_maintenance_date}
-                        onChange={(e) => setNewActivity({...newActivity, next_maintenance_date: e.target.value})}
-                        placeholder="Select maintenance due date"
-                      />
-                      <p className="text-xs text-gray-500 mt-1">
-                        This will be synced to the product's serial number record
-                      </p>
-                    </div>
-                    
                     {newActivity.status === 'completed' && (
                       <>
                         <div>
@@ -892,6 +879,17 @@ const Activities = () => {
                             onChange={(e) => setNewActivity({...newActivity, total_amount: e.target.value})}
                             placeholder="0.00"
                           />
+                        </div>
+                        <div>
+                          <Label>Next Maintenance Due Date</Label>
+                          <Input
+                            type="date"
+                            value={newActivity.next_maintenance_date}
+                            onChange={(e) => setNewActivity({...newActivity, next_maintenance_date: e.target.value})}
+                          />
+                          <p className="text-xs text-gray-500 mt-1">
+                            This will be synced to the product's serial number record
+                          </p>
                         </div>
                       </>
                     )}
