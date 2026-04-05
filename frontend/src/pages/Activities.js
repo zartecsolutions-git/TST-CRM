@@ -1027,14 +1027,23 @@ const Activities = () => {
                     )}
                     <div className="col-span-2">
                       <span className="text-gray-500">📦 Products:</span>
-                      <span className="ml-2 font-medium">
+                      <div className="ml-2 mt-1">
                         {selectedActivity.product_ids && selectedActivity.product_ids.length > 0
-                          ? selectedActivity.product_ids.map(pid => {
+                          ? selectedActivity.product_ids.map((pid, index) => {
                               const product = products.find(p => p.id === pid);
-                              return product?.name || pid;
-                            }).join(', ')
-                          : 'No products selected'}
-                      </span>
+                              return (
+                                <div key={index} className="mb-1">
+                                  <span className="font-medium">{product?.name || pid}</span>
+                                  {product?.serial_number && (
+                                    <span className="ml-2 text-sm text-blue-600">
+                                      (Serial: {product.serial_number})
+                                    </span>
+                                  )}
+                                </div>
+                              );
+                            })
+                          : <span className="text-gray-400">No products selected</span>}
+                      </div>
                     </div>
                     <div>
                       <span className="text-gray-500">Created by:</span>
