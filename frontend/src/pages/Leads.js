@@ -219,6 +219,7 @@ export default function Leads() {
       'contacted': 'bg-purple-100 text-purple-800',
       'qualified': 'bg-cyan-100 text-cyan-800',
       'proposal': 'bg-yellow-100 text-yellow-800',
+      'hold': 'bg-gray-100 text-gray-800',
       'negotiation': 'bg-green-100 text-green-800',
       'closed_won': 'bg-green-100 text-green-800',
       'closed_lost': 'bg-red-100 text-red-800'
@@ -521,9 +522,14 @@ export default function Leads() {
                 <div className="grid grid-cols-2 gap-4">
                   <div><label className="block text-sm mb-1">Status *</label>
                     <select value={updateData.status} onChange={(e) => setUpdateData({...updateData, status: e.target.value})} className="w-full border rounded px-3 py-2">
-                      <option value="new">New</option><option value="contacted">Contacted</option><option value="qualified">Qualified</option>
-                      <option value="proposal">Proposal</option><option value="negotiation">Negotiation</option>
-                      <option value="closed_won">Closed Won</option><option value="closed_lost">Closed Lost</option>
+                      <option value="new">New</option>
+                      <option value="contacted">Contacted</option>
+                      <option value="qualified">Qualified</option>
+                      <option value="proposal">Proposal</option>
+                      <option value="hold">On Hold</option>
+                      <option value="negotiation">Negotiation</option>
+                      <option value="closed_won">Closed Won</option>
+                      <option value="closed_lost">Closed Lost</option>
                     </select>
                   </div>
                   <div><label className="block text-sm mb-1">Quote Reference</label>
