@@ -1312,43 +1312,93 @@ async def get_maintenance_due_products(
 async def export_products_csv(
     current_user_id: str = Depends(get_current_user)
 ):
-    """Export all products to CSV with warranty status"""
+    """Export all products to CSV with serial numbers and warranty status"""
     products = await db.products.find({}, {"_id": 0}).to_list(1000)
+    customers = await db.customers.find({}, {"_id": 0, "id": 1, "name": 1}).to_list(1000)
+    customer_map = {c['id']: c['name'] for c in customers}
     
     # Create CSV in memory
     output = io.StringIO()
     writer = csv.DictWriter(output, fieldnames=[
-        'name', 'serial_number', 'model', 'category', 'license_code',
-        'price', 'warranty_period', 'purchase_date', 'warranty_finished_date',
-        'warranty_status', 'next_maintenance_date', 'specifications'
+        'Product Name', 'Category', 'Model', 'Serial Number', 'Customer',
+        'Warranty Period (Months)', 'Warranty End Date', 'Warranty Status',
+        'Next Maintenance Date', 'License Code', 'Sales Date', 'Purchase Date'
     ])
     
     writer.writeheader()
     now = datetime.now(timezone.utc)
     
     for product in products:
-        # Determine warranty status
-        warranty_status = 'N/A'
-        if product.get('warranty_finished_date'):
-            warranty_date = product['warranty_finished_date']
-            if isinstance(warranty_date, str):
-                warranty_date = datetime.fromisoformat(warranty_date)
-            warranty_status = 'Active' if warranty_date > now else 'Expired'
+        serial_numbers = product.get('serial_numbers', [])
         
-        writer.writerow({
-            'name': product.get('name', ''),
-            'serial_number': product.get('serial_number', ''),
-            'model': product.get('model', ''),
-            'category': product.get('category', ''),
-            'license_code': product.get('license_code', ''),
-            'price': product.get('price', ''),
-            'warranty_period': product.get('warranty_period', ''),
-            'purchase_date': product.get('purchase_date', ''),
-            'warranty_finished_date': product.get('warranty_finished_date', ''),
-            'warranty_status': warranty_status,
-            'next_maintenance_date': product.get('next_maintenance_date', ''),
-            'specifications': product.get('specifications', '')
-        })
+        if serial_numbers:
+            # Export each serial number as a separate row
+            for serial in serial_numbers:
+                # Get customer name
+                customer_name = customer_map.get(serial.get('customer_id'), 'Unassigned')
+                
+                # Calculate warranty status
+                warranty_status = 'N/A'
+                warranty_end_date = ''
+                if serial.get('customer_warranty_end_date'):
+                    warranty_date = serial['customer_warranty_end_date']
+                    if isinstance(warranty_date, str):
+                        warranty_date = datetime.fromisoformat(warranty_date)
+                    warranty_status = 'Active' if warranty_date > now else 'Expired'
+                    warranty_end_date = warranty_date.strftime('%Y-%m-%d')
+                
+                # Format dates
+                sales_date = ''
+                if serial.get('sales_date'):
+                    sd = serial['sales_date']
+                    if isinstance(sd, str):
+                        sd = datetime.fromisoformat(sd)
+                    sales_date = sd.strftime('%Y-%m-%d')
+                
+                purchase_date = ''
+                if serial.get('purchase_date'):
+                    pd = serial['purchase_date']
+                    if isinstance(pd, str):
+                        pd = datetime.fromisoformat(pd)
+                    purchase_date = pd.strftime('%Y-%m-%d')
+                
+                next_maintenance_date = ''
+                if serial.get('next_maintenance_date') or product.get('next_maintenance_date'):
+                    nmd = serial.get('next_maintenance_date') or product.get('next_maintenance_date')
+                    if isinstance(nmd, str):
+                        nmd = datetime.fromisoformat(nmd)
+                    next_maintenance_date = nmd.strftime('%Y-%m-%d')
+                
+                writer.writerow({
+                    'Product Name': product.get('name', ''),
+                    'Category': product.get('category', ''),
+                    'Model': product.get('model', ''),
+                    'Serial Number': serial.get('serial_number', ''),
+                    'Customer': customer_name,
+                    'Warranty Period (Months)': serial.get('warranty_period_months', 0),
+                    'Warranty End Date': warranty_end_date,
+                    'Warranty Status': warranty_status,
+                    'Next Maintenance Date': next_maintenance_date,
+                    'License Code': serial.get('license_code', ''),
+                    'Sales Date': sales_date,
+                    'Purchase Date': purchase_date
+                })
+        else:
+            # Product without serial numbers
+            writer.writerow({
+                'Product Name': product.get('name', ''),
+                'Category': product.get('category', ''),
+                'Model': product.get('model', ''),
+                'Serial Number': 'No Serial Numbers',
+                'Customer': 'N/A',
+                'Warranty Period (Months)': 0,
+                'Warranty End Date': '',
+                'Warranty Status': 'N/A',
+                'Next Maintenance Date': '',
+                'License Code': '',
+                'Sales Date': '',
+                'Purchase Date': ''
+            })
     
     output.seek(0)
     return StreamingResponse(
