@@ -36,6 +36,12 @@ export default function ProductsEnhanced() {
   });
   
   const [newSerial, setNewSerial] = useState('');
+  const [showSerialModal, setShowSerialModal] = useState(false);
+  const [serialFormData, setSerialFormData] = useState({
+    serial_number: '',
+    purchase_date: '',
+    supplier_warranty_period: ''
+  });
   const [bulkAssignData, setBulkAssignData] = useState({
     customer_id: '',
     sale_date: '',
@@ -64,26 +70,61 @@ export default function ProductsEnhanced() {
     }
   };
 
+  const openSerialModal = () => {
+    setSerialFormData({
+      serial_number: '',
+      purchase_date: '',
+      supplier_warranty_period: ''
+    });
+    setShowSerialModal(true);
+  };
+
   const addSerialNumber = () => {
-    if (newSerial.trim()) {
-      setFormData({
-        ...formData,
-        serial_numbers: [
-          ...formData.serial_numbers,
-          {
-            serial_number: newSerial,
-            status: 'in_stock',
-            customer_id: null,
-            customer_name: null,
-            sale_date: null,
-            customer_warranty_period: null,
-            customer_warranty_end_date: null,
-            next_maintenance_date: null
-          }
-        ]
-      });
-      setNewSerial('');
+    if (!serialFormData.serial_number.trim()) {
+      alert('Please enter serial number');
+      return;
     }
+    if (!serialFormData.purchase_date) {
+      alert('Please enter purchase date');
+      return;
+    }
+    if (!serialFormData.supplier_warranty_period) {
+      alert('Please enter supplier warranty period');
+      return;
+    }
+
+    // Calculate supplier warranty expiry date
+    const purchaseDate = new Date(serialFormData.purchase_date);
+    const warrantyMonths = parseInt(serialFormData.supplier_warranty_period) || 0;
+    const warrantyExpiry = new Date(purchaseDate);
+    warrantyExpiry.setMonth(warrantyExpiry.getMonth() + warrantyMonths);
+
+    setFormData({
+      ...formData,
+      serial_numbers: [
+        ...formData.serial_numbers,
+        {
+          serial_number: serialFormData.serial_number,
+          status: 'in_stock',
+          purchase_date: serialFormData.purchase_date,
+          supplier_warranty_period: warrantyMonths,
+          supplier_warranty_expiry: warrantyExpiry.toISOString(),
+          customer_id: null,
+          customer_name: null,
+          sale_date: null,
+          customer_warranty_period: null,
+          customer_warranty_end_date: null,
+          next_maintenance_date: null
+        }
+      ]
+    });
+    
+    setShowSerialModal(false);
+    setSerialFormData({
+      serial_number: '',
+      purchase_date: '',
+      supplier_warranty_period: ''
+    });
   };
 
   const removeSerialNumber = (index) => {
@@ -619,23 +660,13 @@ export default function ProductsEnhanced() {
                   Serial Numbers & Stock ({formData.serial_numbers.length} units)
                 </h3>
                 
-                <div className="flex gap-2 mb-4">
-                  <input
-                    type="text"
-                    value={newSerial}
-                    onChange={(e) => setNewSerial(e.target.value)}
-                    placeholder="Enter serial number"
-                    className="flex-1 border rounded px-3 py-2"
-                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addSerialNumber())}
-                  />
-                  <button
-                    type="button"
-                    onClick={addSerialNumber}
-                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-                  >
-                    Add Serial #
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={openSerialModal}
+                  className="mb-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                >
+                  + Add Serial Number
+                </button>
                 
                 <div className="max-h-60 overflow-y-auto border rounded p-2">
                   {formData.serial_numbers.map((serial, index) => (
@@ -647,6 +678,16 @@ export default function ProductsEnhanced() {
                         }`}>
                           {serial.status === 'in_stock' ? 'In Stock' : 'Sold'}
                         </span>
+                        {serial.purchase_date && (
+                          <span className="ml-2 text-sm text-gray-600">
+                            Purchased: {new Date(serial.purchase_date).toLocaleDateString()}
+                          </span>
+                        )}
+                        {serial.supplier_warranty_expiry && (
+                          <span className="ml-2 text-sm text-orange-600">
+                            Warranty Expires: {new Date(serial.supplier_warranty_expiry).toLocaleDateString()}
+                          </span>
+                        )}
                         {serial.customer_name && (
                           <span className="ml-2 text-sm text-gray-600">
                             → {serial.customer_name}
@@ -808,6 +849,77 @@ export default function ProductsEnhanced() {
                 className="px-6 py-2 bg-gradient-to-r from-blue-700 to-green-700 text-white rounded-lg hover:shadow-lg"
               >
                 Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Serial Number Modal */}
+      {showSerialModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-8 max-w-md w-full m-4">
+            <h2 className="text-2xl font-bold mb-6">Add Serial Number</h2>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">Serial Number *</label>
+                <input
+                  type="text"
+                  value={serialFormData.serial_number}
+                  onChange={(e) => setSerialFormData({...serialFormData, serial_number: e.target.value})}
+                  placeholder="SN-12345"
+                  className="w-full border rounded px-3 py-2"
+                  autoFocus
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Purchase Date *</label>
+                <input
+                  type="date"
+                  value={serialFormData.purchase_date}
+                  onChange={(e) => setSerialFormData({...serialFormData, purchase_date: e.target.value})}
+                  className="w-full border rounded px-3 py-2"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-1">Supplier Warranty Period (months) *</label>
+                <input
+                  type="number"
+                  value={serialFormData.supplier_warranty_period}
+                  onChange={(e) => setSerialFormData({...serialFormData, supplier_warranty_period: e.target.value})}
+                  placeholder="e.g., 12"
+                  className="w-full border rounded px-3 py-2"
+                />
+              </div>
+              
+              {serialFormData.purchase_date && serialFormData.supplier_warranty_period && (
+                <div className="bg-orange-50 p-3 rounded">
+                  <p className="text-sm text-orange-800">
+                    <strong>Supplier Warranty Expires:</strong> {
+                      new Date(new Date(serialFormData.purchase_date).setMonth(
+                        new Date(serialFormData.purchase_date).getMonth() + parseInt(serialFormData.supplier_warranty_period)
+                      )).toLocaleDateString()
+                    }
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                onClick={() => setShowSerialModal(false)}
+                className="px-6 py-2 border border-gray-300 rounded hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={addSerialNumber}
+                className="px-6 py-2 bg-gradient-to-r from-blue-700 to-green-700 text-white rounded hover:shadow-lg"
+              >
+                Add Serial
               </button>
             </div>
           </div>

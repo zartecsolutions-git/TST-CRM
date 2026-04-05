@@ -233,6 +233,9 @@ class ProductCategory(str, Enum):
 
 class SerialNumberAssignment(BaseModel):
     serial_number: str
+    purchase_date: Optional[datetime] = None
+    supplier_warranty_period: Optional[int] = None  # in months
+    supplier_warranty_expiry: Optional[datetime] = None
     customer_id: Optional[str] = None
     customer_name: Optional[str] = None
     sale_date: Optional[datetime] = None
