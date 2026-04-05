@@ -110,7 +110,7 @@ const LocationTracking = () => {
             </p>
             <Button
               onClick={() => window.location.href = '/dashboard'}
-              className="bg-gradient-to-r from-blue-500 to-green-500"
+              className="bg-gradient-to-r from-blue-700 to-green-700"
             >
               Back to Dashboard
             </Button>
@@ -188,14 +188,14 @@ const LocationTracking = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-3">
-              <div className="bg-gradient-to-r from-blue-500 to-green-500 p-2 rounded-xl">
+              <div className="bg-gradient-to-r from-blue-700 to-green-700 p-2 rounded-xl">
                 <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                 </svg>
               </div>
               <div>
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-500 to-green-500 bg-clip-text text-transparent">
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-700 to-green-700 bg-clip-text text-transparent">
                   Real-Time Location Tracking
                 </h1>
               </div>
@@ -214,7 +214,7 @@ const LocationTracking = () => {
               {!tracking ? (
                 <Button
                   onClick={handleStartTracking}
-                  className="bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-700 hover:to-green-700"
+                  className="bg-gradient-to-r from-blue-700 to-green-700 hover:from-blue-700 hover:to-green-700"
                 >
                   Start Tracking
                 </Button>

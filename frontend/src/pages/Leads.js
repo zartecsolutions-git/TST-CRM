@@ -239,7 +239,7 @@ export default function Leads() {
             <button onClick={() => window.location.href = '/dashboard'} className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
               Back to Dashboard
             </button>
-            <button onClick={() => setShowForm(true)} className="bg-gradient-to-r from-blue-500 to-green-500 text-white px-6 py-2 rounded-lg">+ Add Lead</button>
+            <button onClick={() => setShowForm(true)} className="bg-gradient-to-r from-blue-700 to-green-700 text-white px-6 py-2 rounded-lg">+ Add Lead</button>
           </div>
         </div>
 
@@ -262,7 +262,7 @@ export default function Leads() {
 
         {/* Sales Rep-wise Performance Table */}
         <div className="bg-white rounded-lg shadow mb-6 overflow-hidden">
-          <div className="bg-gradient-to-r from-blue-500 to-green-500 px-6 py-4">
+          <div className="bg-gradient-to-r from-blue-700 to-green-700 px-6 py-4">
             <h2 className="text-xl font-bold text-white">📊 Sales Rep Performance</h2>
           </div>
           <div className="overflow-x-auto">
@@ -363,7 +363,7 @@ export default function Leads() {
                 </div>
                 <div className="flex gap-2 justify-end">
                   <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 border rounded">Cancel</button>
-                  <button type="submit" className="px-4 py-2 bg-gradient-to-r from-blue-500 to-green-500 text-white rounded">Create Lead</button>
+                  <button type="submit" className="px-4 py-2 bg-gradient-to-r from-blue-700 to-green-700 text-white rounded">Create Lead</button>
                 </div>
               </form>
             </div>
@@ -499,7 +499,7 @@ export default function Leads() {
                   Close
                 </button>
                 {selectedLead.status !== 'closed_won' && (
-                  <button onClick={() => { setShowDetailModal(false); openUpdateModal(selectedLead); }} className="px-6 py-2 bg-gradient-to-r from-blue-500 to-green-500 text-white rounded-lg hover:from-blue-700 hover:to-green-700 flex items-center">
+                  <button onClick={() => { setShowDetailModal(false); openUpdateModal(selectedLead); }} className="px-6 py-2 bg-gradient-to-r from-blue-700 to-green-700 text-white rounded-lg hover:from-blue-700 hover:to-green-700 flex items-center">
                     <span className="mr-2">✏️</span> Edit Lead
                   </button>
                 )}
@@ -575,7 +575,7 @@ export default function Leads() {
             <div className="p-8 text-center text-gray-500">{searchQuery ? 'No leads found' : 'No leads yet'}</div>
           ) : (
             <table className="w-full">
-              <thead className="bg-gradient-to-r from-blue-500 to-green-500 text-white">
+              <thead className="bg-gradient-to-r from-blue-700 to-green-700 text-white">
                 <tr>
                   <th className="px-4 py-3 text-left">Customer</th>
                   <th className="px-4 py-3 text-left">Lead Title</th>

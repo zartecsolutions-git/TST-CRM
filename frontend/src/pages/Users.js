@@ -97,7 +97,7 @@ const Users = () => {
             <Button
               onClick={() => setFilterRole('all')}
               variant={filterRole === 'all' ? 'default' : 'outline'}
-              className={filterRole === 'all' ? 'bg-gradient-to-r from-blue-500 to-green-500' : ''}
+              className={filterRole === 'all' ? 'bg-gradient-to-r from-blue-700 to-green-700' : ''}
             >
               All Users
             </Button>
@@ -126,7 +126,7 @@ const Users = () => {
           {isAdmin && (
             <Button
               onClick={() => setShowAddForm(!showAddForm)}
-              className="bg-gradient-to-r from-blue-500 to-green-500"
+              className="bg-gradient-to-r from-blue-700 to-green-700"
             >
               + Add User
             </Button>
@@ -196,7 +196,7 @@ const Users = () => {
                   </div>
                 </div>
                 <div className="flex space-x-2 pt-4 border-t">
-                  <Button type="submit" className="bg-gradient-to-r from-blue-500 to-green-500">
+                  <Button type="submit" className="bg-gradient-to-r from-blue-700 to-green-700">
                     ✓ Create User
                   </Button>
                   <Button type="button" variant="outline" onClick={() => setShowAddForm(false)}>

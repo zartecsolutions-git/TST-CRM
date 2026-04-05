@@ -107,7 +107,7 @@ const Teams = () => {
           {isAdmin && (
             <Button
               onClick={() => setShowAddForm(!showAddForm)}
-              className="bg-gradient-to-r from-blue-500 to-green-500"
+              className="bg-gradient-to-r from-blue-700 to-green-700"
             >
               + Create Team
             </Button>
@@ -139,7 +139,7 @@ const Teams = () => {
                   />
                 </div>
                 <div className="flex space-x-2">
-                  <Button type="submit" className="bg-gradient-to-r from-blue-500 to-green-500">
+                  <Button type="submit" className="bg-gradient-to-r from-blue-700 to-green-700">
                     Create Team
                   </Button>
                   <Button type="button" variant="outline" onClick={() => setShowAddForm(false)}>
