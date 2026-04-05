@@ -223,26 +223,36 @@ class CustomerUpdate(BaseModel):
     business_vertical: Optional[str] = None
     contact_person: Optional[str] = None
 
+class ProductCategory(str, Enum):
+    industrial = "industrial"
+    retails = "retails"
+    others = "others"
+
+class SerialNumberAssignment(BaseModel):
+    serial_number: str
+    customer_id: Optional[str] = None
+    customer_name: Optional[str] = None
+    sale_date: Optional[datetime] = None
+    customer_warranty_period: Optional[int] = None  # in months
+    customer_warranty_end_date: Optional[datetime] = None
+    next_maintenance_date: Optional[datetime] = None
+    status: str = "in_stock"  # in_stock, sold
+
 # Product Models
 class ProductCreate(BaseModel):
     name: str
-    serial_number: str
+    category: ProductCategory = ProductCategory.others
+    sub_category: Optional[str] = None
     description: Optional[str] = None
     price: Optional[float] = None
     model: Optional[str] = None
-    category: Optional[str] = None
     specifications: Optional[str] = None
-    warranty_period: Optional[str] = None  # e.g., "12 months", "24 months"
+    supplier_warranty_period: Optional[str] = None  # e.g., "12 months", "24 months"
     purchase_date: Optional[datetime] = None
     installation_date: Optional[datetime] = None
-    next_maintenance_date: Optional[datetime] = None
     license_code: Optional[str] = None
-    # Sales/Customer Linkage (NEW)
-    customer_id: Optional[str] = None  # Linked customer after sale
-    sale_date: Optional[datetime] = None
-    invoice_number: Optional[str] = None
-    sale_amount: Optional[float] = None
-    sale_notes: Optional[str] = None
+    # Multiple serial numbers with customer assignments
+    serial_numbers: List[SerialNumberAssignment] = []
 
 class Product(ProductCreate):
     model_config = ConfigDict(extra="ignore")
@@ -255,19 +265,17 @@ class Product(ProductCreate):
 
 class ProductUpdate(BaseModel):
     name: Optional[str] = None
-    serial_number: Optional[str] = None
+    category: Optional[ProductCategory] = None
+    sub_category: Optional[str] = None
     description: Optional[str] = None
     price: Optional[float] = None
     model: Optional[str] = None
-    category: Optional[str] = None
     specifications: Optional[str] = None
-    warranty_period: Optional[str] = None
+    supplier_warranty_period: Optional[str] = None
     purchase_date: Optional[datetime] = None
     installation_date: Optional[datetime] = None
-    next_maintenance_date: Optional[datetime] = None
     license_code: Optional[str] = None
-    # Sales/Customer Linkage (NEW)
-    customer_id: Optional[str] = None
+    serial_numbers: Optional[List[SerialNumberAssignment]] = None
     sale_date: Optional[datetime] = None
     invoice_number: Optional[str] = None
     sale_amount: Optional[float] = None
