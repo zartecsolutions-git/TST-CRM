@@ -1001,6 +1001,12 @@ const Activities = () => {
                       <span className="text-gray-500">Priority:</span>
                       <span className="ml-2 font-medium">{selectedActivity.priority || 'N/A'}</span>
                     </div>
+                    {selectedActivity.work_order_no && (
+                      <div className="col-span-2">
+                        <span className="text-gray-500">🔢 Serial Number (Work Order #):</span>
+                        <span className="ml-2 font-semibold text-blue-600">{selectedActivity.work_order_no}</span>
+                      </div>
+                    )}
                     <div>
                       <span className="text-gray-500">Created by:</span>
                       <span className="ml-2 font-medium text-blue-600">{getUserName(selectedActivity.created_by)}</span>
