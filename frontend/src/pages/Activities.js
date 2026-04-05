@@ -24,8 +24,10 @@ const Activities = () => {
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [showProgressModal, setShowProgressModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showEditAssignmentModal, setShowEditAssignmentModal] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState(null);
   const [statusUpdateNote, setStatusUpdateNote] = useState('');
+  const [editAssignedTo, setEditAssignedTo] = useState('');
   const [completionData, setCompletionData] = useState({
     invoice_number: '',
     work_order_no: '',
@@ -307,6 +309,33 @@ const Activities = () => {
       fetchData();
     } catch (error) {
       alert('Error deleting activity: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  const handleEditAssignment = (activity) => {
+    setSelectedActivity(activity);
+    setEditAssignedTo(activity.assigned_to || '');
+    setShowEditAssignmentModal(true);
+  };
+
+  const handleUpdateAssignment = async () => {
+    try {
+      const response = await api.put(`/activities/${selectedActivity.id}`, {
+        assigned_to: editAssignedTo
+      });
+      
+      // Update local state
+      setActivities(activities.map(a => 
+        a.id === selectedActivity.id ? { ...a, assigned_to: editAssignedTo } : a
+      ));
+      
+      setShowEditAssignmentModal(false);
+      setShowDetailModal(false);
+      alert('Activity reassigned successfully!');
+      fetchData();
+    } catch (error) {
+      console.error('Error updating assignment:', error);
+      alert('Failed to update assignment');
     }
   };
 
@@ -1440,6 +1469,18 @@ const Activities = () => {
                       ℹ️ Only the creator, assignee, or admin can edit this activity
                     </p>
                   )}
+                  
+                  {/* Admin can reassign activity */}
+                  {currentUser?.role === 'admin' && (
+                    <Button
+                      variant="outline"
+                      onClick={() => handleEditAssignment(selectedActivity)}
+                      className="border-blue-600 text-blue-600 hover:bg-blue-50"
+                    >
+                      ✏️ Edit Assignment
+                    </Button>
+                  )}
+                  
                   <Button
                     variant="outline"
                     onClick={() => setShowDetailModal(false)}
@@ -1452,6 +1493,71 @@ const Activities = () => {
           </div>
         )}
       </div>
+      
+      {/* Edit Assignment Modal (Admin Only) */}
+      {showEditAssignmentModal && selectedActivity && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>✏️ Edit Activity Assignment</span>
+                <button
+                  onClick={() => setShowEditAssignmentModal(false)}
+                  className="text-gray-400 hover:text-gray-600 text-2xl"
+                >
+                  ×
+                </button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <p className="text-sm text-gray-600 mb-4">
+                  <strong>Activity:</strong> {selectedActivity.title}
+                </p>
+                <p className="text-sm text-gray-600 mb-4">
+                  <strong>Current Assignment:</strong> {getUserName(selectedActivity.assigned_to)}
+                </p>
+              </div>
+              
+              <div>
+                <Label htmlFor="reassign-to">Reassign To</Label>
+                <select
+                  id="reassign-to"
+                  value={editAssignedTo}
+                  onChange={(e) => setEditAssignedTo(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">-- Unassigned --</option>
+                  {users
+                    .filter(u => u.role === 'support')
+                    .map(user => (
+                      <option key={user.id} value={user.id}>
+                        {user.name}
+                      </option>
+                    ))}
+                </select>
+              </div>
+              
+              <div className="flex gap-2 pt-4">
+                <Button
+                  onClick={handleUpdateAssignment}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700"
+                  disabled={editAssignedTo === selectedActivity.assigned_to}
+                >
+                  Update Assignment
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowEditAssignmentModal(false)}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
