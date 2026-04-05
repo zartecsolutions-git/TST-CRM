@@ -29,7 +29,8 @@ const Activities = () => {
   const [completionData, setCompletionData] = useState({
     invoice_number: '',
     work_order_no: '',
-    total_amount: ''
+    total_amount: '',
+    serial_number: ''
   });
   const [progressUpdate, setProgressUpdate] = useState({ update: '', percentage: 0 });
   const [newActivity, setNewActivity] = useState({
@@ -44,7 +45,8 @@ const Activities = () => {
     due_date: '',
     invoice_number: '',
     work_order_no: '',
-    total_amount: ''
+    total_amount: '',
+    serial_number: ''
   });
 
   useEffect(() => {
@@ -341,7 +343,7 @@ const Activities = () => {
             <div className="relative">
               <input
                 type="text"
-                placeholder="Search by Work Order # or Customer..."
+                placeholder="Search by Product Serial # or Customer..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="px-4 py-2 border border-gray-300 rounded-lg w-80 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -801,6 +803,14 @@ const Activities = () => {
                           />
                         </div>
                         <div>
+                          <Label>Product Serial Number</Label>
+                          <Input
+                            value={newActivity.serial_number}
+                            onChange={(e) => setNewActivity({...newActivity, serial_number: e.target.value})}
+                            placeholder="SN-12345"
+                          />
+                        </div>
+                        <div>
                           <Label>Total Amount ({companySettings?.currency || 'USD'})</Label>
                           <Input
                             type="number"
@@ -868,6 +878,14 @@ const Activities = () => {
                           placeholder="INV-2024-001"
                           value={completionData.invoice_number}
                           onChange={(e) => setCompletionData({...completionData, invoice_number: e.target.value})}
+                        />
+                      </div>
+                      <div>
+                        <Label>Product Serial Number</Label>
+                        <Input
+                          placeholder="SN-12345"
+                          value={completionData.serial_number}
+                          onChange={(e) => setCompletionData({...completionData, serial_number: e.target.value})}
                         />
                       </div>
                       <div>
@@ -1001,10 +1019,10 @@ const Activities = () => {
                       <span className="text-gray-500">Priority:</span>
                       <span className="ml-2 font-medium">{selectedActivity.priority || 'N/A'}</span>
                     </div>
-                    {selectedActivity.work_order_no && (
+                    {selectedActivity.serial_number && (
                       <div className="col-span-2">
-                        <span className="text-gray-500">🔢 Serial Number (Work Order #):</span>
-                        <span className="ml-2 font-semibold text-blue-600">{selectedActivity.work_order_no}</span>
+                        <span className="text-gray-500">🔢 Product Serial Number:</span>
+                        <span className="ml-2 font-semibold text-blue-600">{selectedActivity.serial_number}</span>
                       </div>
                     )}
                     <div>

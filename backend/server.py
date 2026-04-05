@@ -459,7 +459,7 @@ async def get_activities(
     if status:
         query['status'] = status
     
-    # Search by work order number (serial number) or customer
+    # Search by work order number (serial number) or customer or product serial number
     if search:
         # Get customers matching search
         customer_docs = await db.customers.find(
@@ -468,9 +468,10 @@ async def get_activities(
         ).to_list(100)
         customer_ids = [c['id'] for c in customer_docs]
         
-        # Search by work order number OR customer_id
+        # Search by work order number OR customer_id OR product serial number
         query["$or"] = [
             {"work_order_no": {"$regex": search, "$options": "i"}},
+            {"serial_number": {"$regex": search, "$options": "i"}},
             {"customer_id": {"$in": customer_ids}}
         ]
     

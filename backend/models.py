@@ -108,6 +108,7 @@ class ActivityCreate(BaseModel):
     invoice_number: Optional[str] = None  # For completed activities
     work_order_no: Optional[str] = None  # For completed activities
     total_amount: Optional[float] = None  # For completed activities
+    serial_number: Optional[str] = None  # Product serial number
 
 class Activity(ActivityCreate):
     model_config = ConfigDict(extra="ignore")
