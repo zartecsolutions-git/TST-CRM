@@ -30,7 +30,7 @@ const Activities = () => {
     invoice_number: '',
     work_order_no: '',
     total_amount: '',
-    serial_number: ''
+    next_maintenance_date: ''
   });
   const [progressUpdate, setProgressUpdate] = useState({ update: '', percentage: 0 });
   const [newActivity, setNewActivity] = useState({
@@ -214,7 +214,7 @@ const Activities = () => {
         notes: statusUpdateNote
       };
       
-      // Add invoice and amount if completing
+      // Add invoice, amount, and next maintenance date if completing
       if (selectedActivity.newStatus === 'completed') {
         if (completionData.work_order_no) {
           updateData.work_order_no = completionData.work_order_no;
@@ -225,13 +225,46 @@ const Activities = () => {
         if (completionData.total_amount) {
           updateData.total_amount = parseFloat(completionData.total_amount);
         }
+        if (completionData.next_maintenance_date) {
+          updateData.next_maintenance_date = completionData.next_maintenance_date;
+        }
       }
       
       await api.put(`/activities/${selectedActivity.id}`, updateData);
+      
+      // Update product's serial number with next_maintenance_date if provided
+      if (selectedActivity.newStatus === 'completed' && 
+          completionData.next_maintenance_date && 
+          selectedActivity.product_id && 
+          selectedActivity.serial_number) {
+        try {
+          const product = products.find(p => p.id === selectedActivity.product_id);
+          if (product && product.serial_numbers) {
+            const updatedSerials = product.serial_numbers.map(serial => {
+              if (serial.serial_number === selectedActivity.serial_number) {
+                return {
+                  ...serial,
+                  next_maintenance_date: completionData.next_maintenance_date
+                };
+              }
+              return serial;
+            });
+            
+            await api.put(`/products/${product.id}`, {
+              serial_numbers: updatedSerials
+            });
+            console.log('Product serial number updated with next maintenance date');
+          }
+        } catch (updateError) {
+          console.error('Error updating product maintenance date:', updateError);
+          // Don't fail the activity update if product update fails
+        }
+      }
+      
       alert('Activity status updated successfully!');
       setShowStatusModal(false);
       setStatusUpdateNote('');
-      setCompletionData({ invoice_number: '', work_order_no: '', total_amount: '' });
+      setCompletionData({ invoice_number: '', work_order_no: '', total_amount: '', next_maintenance_date: '' });
       setSelectedActivity(null);
       fetchData();
     } catch (error) {
@@ -971,11 +1004,11 @@ const Activities = () => {
                         />
                       </div>
                       <div>
-                        <Label>Product Serial Number</Label>
+                        <Label>Next Maintenance Date</Label>
                         <Input
-                          placeholder="SN-12345"
-                          value={completionData.serial_number}
-                          onChange={(e) => setCompletionData({...completionData, serial_number: e.target.value})}
+                          type="date"
+                          value={completionData.next_maintenance_date}
+                          onChange={(e) => setCompletionData({...completionData, next_maintenance_date: e.target.value})}
                         />
                       </div>
                       <div>
