@@ -1212,8 +1212,45 @@ const Activities = () => {
                         </span>
                       </div>
                     )}
+                    {selectedActivity.next_maintenance_date && (
+                      <div className="col-span-2">
+                        <span className="text-gray-500">🔧 Next Maintenance Due:</span>
+                        <span className="ml-2 font-bold text-orange-600">
+                          {new Date(selectedActivity.next_maintenance_date).toLocaleDateString()}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
+
+                {/* Completion Details */}
+                {selectedActivity.status === 'completed' && (
+                  <div className="bg-green-50 p-4 rounded-lg">
+                    <h4 className="font-semibold text-green-700 mb-3">💰 Completion Details</h4>
+                    <div className="grid grid-cols-2 gap-3 text-sm">
+                      {selectedActivity.work_order_no && (
+                        <div>
+                          <span className="text-gray-600">Work Order:</span>
+                          <span className="ml-2 font-medium">{selectedActivity.work_order_no}</span>
+                        </div>
+                      )}
+                      {selectedActivity.invoice_number && (
+                        <div>
+                          <span className="text-gray-600">Invoice:</span>
+                          <span className="ml-2 font-medium">{selectedActivity.invoice_number}</span>
+                        </div>
+                      )}
+                      {selectedActivity.total_amount && (
+                        <div className="col-span-2">
+                          <span className="text-gray-600">Total Amount:</span>
+                          <span className="ml-2 font-bold text-green-700">
+                            {formatAmount(selectedActivity.total_amount)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
 
                 {/* Financial Details */}
                 {selectedActivity.status === 'completed' && (selectedActivity.invoice_number || selectedActivity.work_order_no || selectedActivity.total_amount) && (

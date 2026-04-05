@@ -559,6 +559,8 @@ async def update_activity(
     update_data['updated_at'] = datetime.now(timezone.utc).isoformat()
     if 'due_date' in update_data and update_data['due_date']:
         update_data['due_date'] = update_data['due_date'].isoformat()
+    if 'next_maintenance_date' in update_data and update_data['next_maintenance_date']:
+        update_data['next_maintenance_date'] = update_data['next_maintenance_date'].isoformat()
     
     result = await db.activities.update_one(
         {"id": activity_id},
