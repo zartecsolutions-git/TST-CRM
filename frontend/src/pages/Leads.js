@@ -80,6 +80,11 @@ export default function Leads() {
   const totalProjectValue = leads
     .filter(lead => lead.status === 'closed_won')
     .reduce((sum, lead) => sum + (lead.project_value || 0), 0);
+  
+  // Calculate active pipeline value (all leads except closed_won and closed_lost)
+  const activePipelineValue = leads
+    .filter(lead => !['closed_won', 'closed_lost'].includes(lead.status))
+    .reduce((sum, lead) => sum + (lead.quote_value || lead.estimated_value || 0), 0);
 
   // Calculate sales rep-wise statistics
   const salesRepStats = {};
@@ -245,7 +250,7 @@ export default function Leads() {
         </div>
 
         {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <div className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
             <h3 className="text-sm font-semibold text-gray-600 uppercase mb-2">Total Leads</h3>
             <p className="text-3xl font-bold text-blue-600">{leads.length}</p>
@@ -253,6 +258,11 @@ export default function Leads() {
           <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-600">
             <h3 className="text-sm font-semibold text-gray-600 uppercase mb-2">Total Quote Value</h3>
             <p className="text-3xl font-bold text-green-600">{formatAmount(totalQuoteValue)}</p>
+          </div>
+          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-amber-500">
+            <h3 className="text-sm font-semibold text-gray-600 uppercase mb-2">Active Pipeline</h3>
+            <p className="text-3xl font-bold text-amber-600">{formatAmount(activePipelineValue)}</p>
+            <p className="text-xs text-gray-500 mt-1">Excluding closed deals</p>
           </div>
           <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
             <h3 className="text-sm font-semibold text-gray-600 uppercase mb-2">Total Project Value</h3>

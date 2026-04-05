@@ -440,6 +440,7 @@ async def create_activity(
 async def get_activities(
     status: Optional[ActivityStatus] = None,
     assigned_to: Optional[str] = None,
+    search: Optional[str] = None,
     current_user_id: str = Depends(get_current_user)
 ):
     # Get current user data for role-based filtering
@@ -447,15 +448,31 @@ async def get_activities(
     
     query = {}
     
-    # Role-based filtering: support users see only activities assigned to them
-    if user_data['role'] == 'support':
-        query['assigned_to'] = current_user_id
-    # If assigned_to filter is explicitly provided, use it (admin/sales can filter)
-    elif assigned_to:
+    # Support users can see ALL activities (not filtered by assigned_to)
+    # This allows them to search by serial number or customer across all support activities
+    # Admin and sales can also see all activities
+    
+    # If assigned_to filter is explicitly provided, use it
+    if assigned_to:
         query['assigned_to'] = assigned_to
     
     if status:
         query['status'] = status
+    
+    # Search by work order number (serial number) or customer
+    if search:
+        # Get customers matching search
+        customer_docs = await db.customers.find(
+            {"name": {"$regex": search, "$options": "i"}},
+            {"id": 1, "_id": 0}
+        ).to_list(100)
+        customer_ids = [c['id'] for c in customer_docs]
+        
+        # Search by work order number OR customer_id
+        query["$or"] = [
+            {"work_order_no": {"$regex": search, "$options": "i"}},
+            {"customer_id": {"$in": customer_ids}}
+        ]
     
     activities = await db.activities.find(query, {"_id": 0}).to_list(1000)
     

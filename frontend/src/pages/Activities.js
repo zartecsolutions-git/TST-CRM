@@ -49,12 +49,19 @@ const Activities = () => {
 
   useEffect(() => {
     fetchData();
-  }, [filterStatus]);
+  }, [filterStatus, searchQuery]);
 
   const fetchData = async () => {
     try {
+      // Build query parameters
+      let activityUrl = '/activities';
+      const params = [];
+      if (filterStatus !== 'all') params.push(`status=${filterStatus}`);
+      if (searchQuery.trim()) params.push(`search=${encodeURIComponent(searchQuery)}`);
+      if (params.length > 0) activityUrl += '?' + params.join('&');
+      
       const [activitiesRes, usersRes, customersRes, productsRes] = await Promise.all([
-        api.get(filterStatus === 'all' ? '/activities' : `/activities?status=${filterStatus}`),
+        api.get(activityUrl),
         api.get('/users'),
         api.get('/customers'),
         api.get('/products')
@@ -328,6 +335,28 @@ const Activities = () => {
               Completed
             </Button>
           </div>
+          
+          {/* Search Box - for Support Users */}
+          {currentUser?.role === 'support' && (
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Search by Work Order # or Customer..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="px-4 py-2 border border-gray-300 rounded-lg w-80 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-2 top-2.5 text-gray-400 hover:text-gray-600"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+          )}
+          
           {canCreateActivity && (
             <Button
               onClick={() => setShowAddForm(!showAddForm)}
