@@ -516,13 +516,27 @@ async def update_activity(
     activity_update: ActivityUpdate,
     current_user_id: str = Depends(get_current_user)
 ):
+    # Get the activity to check creator
+    activity_doc = await db.activities.find_one({"id": activity_id}, {"_id": 0})
+    if not activity_doc:
+        raise HTTPException(status_code=404, detail="Activity not found")
+    
+    # Get current user data to check role
+    user_data = await get_current_user_data(current_user_id)
+    
+    # Only the creator can edit/update the activity (unless admin)
+    if user_data['role'] != 'admin' and activity_doc.get('created_by') != current_user_id:
+        raise HTTPException(
+            status_code=403, 
+            detail="You can only edit activities that you created"
+        )
+    
     update_data = activity_update.model_dump(exclude_unset=True)
     if not update_data:
         raise HTTPException(status_code=400, detail="No fields to update")
     
     # If status is being updated and notes are provided, add to history
     if 'status' in update_data:
-        activity_doc = await db.activities.find_one({"id": activity_id}, {"_id": 0})
         if not activity_doc:
             raise HTTPException(status_code=404, detail="Activity not found")
         

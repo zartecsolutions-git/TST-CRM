@@ -1210,38 +1210,50 @@ const Activities = () => {
 
                 {/* Action Buttons */}
                 <div className="flex flex-wrap gap-2 pt-4 border-t">
-                  {selectedActivity.status === 'pending' && (
-                    <Button
-                      onClick={() => {
-                        setShowDetailModal(false);
-                        handleStatusChange(selectedActivity, 'in_progress');
-                      }}
-                      className="bg-blue-600 hover:bg-blue-700"
-                    >
-                      Start Activity
-                    </Button>
-                  )}
-                  {selectedActivity.status === 'in_progress' && (
+                  {/* Only show edit/update buttons if user is the creator or admin */}
+                  {(currentUser?.role === 'admin' || selectedActivity.created_by === currentUser?.id) && (
                     <>
-                      <Button
-                        onClick={() => {
-                          setShowDetailModal(false);
-                          handleAddProgressUpdate(selectedActivity.id);
-                        }}
-                        className="bg-purple-600 hover:bg-purple-700"
-                      >
-                        Add Progress
-                      </Button>
-                      <Button
-                        onClick={() => {
-                          setShowDetailModal(false);
-                          handleStatusChange(selectedActivity, 'completed');
-                        }}
-                        className="bg-green-600 hover:bg-green-700"
-                      >
-                        Mark Complete
-                      </Button>
+                      {selectedActivity.status === 'pending' && (
+                        <Button
+                          onClick={() => {
+                            setShowDetailModal(false);
+                            handleStatusChange(selectedActivity, 'in_progress');
+                          }}
+                          className="bg-blue-600 hover:bg-blue-700"
+                        >
+                          Start Activity
+                        </Button>
+                      )}
+                      {selectedActivity.status === 'in_progress' && (
+                        <>
+                          <Button
+                            onClick={() => {
+                              setShowDetailModal(false);
+                              handleAddProgressUpdate(selectedActivity.id);
+                            }}
+                            className="bg-purple-600 hover:bg-purple-700"
+                          >
+                            Add Progress
+                          </Button>
+                          <Button
+                            onClick={() => {
+                              setShowDetailModal(false);
+                              handleStatusChange(selectedActivity, 'completed');
+                            }}
+                            className="bg-green-600 hover:bg-green-700"
+                          >
+                            Mark Complete
+                          </Button>
+                        </>
+                      )}
                     </>
+                  )}
+                  
+                  {/* Show message if user cannot edit */}
+                  {currentUser?.role !== 'admin' && selectedActivity.created_by !== currentUser?.id && (
+                    <p className="text-sm text-gray-500 italic">
+                      ℹ️ Only the creator can edit this activity
+                    </p>
                   )}
                   <Button
                     variant="outline"
