@@ -87,6 +87,7 @@ class ActivityType(str, Enum):
     warranty = "warranty"
     service_call = "service_call"
     periodic_visit = "periodic_visit"
+    new_installation = "new_installation"
     others = "others"
 
 # Activity Models

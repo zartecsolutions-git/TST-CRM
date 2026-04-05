@@ -841,6 +841,7 @@ const Activities = () => {
                         <option value="warranty">Warranty</option>
                         <option value="service_call">Service Call</option>
                         <option value="periodic_visit">Periodic Visit</option>
+                        <option value="new_installation">New Installation</option>
                         <option value="others">Others</option>
                       </select>
                     </div>

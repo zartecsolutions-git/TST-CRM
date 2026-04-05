@@ -432,6 +432,8 @@ async def create_activity(
     activity_dict['updated_at'] = activity_dict['updated_at'].isoformat()
     if activity_dict.get('due_date'):
         activity_dict['due_date'] = activity_dict['due_date'].isoformat()
+    if activity_dict.get('next_maintenance_date'):
+        activity_dict['next_maintenance_date'] = activity_dict['next_maintenance_date'].isoformat()
     
     await db.activities.insert_one(activity_dict)
     return activity
