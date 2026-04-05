@@ -85,6 +85,8 @@ const Activities = () => {
     try {
       // Clean up data - convert empty strings to null for number fields
       const submitData = { ...newActivity };
+      
+      // Convert empty strings to null for optional fields
       if (submitData.total_amount === '' || !submitData.total_amount) {
         delete submitData.total_amount;
       } else {
@@ -98,6 +100,21 @@ const Activities = () => {
       }
       if (submitData.support_staff === '') {
         delete submitData.support_staff;
+      }
+      if (submitData.due_date === '') {
+        delete submitData.due_date;
+      }
+      if (submitData.next_maintenance_date === '') {
+        delete submitData.next_maintenance_date;
+      }
+      if (submitData.product_id === '') {
+        delete submitData.product_id;
+      }
+      if (submitData.serial_number === '') {
+        delete submitData.serial_number;
+      }
+      if (submitData.customer_id === '') {
+        delete submitData.customer_id;
       }
       
       console.log('Creating activity with data:', submitData);
