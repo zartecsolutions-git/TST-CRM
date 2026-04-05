@@ -1278,7 +1278,7 @@ const Activities = () => {
                       </h4>
                       {/* Only creator or assignee can add progress */}
                       {selectedActivity.status === 'in_progress' && 
-                       (selectedActivity.created_by === user.id || selectedActivity.assigned_to === user.id) && (
+                       (selectedActivity.created_by === currentUser.id || selectedActivity.assigned_to === currentUser.id) && (
                         <Button
                           size="sm"
                           onClick={() => {
@@ -1294,8 +1294,8 @@ const Activities = () => {
                     
                     {/* Info message for support users who can't add progress */}
                     {selectedActivity.status === 'in_progress' && 
-                     selectedActivity.created_by !== user.id && 
-                     selectedActivity.assigned_to !== user.id && (
+                     selectedActivity.created_by !== currentUser.id && 
+                     selectedActivity.assigned_to !== currentUser.id && (
                       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-2 mb-3 text-xs text-yellow-800">
                         ℹ️ Only the creator or assignee can add progress
                       </div>
@@ -1324,7 +1324,7 @@ const Activities = () => {
                     <div className="flex justify-between items-center mb-3">
                       <h4 className="font-semibold text-gray-700">📊 Progress History</h4>
                       {/* Only creator or assignee can add first progress */}
-                      {(selectedActivity.created_by === user.id || selectedActivity.assigned_to === user.id) && (
+                      {(selectedActivity.created_by === currentUser.id || selectedActivity.assigned_to === currentUser.id) && (
                         <Button
                           size="sm"
                           onClick={() => {
@@ -1339,7 +1339,7 @@ const Activities = () => {
                     </div>
                     
                     {/* Message for creator/assignee with no progress yet */}
-                    {(selectedActivity.created_by === user.id || selectedActivity.assigned_to === user.id) ? (
+                    {(selectedActivity.created_by === currentUser.id || selectedActivity.assigned_to === currentUser.id) ? (
                       <div className="bg-gray-50 p-6 rounded-lg text-center">
                         <p className="text-gray-500">No progress updates yet</p>
                       </div>
