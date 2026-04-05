@@ -38,7 +38,8 @@ const Activities = () => {
     description: '',
     assigned_to: '',
     customer_id: '',
-    product_ids: [],
+    product_id: '',
+    serial_number: '',
     status: 'pending',
     activity_type: 'others',
     support_staff: '',
@@ -46,7 +47,7 @@ const Activities = () => {
     invoice_number: '',
     work_order_no: '',
     total_amount: '',
-    serial_number: ''
+    next_maintenance_date: ''
   });
 
   useEffect(() => {
@@ -104,18 +105,48 @@ const Activities = () => {
       const response = await api.post('/activities', submitData);
       console.log('Activity created:', response.data);
       
+      // Update product's serial number with next_maintenance_date
+      if (submitData.product_id && submitData.serial_number && submitData.next_maintenance_date) {
+        try {
+          const product = products.find(p => p.id === submitData.product_id);
+          if (product && product.serial_numbers) {
+            const updatedSerials = product.serial_numbers.map(serial => {
+              if (serial.serial_number === submitData.serial_number) {
+                return {
+                  ...serial,
+                  next_maintenance_date: submitData.next_maintenance_date
+                };
+              }
+              return serial;
+            });
+            
+            await api.put(`/products/${product.id}`, {
+              serial_numbers: updatedSerials
+            });
+            console.log('Product serial number updated with next maintenance date');
+          }
+        } catch (updateError) {
+          console.error('Error updating product maintenance date:', updateError);
+          // Don't fail the activity creation if product update fails
+        }
+      }
+      
       alert('Activity created successfully!');
       setNewActivity({ 
         title: '', 
         description: '', 
         assigned_to: '', 
         customer_id: '', 
-        product_ids: [], 
+        product_id: '',
+        serial_number: '',
         status: 'pending',
         activity_type: 'others',
+        support_staff: '',
         due_date: '',
         invoice_number: '',
-        total_amount: ''
+        work_order_no: '',
+        total_amount: '',
+        next_maintenance_date: ''
       });
       setShowAddForm(false);
       fetchData();
@@ -709,7 +740,7 @@ const Activities = () => {
                         className="w-full border rounded-md p-2"
                         value={newActivity.customer_id}
                         onChange={(e) => {
-                          setNewActivity({...newActivity, customer_id: e.target.value, product_ids: []});
+                          setNewActivity({...newActivity, customer_id: e.target.value, product_id: '', serial_number: ''});
                         }}
                       >
                         <option value="">Select Customer (Optional)</option>
@@ -720,33 +751,62 @@ const Activities = () => {
                         ))}
                       </select>
                     </div>
-                    <div className="md:col-span-2">
-                      <Label>Products (Multiple Selection)</Label>
+                    
+                    {/* Product Selection */}
+                    <div>
+                      <Label>Product</Label>
                       {newActivity.customer_id ? (
                         <select
-                          multiple
-                          className="w-full border rounded-md p-2 min-h-[100px]"
-                          value={newActivity.product_ids}
+                          className="w-full border rounded-md p-2"
+                          value={newActivity.product_id}
                           onChange={(e) => {
-                            const selected = Array.from(e.target.selectedOptions, option => option.value);
-                            setNewActivity({...newActivity, product_ids: selected});
+                            setNewActivity({...newActivity, product_id: e.target.value, serial_number: ''});
                           }}
                         >
-                          {products.filter(p => p.customer_id === newActivity.customer_id).map(product => (
-                            <option key={product.id} value={product.id}>
-                              {product.name} (SN: {product.serial_number}) - {product.category || 'N/A'}
-                            </option>
-                          ))}
+                          <option value="">Select Product</option>
+                          {products
+                            .filter(p => p.serial_numbers?.some(s => s.customer_id === newActivity.customer_id && s.status === 'sold'))
+                            .map(product => (
+                              <option key={product.id} value={product.id}>
+                                {product.name} - {product.model || product.category}
+                              </option>
+                            ))}
                         </select>
                       ) : (
-                        <div className="w-full border rounded-md p-2 min-h-[100px] bg-gray-50 flex items-center justify-center text-gray-500">
-                          Please select a customer first to see their products
+                        <div className="w-full border rounded-md p-2 bg-gray-50 flex items-center justify-center text-gray-500">
+                          Please select a customer first
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Serial Number Selection */}
+                    <div>
+                      <Label>Product Serial Number</Label>
+                      {newActivity.product_id && newActivity.customer_id ? (
+                        <select
+                          className="w-full border rounded-md p-2"
+                          value={newActivity.serial_number}
+                          onChange={(e) => setNewActivity({...newActivity, serial_number: e.target.value})}
+                        >
+                          <option value="">Select Serial Number</option>
+                          {(() => {
+                            const product = products.find(p => p.id === newActivity.product_id);
+                            return product?.serial_numbers
+                              ?.filter(s => s.customer_id === newActivity.customer_id && s.status === 'sold')
+                              .map((serial, index) => (
+                                <option key={index} value={serial.serial_number}>
+                                  {serial.serial_number} (Sold: {serial.sale_date ? new Date(serial.sale_date).toLocaleDateString() : 'N/A'})
+                                </option>
+                              )) || [];
+                          })()}
+                        </select>
+                      ) : (
+                        <div className="w-full border rounded-md p-2 bg-gray-50 flex items-center justify-center text-gray-500 text-sm">
+                          {!newActivity.customer_id ? 'Select customer and product first' : 'Select a product first'}
                         </div>
                       )}
                       <p className="text-sm text-gray-500 mt-1">
-                        {newActivity.customer_id 
-                          ? `Hold Ctrl/Cmd to select multiple products. ${products.filter(p => p.customer_id === newActivity.customer_id).length} product(s) available for this customer.`
-                          : 'Products will be filtered based on selected customer'}
+                        Only serial numbers assigned to the selected customer are shown
                       </p>
                     </div>
                     <div className="md:col-span-2">
@@ -792,6 +852,20 @@ const Activities = () => {
                         onChange={(e) => setNewActivity({...newActivity, due_date: e.target.value})}
                       />
                     </div>
+                    
+                    <div>
+                      <Label>Next Maintenance Date</Label>
+                      <Input
+                        type="date"
+                        value={newActivity.next_maintenance_date}
+                        onChange={(e) => setNewActivity({...newActivity, next_maintenance_date: e.target.value})}
+                        placeholder="Select maintenance due date"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        This will be synced to the product's serial number record
+                      </p>
+                    </div>
+                    
                     {newActivity.status === 'completed' && (
                       <>
                         <div>
@@ -803,11 +877,11 @@ const Activities = () => {
                           />
                         </div>
                         <div>
-                          <Label>Product Serial Number</Label>
+                          <Label>Work Order Number</Label>
                           <Input
-                            value={newActivity.serial_number}
-                            onChange={(e) => setNewActivity({...newActivity, serial_number: e.target.value})}
-                            placeholder="SN-12345"
+                            value={newActivity.work_order_no}
+                            onChange={(e) => setNewActivity({...newActivity, work_order_no: e.target.value})}
+                            placeholder="WO-2024-001"
                           />
                         </div>
                         <div>

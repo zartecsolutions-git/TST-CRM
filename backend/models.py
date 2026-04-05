@@ -96,7 +96,8 @@ class ActivityCreate(BaseModel):
     assigned_to: str  # user_id
     client_id: Optional[str] = None
     customer_id: Optional[str] = None  # Customer reference
-    product_ids: Optional[List[str]] = []  # Multiple products
+    product_id: Optional[str] = None  # Single product
+    serial_number: Optional[str] = None  # Product serial number
     status: ActivityStatus = ActivityStatus.pending
     priority: ActivityPriority = ActivityPriority.medium
     activity_type: Optional[str] = "others"  # New field
@@ -108,7 +109,7 @@ class ActivityCreate(BaseModel):
     invoice_number: Optional[str] = None  # For completed activities
     work_order_no: Optional[str] = None  # For completed activities
     total_amount: Optional[float] = None  # For completed activities
-    serial_number: Optional[str] = None  # Product serial number
+    next_maintenance_date: Optional[datetime] = None  # Next maintenance due
 
 class Activity(ActivityCreate):
     model_config = ConfigDict(extra="ignore")
@@ -140,6 +141,7 @@ class ActivityUpdate(BaseModel):
     invoice_number: Optional[str] = None  # For completed activities
     work_order_no: Optional[str] = None  # For completed activities
     total_amount: Optional[float] = None  # For completed activities
+    next_maintenance_date: Optional[datetime] = None  # Next maintenance due date
 
 # Team Models
 class TeamCreate(BaseModel):
