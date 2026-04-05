@@ -1276,7 +1276,9 @@ const Activities = () => {
                       <h4 className="font-semibold text-gray-700">
                         📊 Progress History ({selectedActivity.progress_updates.length} updates)
                       </h4>
-                      {selectedActivity.status === 'in_progress' && (
+                      {/* Only creator or assignee can add progress */}
+                      {selectedActivity.status === 'in_progress' && 
+                       (selectedActivity.created_by === user.id || selectedActivity.assigned_to === user.id) && (
                         <Button
                           size="sm"
                           onClick={() => {
@@ -1289,6 +1291,16 @@ const Activities = () => {
                         </Button>
                       )}
                     </div>
+                    
+                    {/* Info message for support users who can't add progress */}
+                    {selectedActivity.status === 'in_progress' && 
+                     selectedActivity.created_by !== user.id && 
+                     selectedActivity.assigned_to !== user.id && (
+                      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-2 mb-3 text-xs text-yellow-800">
+                        ℹ️ Only the creator or assignee can add progress
+                      </div>
+                    )}
+                    
                     <div className="space-y-3">
                       {selectedActivity.progress_updates.slice().reverse().map((update, idx) => (
                         <div key={idx} className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
@@ -1311,20 +1323,31 @@ const Activities = () => {
                   <div>
                     <div className="flex justify-between items-center mb-3">
                       <h4 className="font-semibold text-gray-700">📊 Progress History</h4>
-                      <Button
-                        size="sm"
-                        onClick={() => {
-                          setShowDetailModal(false);
-                          handleAddProgressUpdate(selectedActivity.id);
-                        }}
-                        className="bg-purple-600 hover:bg-purple-700"
-                      >
-                        + Add First Progress
-                      </Button>
+                      {/* Only creator or assignee can add first progress */}
+                      {(selectedActivity.created_by === user.id || selectedActivity.assigned_to === user.id) && (
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            setShowDetailModal(false);
+                            handleAddProgressUpdate(selectedActivity.id);
+                          }}
+                          className="bg-purple-600 hover:bg-purple-700"
+                        >
+                          + Add First Progress
+                        </Button>
+                      )}
                     </div>
-                    <div className="bg-gray-50 p-6 rounded-lg text-center">
-                      <p className="text-gray-500">No progress updates yet</p>
-                    </div>
+                    
+                    {/* Message for creator/assignee with no progress yet */}
+                    {(selectedActivity.created_by === user.id || selectedActivity.assigned_to === user.id) ? (
+                      <div className="bg-gray-50 p-6 rounded-lg text-center">
+                        <p className="text-gray-500">No progress updates yet</p>
+                      </div>
+                    ) : (
+                      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-800">
+                        ℹ️ Only the activity creator or assignee can add progress updates
+                      </div>
+                    )}
                   </div>
                 )}
 
