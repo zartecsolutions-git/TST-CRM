@@ -51,6 +51,8 @@ export const activitiesAPI = {
 export const locationAPI = {
   updateLocation: (latitude, longitude) => 
     api.post('/locations', { latitude, longitude }),
+  getMyLocationHistory: () => api.get('/locations/my-history'),
+  getCurrentLocations: () => api.get('/locations/current'),
 };
 
 export const usersAPI = {

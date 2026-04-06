@@ -176,6 +176,15 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/location-tracking"
+              element={
+                <ProtectedRoute>
+                  <LocationTracking />
+                </ProtectedRoute>
+              }
+            />
+
 
             {/* Default Route */}
             <Route path="/" element={<Navigate to="/dashboard" replace />} />

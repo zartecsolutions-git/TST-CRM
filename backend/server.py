@@ -367,6 +367,25 @@ async def get_user_distance(
         "points_count": len(locations)
     }
 
+
+@api_router.get("/locations/my-history")
+async def get_my_location_history(
+    limit: int = 100,
+    current_user_id: str = Depends(get_current_user)
+):
+    """Get current user's location history"""
+    locations = await db.locations.find(
+        {"user_id": current_user_id},
+        {"_id": 0}
+    ).sort("timestamp", -1).limit(limit).to_list(limit)
+    
+    for location in locations:
+        if isinstance(location.get('timestamp'), str):
+            location['timestamp'] = datetime.fromisoformat(location['timestamp'])
+    
+    return locations
+
+
 # ============================================================================
 # ACTIVITIES ENDPOINTS - Moved to routes/activity_routes.py
 # ============================================================================
