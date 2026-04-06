@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '../contexts/AuthContext';
-import api from '../services/api';
+import api from '../utils/api';
 
 export default function LocationTracking() {
   const { user } = useAuth();
@@ -11,6 +11,16 @@ export default function LocationTracking() {
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState('all');
   const [timeRange, setTimeRange] = useState('today');
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (user?.role === 'admin') {
+      fetchData();
+      // Refresh every 30 seconds
+      const interval = setInterval(fetchData, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [selectedUser, timeRange, user]);
 
   // Only admins can access this page
   if (user?.role !== 'admin') {
@@ -27,13 +37,6 @@ export default function LocationTracking() {
       </div>
     );
   }
-
-  useEffect(() => {
-    fetchData();
-    // Refresh every 30 seconds
-    const interval = setInterval(fetchData, 30000);
-    return () => clearInterval(interval);
-  }, [selectedUser, timeRange]);
 
   const fetchData = async () => {
     try {
