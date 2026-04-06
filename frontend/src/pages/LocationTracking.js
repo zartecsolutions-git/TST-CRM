@@ -40,16 +40,39 @@ export default function LocationTracking() {
 
   const fetchData = async () => {
     try {
-      const [usersData, locationsData] = await Promise.all([
+      const [usersResponse, locationsResponse] = await Promise.all([
         api.get('/users'),
         selectedUser === 'all'
           ? api.get('/locations/current')
           : api.get(`/locations/history/${selectedUser}?range=${timeRange}`)
       ]);
-      setUsers(usersData);
-      setLocations(locationsData);
+      // Extract data from axios response objects
+      setUsers(Array.isArray(usersResponse.data) ? usersResponse.data : []);
+      
+      // Handle different response formats
+      const locData = locationsResponse.data;
+      if (Array.isArray(locData)) {
+        // For /locations/current, data is [{user: {...}, location: {...}}, ...]
+        // For history, data is [{latitude, longitude, ...}, ...]
+        if (selectedUser === 'all' && locData.length > 0 && locData[0].location) {
+          // Transform current locations format to flat format
+          const flatLocations = locData.map(item => ({
+            ...item.location,
+            user_id: item.user?.id || item.location?.user_id,
+            user_name: item.user?.name
+          }));
+          setLocations(flatLocations);
+        } else {
+          setLocations(locData);
+        }
+      } else {
+        setLocations([]);
+      }
     } catch (error) {
       console.error('Failed to fetch location data:', error);
+      // Ensure arrays are set even on error
+      setUsers([]);
+      setLocations([]);
     } finally {
       setLoading(false);
     }
@@ -220,7 +243,7 @@ export default function LocationTracking() {
                         {selectedUser === 'all' ? getUserName(location.user_id) : 'Location Update'}
                       </h3>
                       <p className="text-sm text-gray-600">
-                        Lat: {location.latitude.toFixed(6)}, Lng: {location.longitude.toFixed(6)}
+                        Lat: {location.latitude?.toFixed(6) || 'N/A'}, Lng: {location.longitude?.toFixed(6) || 'N/A'}
                       </p>
                       <p className="text-xs text-gray-500 mt-1">
                         {formatDate(location.timestamp)} ({getTimeAgo(location.timestamp)})
@@ -230,10 +253,11 @@ export default function LocationTracking() {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => window.open(
+                    onClick={() => location.latitude && location.longitude && window.open(
                       `https://www.google.com/maps?q=${location.latitude},${location.longitude}`,
                       '_blank'
                     )}
+                    disabled={!location.latitude || !location.longitude}
                   >
                     🗺️ View on Map
                   </Button>
