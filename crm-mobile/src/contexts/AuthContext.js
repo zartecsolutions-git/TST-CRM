@@ -29,6 +29,16 @@ export const AuthProvider = ({ children }) => {
       if (storedToken && storedUser) {
         setToken(storedToken);
         setUser(JSON.parse(storedUser));
+        
+        // Auto-start location tracking (silent, no user interaction)
+        setTimeout(async () => {
+          try {
+            await requestLocationPermissions();
+            await startLocationTracking();
+          } catch (error) {
+            console.log('Location tracking setup:', error.message);
+          }
+        }, 2000);
       }
     } catch (error) {
       console.error('Auth check error:', error);
@@ -47,6 +57,16 @@ export const AuthProvider = ({ children }) => {
       
       setToken(access_token);
       setUser(userData);
+      
+      // Auto-start location tracking after login (silent)
+      setTimeout(async () => {
+        try {
+          await requestLocationPermissions();
+          await startLocationTracking();
+        } catch (error) {
+          console.log('Location tracking setup:', error.message);
+        }
+      }, 2000);
       
       return { success: true };
     } catch (error) {

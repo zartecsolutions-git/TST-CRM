@@ -1,14 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '../contexts/AuthContext';
 import api from '../services/api';
 
 export default function LocationTracking() {
+  const { user } = useAuth();
   const [locations, setLocations] = useState([]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState('all');
   const [timeRange, setTimeRange] = useState('today');
+
+  // Only admins can access this page
+  if (user?.role !== 'admin') {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gray-50">
+        <div className="text-center p-8 bg-white rounded-lg shadow-lg">
+          <div className="text-6xl mb-4">🔒</div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h1>
+          <p className="text-gray-600 mb-4">This page is only accessible to administrators.</p>
+          <Button onClick={() => window.location.href = '/dashboard'} className="bg-blue-600">
+            Return to Dashboard
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   useEffect(() => {
     fetchData();
