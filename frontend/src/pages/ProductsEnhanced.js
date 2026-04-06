@@ -4,6 +4,11 @@ import PageHeader from '../components/PageHeader';
 import { useCurrency } from '../contexts/CurrencyContext';
 import api from '../utils/api';
 
+// Import product components
+import ProductStats from '../components/products/ProductStats';
+import ProductFilters from '../components/products/ProductFilters';
+import ProductTable from '../components/products/ProductTable';
+
 export default function ProductsEnhanced() {
   const navigate = useNavigate();
   const { formatAmount } = useCurrency();
@@ -392,130 +397,34 @@ export default function ProductsEnhanced() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 mt-6">
-        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
-          <h3 className="text-sm font-semibold text-gray-600 uppercase mb-2">Total Products</h3>
-          <p className="text-3xl font-bold text-blue-600">{products.length}</p>
-        </div>
-        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-600">
-          <h3 className="text-sm font-semibold text-gray-600 uppercase mb-2">Total Stock</h3>
-          <p className="text-3xl font-bold text-green-600">
-            {products.reduce((sum, p) => sum + inStockCount(p), 0)}
-          </p>
-        </div>
-        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-amber-500">
-          <h3 className="text-sm font-semibold text-gray-600 uppercase mb-2">Total Sold</h3>
-          <p className="text-3xl font-bold text-amber-600">
-            {products.reduce((sum, p) => sum + soldCount(p), 0)}
-          </p>
-        </div>
-        <div className="bg-white rounded-lg shadow p-6 border-l-4 border-purple-500">
-          <h3 className="text-sm font-semibold text-gray-600 uppercase mb-2">Stock Value</h3>
-          <p className="text-3xl font-bold text-purple-600">
-            {formatAmount(products.reduce((sum, p) => sum + ((p.price || 0) * inStockCount(p)), 0))}
-          </p>
-        </div>
-      </div>
+      <ProductStats 
+        products={products}
+        inStockCount={inStockCount}
+        soldCount={soldCount}
+        formatAmount={formatAmount}
+      />
 
       {/* Search and Action Buttons */}
-      <div className="mb-6">
-        <div className="flex gap-2 mb-4">
-          <input
-            type="text"
-            placeholder="🔍 Search products by name, model, category, license code, or serial number..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-        
-        <div className="flex justify-between items-center">
-          <div>
-            {searchQuery && (
-              <p className="text-sm text-gray-600">
-                Found {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''}
-              </p>
-            )}
-          </div>
-          <div className="flex gap-2">
-            {user.role === 'admin' && (
-              <>
-                <button onClick={handleExport} className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
-                  📥 Export CSV
-                </button>
-                <button onClick={() => setShowImport(true)} className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">
-                  📤 Import CSV
-                </button>
-              </>
-            )}
-            <button
-              onClick={() => setShowForm(true)}
-              className="bg-gradient-to-r from-blue-700 to-green-700 text-white px-6 py-2 rounded-lg hover:shadow-lg"
-            >
-              + Add Product
-            </button>
-          </div>
-        </div>
-      </div>
+      <ProductFilters
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        filteredProducts={filteredProducts}
+        onExport={handleExport}
+        onImport={() => setShowImport(true)}
+        onAddProduct={() => setShowForm(true)}
+        userRole={user.role}
+      />
 
       {/* Products Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        {filteredProducts.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">
-            {searchQuery ? 'No products found matching your search' : 'No products yet'}
-          </div>
-        ) : (
-          <table className="w-full">
-            <thead className="bg-gradient-to-r from-blue-700 to-green-700 text-white">
-              <tr>
-                <th className="px-4 py-3 text-left">Product Name</th>
-                <th className="px-4 py-3 text-left">Category</th>
-                <th className="px-4 py-3 text-left">Sub-Category</th>
-                <th className="px-4 py-3 text-center">In Stock</th>
-                <th className="px-4 py-3 text-center">Sold</th>
-                <th className="px-4 py-3 text-left">Price</th>
-                <th className="px-4 py-3 text-left">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredProducts.map((product, index) => (
-                <tr key={product.id} className={index % 2 === 0 ? 'bg-gray-50' : 'bg-white'}>
-                  <td className="px-4 py-3 font-medium">{product.name}</td>
-                  <td className="px-4 py-3">
-                    <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
-                      {product.category || 'others'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-sm">{product.sub_category || '-'}</td>
-                  <td className="px-4 py-3 text-center">
-                    <span className="font-bold text-green-600">{inStockCount(product)}</span>
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <span className="font-bold text-gray-600">{soldCount(product)}</span>
-                  </td>
-                  <td className="px-4 py-3">{formatAmount(product.price || 0)}</td>
-                  <td className="px-4 py-3">
-                    <button
-                      onClick={() => handleViewDetails(product)}
-                      className="text-blue-600 hover:text-blue-800 mr-3"
-                    >
-                      View
-                    </button>
-                    {user.role === 'admin' && (
-                      <button
-                        onClick={() => handleEditClick(product)}
-                        className="text-green-600 hover:text-green-800"
-                      >
-                        Edit
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+      <ProductTable
+        products={filteredProducts}
+        searchQuery={searchQuery}
+        inStockCount={inStockCount}
+        soldCount={soldCount}
+        formatAmount={formatAmount}
+        onViewDetails={handleViewDetails}
+        onEdit={handleEditClick}
+      />
 
       {/* Create/Edit Product Modal */}
       {showForm && (
