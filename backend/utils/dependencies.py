@@ -35,3 +35,14 @@ class ConnectionManager:
                 pass
 
 manager = ConnectionManager()
+
+
+# Dependency functions
+def get_db():
+    """Database dependency for route injection"""
+    return db
+
+
+def get_websocket_manager():
+    """WebSocket manager dependency for route injection"""
+    return manager
