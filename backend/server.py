@@ -35,10 +35,13 @@ from auth import (
 )
 from rbac import require_admin, require_admin_or_agent, get_current_user_data, require_super_admin
 
+# Import route modules
+from routes import auth_routes, activity_routes, customer_routes
+
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
 
-# MongoDB connection
+# MongoDB connection (keeping for backward compatibility with remaining routes)
 mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
@@ -71,60 +74,8 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 # ============================================================================
-# AUTHENTICATION ENDPOINTS
+# AUTHENTICATION ENDPOINTS - Moved to routes/auth_routes.py
 # ============================================================================
-
-@api_router.post("/auth/register", response_model=Token)
-async def register(user_data: UserCreate):
-    # Check if user exists
-    existing_user = await db.users.find_one({"email": user_data.email})
-    if existing_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
-    
-    # Create user
-    user = User(**user_data.model_dump(exclude={'password'}))
-    user_dict = user.model_dump()
-    user_dict['password_hash'] = get_password_hash(user_data.password)
-    user_dict['created_at'] = user_dict['created_at'].isoformat()
-    user_dict['updated_at'] = user_dict['updated_at'].isoformat()
-    
-    await db.users.insert_one(user_dict)
-    
-    # Create access token
-    access_token = create_access_token(data={"sub": user.id, "role": user.role})
-    
-    return Token(access_token=access_token, user=user)
-
-@api_router.post("/auth/login", response_model=Token)
-async def login(credentials: UserLogin):
-    user_doc = await db.users.find_one({"email": credentials.email}, {"_id": 0})
-    
-    if not user_doc or not verify_password(credentials.password, user_doc.get('password_hash', '')):
-        raise HTTPException(status_code=401, detail="Invalid email or password")
-    
-    # Convert datetime strings back to datetime objects
-    if isinstance(user_doc.get('created_at'), str):
-        user_doc['created_at'] = datetime.fromisoformat(user_doc['created_at'])
-    if isinstance(user_doc.get('updated_at'), str):
-        user_doc['updated_at'] = datetime.fromisoformat(user_doc['updated_at'])
-    
-    user = User(**user_doc)
-    access_token = create_access_token(data={"sub": user.id, "role": user.role})
-    
-    return Token(access_token=access_token, user=user)
-
-@api_router.get("/auth/me", response_model=User)
-async def get_me(current_user_id: str = Depends(get_current_user)):
-    user_doc = await db.users.find_one({"id": current_user_id}, {"_id": 0})
-    if not user_doc:
-        raise HTTPException(status_code=404, detail="User not found")
-    
-    if isinstance(user_doc.get('created_at'), str):
-        user_doc['created_at'] = datetime.fromisoformat(user_doc['created_at'])
-    if isinstance(user_doc.get('updated_at'), str):
-        user_doc['updated_at'] = datetime.fromisoformat(user_doc['updated_at'])
-    
-    return User(**user_doc)
 
 # ============================================================================
 # USER ENDPOINTS
@@ -417,238 +368,8 @@ async def get_user_distance(
     }
 
 # ============================================================================
-# ACTIVITIES ENDPOINTS
+# ACTIVITIES ENDPOINTS - Moved to routes/activity_routes.py
 # ============================================================================
-
-@api_router.post("/activities", response_model=Activity)
-async def create_activity(
-    activity_data: ActivityCreate,
-    current_user_id: str = Depends(get_current_user)
-):
-    # All authenticated users can create activities
-    activity = Activity(**activity_data.model_dump(), created_by=current_user_id)
-    activity_dict = activity.model_dump()
-    activity_dict['created_at'] = activity_dict['created_at'].isoformat()
-    activity_dict['updated_at'] = activity_dict['updated_at'].isoformat()
-    if activity_dict.get('due_date'):
-        activity_dict['due_date'] = activity_dict['due_date'].isoformat()
-    if activity_dict.get('next_maintenance_date'):
-        activity_dict['next_maintenance_date'] = activity_dict['next_maintenance_date'].isoformat()
-    
-    await db.activities.insert_one(activity_dict)
-    return activity
-
-@api_router.get("/activities", response_model=List[Activity])
-async def get_activities(
-    status: Optional[ActivityStatus] = None,
-    assigned_to: Optional[str] = None,
-    search: Optional[str] = None,
-    current_user_id: str = Depends(get_current_user)
-):
-    # Get current user data for role-based filtering
-    user_data = await get_current_user_data(current_user_id)
-    
-    query = {}
-    
-    # Support users can see ALL activities (not filtered by assigned_to)
-    # This allows them to search by serial number or customer across all support activities
-    # Admin and sales can also see all activities
-    
-    # If assigned_to filter is explicitly provided, use it
-    if assigned_to:
-        query['assigned_to'] = assigned_to
-    
-    if status:
-        query['status'] = status
-    
-    # Search by work order number, product serial number, customer, or product name
-    if search:
-        # Get customers matching search
-        customer_docs = await db.customers.find(
-            {"name": {"$regex": search, "$options": "i"}},
-            {"id": 1, "_id": 0}
-        ).to_list(100)
-        customer_ids = [c['id'] for c in customer_docs]
-        
-        # Get products matching search
-        product_docs = await db.products.find(
-            {"name": {"$regex": search, "$options": "i"}},
-            {"id": 1, "_id": 0}
-        ).to_list(100)
-        product_ids = [p['id'] for p in product_docs]
-        
-        # Get users matching search (for assigned_to and created_by)
-        user_docs = await db.users.find(
-            {"name": {"$regex": search, "$options": "i"}},
-            {"id": 1, "_id": 0}
-        ).to_list(100)
-        user_ids = [u['id'] for u in user_docs]
-        
-        # Search by invoice number, work order number, product serial number, customer, product, or assigned user
-        query["$or"] = [
-            {"invoice_number": {"$regex": search, "$options": "i"}},
-            {"work_order_no": {"$regex": search, "$options": "i"}},
-            {"serial_number": {"$regex": search, "$options": "i"}},
-            {"customer_id": {"$in": customer_ids}},
-            {"product_ids": {"$in": product_ids}},
-            {"assigned_to": {"$in": user_ids}},
-            {"created_by": {"$in": user_ids}}
-        ]
-    
-    activities = await db.activities.find(query, {"_id": 0}).to_list(1000)
-    
-    for activity in activities:
-        if isinstance(activity.get('created_at'), str):
-            activity['created_at'] = datetime.fromisoformat(activity['created_at'])
-        if isinstance(activity.get('updated_at'), str):
-            activity['updated_at'] = datetime.fromisoformat(activity['updated_at'])
-        if activity.get('due_date') and isinstance(activity['due_date'], str):
-            activity['due_date'] = datetime.fromisoformat(activity['due_date'])
-    
-    return activities
-
-@api_router.get("/activities/{activity_id}", response_model=Activity)
-async def get_activity(activity_id: str, current_user_id: str = Depends(get_current_user)):
-    activity_doc = await db.activities.find_one({"id": activity_id}, {"_id": 0})
-    if not activity_doc:
-        raise HTTPException(status_code=404, detail="Activity not found")
-    
-    if isinstance(activity_doc.get('created_at'), str):
-        activity_doc['created_at'] = datetime.fromisoformat(activity_doc['created_at'])
-    if isinstance(activity_doc.get('updated_at'), str):
-        activity_doc['updated_at'] = datetime.fromisoformat(activity_doc['updated_at'])
-    if activity_doc.get('due_date') and isinstance(activity_doc['due_date'], str):
-        activity_doc['due_date'] = datetime.fromisoformat(activity_doc['due_date'])
-    
-    return Activity(**activity_doc)
-
-@api_router.put("/activities/{activity_id}", response_model=Activity)
-async def update_activity(
-    activity_id: str,
-    activity_update: ActivityUpdate,
-    current_user_id: str = Depends(get_current_user)
-):
-    # Get the activity to check creator
-    activity_doc = await db.activities.find_one({"id": activity_id}, {"_id": 0})
-    if not activity_doc:
-        raise HTTPException(status_code=404, detail="Activity not found")
-    
-    # Get current user data to check role
-    user_data = await get_current_user_data(current_user_id)
-    
-    # Admin, creator, or assignee can edit/update the activity
-    if (user_data['role'] != 'admin' and 
-        activity_doc.get('created_by') != current_user_id and 
-        activity_doc.get('assigned_to') != current_user_id):
-        raise HTTPException(
-            status_code=403, 
-            detail="You can only edit activities that you created or are assigned to"
-        )
-    
-    update_data = activity_update.model_dump(exclude_unset=True)
-    if not update_data:
-        raise HTTPException(status_code=400, detail="No fields to update")
-    
-    # If status is being updated and notes are provided, add to history
-    if 'status' in update_data:
-        if not activity_doc:
-            raise HTTPException(status_code=404, detail="Activity not found")
-        
-        # Create status history entry
-        status_entry = {
-            'status': update_data['status'],
-            'updated_by': current_user_id,
-            'timestamp': datetime.now(timezone.utc).isoformat(),
-            'notes': update_data.pop('notes', '')  # Remove notes from main update, add to history
-        }
-        
-        # Update status history
-        await db.activities.update_one(
-            {"id": activity_id},
-            {"$push": {"status_history": status_entry}}
-        )
-    
-    update_data['updated_at'] = datetime.now(timezone.utc).isoformat()
-    if 'due_date' in update_data and update_data['due_date']:
-        update_data['due_date'] = update_data['due_date'].isoformat()
-    if 'next_maintenance_date' in update_data and update_data['next_maintenance_date']:
-        update_data['next_maintenance_date'] = update_data['next_maintenance_date'].isoformat()
-    
-    result = await db.activities.update_one(
-        {"id": activity_id},
-        {"$set": update_data}
-    )
-    
-    if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Activity not found")
-    
-    activity_doc = await db.activities.find_one({"id": activity_id}, {"_id": 0})
-    
-    if isinstance(activity_doc.get('created_at'), str):
-        activity_doc['created_at'] = datetime.fromisoformat(activity_doc['created_at'])
-    if isinstance(activity_doc.get('updated_at'), str):
-        activity_doc['updated_at'] = datetime.fromisoformat(activity_doc['updated_at'])
-    if activity_doc.get('due_date') and isinstance(activity_doc['due_date'], str):
-        activity_doc['due_date'] = datetime.fromisoformat(activity_doc['due_date'])
-    
-    return Activity(**activity_doc)
-
-@api_router.post("/activities/{activity_id}/progress")
-async def add_progress_update(
-    activity_id: str,
-    update_data: dict,
-    current_user_id: str = Depends(get_current_user)
-):
-    """Add a progress update to an in-progress activity"""
-    activity_doc = await db.activities.find_one({"id": activity_id}, {"_id": 0})
-    if not activity_doc:
-        raise HTTPException(status_code=404, detail="Activity not found")
-    
-    if activity_doc.get('status') != 'in_progress':
-        raise HTTPException(status_code=400, detail="Can only add progress updates to in-progress activities")
-    
-    # Create progress entry
-    progress_entry = {
-        'update': update_data.get('update', ''),
-        'percentage': update_data.get('percentage', 0),
-        'updated_by': current_user_id,
-        'timestamp': datetime.now(timezone.utc).isoformat()
-    }
-    
-    # Add to progress_updates array
-    await db.activities.update_one(
-        {"id": activity_id},
-        {
-            "$push": {"progress_updates": progress_entry},
-            "$set": {"updated_at": datetime.now(timezone.utc).isoformat()}
-        }
-    )
-    
-    return {"message": "Progress update added successfully", "progress": progress_entry}
-
-@api_router.delete("/activities/{activity_id}")
-async def delete_activity(activity_id: str, current_user_id: str = Depends(get_current_user)):
-    # Only admins can delete activities
-    await require_admin(current_user_id)
-    
-    result = await db.activities.delete_one({"id": activity_id})
-    if result.deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Activity not found")
-    return {"message": "Activity deleted successfully"}
-
-@api_router.get("/activities/stats/summary")
-async def get_activities_stats(current_user_id: str = Depends(get_current_user)):
-    total = await db.activities.count_documents({})
-    pending = await db.activities.count_documents({"status": "pending"})
-    in_progress = await db.activities.count_documents({"status": "in_progress"})
-    completed = await db.activities.count_documents({"status": "completed"})
-    
-    return {
-        "total": total,
-        "pending": pending,
-        "in_progress": in_progress,
-        "completed": completed
-    }
 
 # ============================================================================
 # TEAMS ENDPOINTS
@@ -992,106 +713,8 @@ def calculate_warranty_finished_date(purchase_date: datetime, warranty_period: s
     return None
 
 # ============================================================================
-# CUSTOMERS ENDPOINTS
+# CUSTOMERS ENDPOINTS - Moved to routes/customer_routes.py
 # ============================================================================
-
-@api_router.post("/customers", response_model=Customer)
-async def create_customer(
-    customer_data: CustomerCreate,
-    current_user_id: str = Depends(get_current_user)
-):
-    # Sales and Support can create customers
-    user_data = await get_current_user_data(current_user_id)
-    if user_data['role'] not in ['admin', 'sales', 'support']:
-        raise HTTPException(status_code=403, detail="Not authorized")
-    
-    # Check if customer email already exists
-    existing = await db.customers.find_one({"email": customer_data.email})
-    if existing:
-        raise HTTPException(status_code=400, detail="Customer with this email already exists")
-    
-    customer = Customer(**customer_data.model_dump(), created_by=current_user_id)
-    customer_dict = customer.model_dump()
-    customer_dict['created_at'] = customer_dict['created_at'].isoformat()
-    customer_dict['updated_at'] = customer_dict['updated_at'].isoformat()
-    
-    await db.customers.insert_one(customer_dict)
-    return customer
-
-@api_router.get("/customers", response_model=List[Customer])
-async def get_customers(
-    current_user_id: str = Depends(get_current_user)
-):
-    customers = await db.customers.find({}, {"_id": 0}).to_list(1000)
-    
-    for customer in customers:
-        if isinstance(customer.get('created_at'), str):
-            customer['created_at'] = datetime.fromisoformat(customer['created_at'])
-        if isinstance(customer.get('updated_at'), str):
-            customer['updated_at'] = datetime.fromisoformat(customer['updated_at'])
-    
-    return customers
-
-@api_router.get("/customers/{customer_id}", response_model=Customer)
-async def get_customer(
-    customer_id: str,
-    current_user_id: str = Depends(get_current_user)
-):
-    customer_doc = await db.customers.find_one({"id": customer_id}, {"_id": 0})
-    if not customer_doc:
-        raise HTTPException(status_code=404, detail="Customer not found")
-    
-    if isinstance(customer_doc.get('created_at'), str):
-        customer_doc['created_at'] = datetime.fromisoformat(customer_doc['created_at'])
-    if isinstance(customer_doc.get('updated_at'), str):
-        customer_doc['updated_at'] = datetime.fromisoformat(customer_doc['updated_at'])
-    
-    return Customer(**customer_doc)
-
-@api_router.put("/customers/{customer_id}", response_model=Customer)
-async def update_customer(
-    customer_id: str,
-    customer_update: CustomerUpdate,
-    current_user_id: str = Depends(get_current_user)
-):
-    # Only Admin can update customers
-    await require_admin(current_user_id)
-    
-    update_data = customer_update.model_dump(exclude_unset=True)
-    if not update_data:
-        raise HTTPException(status_code=400, detail="No fields to update")
-    
-    update_data['updated_at'] = datetime.now(timezone.utc).isoformat()
-    
-    result = await db.customers.update_one(
-        {"id": customer_id},
-        {"$set": update_data}
-    )
-    
-    if result.matched_count == 0:
-        raise HTTPException(status_code=404, detail="Customer not found")
-    
-    customer_doc = await db.customers.find_one({"id": customer_id}, {"_id": 0})
-    
-    if isinstance(customer_doc.get('created_at'), str):
-        customer_doc['created_at'] = datetime.fromisoformat(customer_doc['created_at'])
-    if isinstance(customer_doc.get('updated_at'), str):
-        customer_doc['updated_at'] = datetime.fromisoformat(customer_doc['updated_at'])
-    
-    return Customer(**customer_doc)
-
-@api_router.delete("/customers/{customer_id}")
-async def delete_customer(
-    customer_id: str,
-    current_user_id: str = Depends(get_current_user)
-):
-    # Only Admin can delete customers
-    await require_admin(current_user_id)
-    
-    result = await db.customers.delete_one({"id": customer_id})
-    if result.deleted_count == 0:
-        raise HTTPException(status_code=404, detail="Customer not found")
-    return {"message": "Customer deleted successfully"}
 
 # ============================================================================
 # PRODUCTS ENDPOINTS
@@ -1950,6 +1573,11 @@ async def websocket_endpoint(websocket: WebSocket):
 
 # Include the router in the main app
 app.include_router(api_router)
+
+# Include modular route modules
+app.include_router(auth_routes.router, prefix="/api")
+app.include_router(activity_routes.router, prefix="/api")
+app.include_router(customer_routes.router, prefix="/api")
 
 app.add_middleware(
     CORSMiddleware,
