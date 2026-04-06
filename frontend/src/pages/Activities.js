@@ -9,6 +9,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 
+// Import activity components
+import ActivityStats from '../components/activities/ActivityStats';
+import ActivityFilters from '../components/activities/ActivityFilters';
+import ActivitySearchBar from '../components/activities/ActivitySearchBar';
+import ActivityPerformanceChart from '../components/activities/ActivityPerformanceChart';
+
 const Activities = () => {
   const { user: currentUser } = useAuth();
   // Import calculateTotal from useCurrency
@@ -410,219 +416,37 @@ const Activities = () => {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
-            <h3 className="text-sm font-semibold text-gray-600 uppercase mb-2">Total Activities</h3>
-            <p className="text-3xl font-bold text-blue-600">{totalActivitiesByUser}</p>
-            <p className="text-xs text-gray-500 mt-1">All your activities</p>
-          </div>
-          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-600">
-            <h3 className="text-sm font-semibold text-gray-600 uppercase mb-2">Completed Activities</h3>
-            <p className="text-3xl font-bold text-green-600">{completedActivitiesCount}</p>
-            <p className="text-xs text-gray-500 mt-1">Successfully completed</p>
-          </div>
-          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
-            <h3 className="text-sm font-semibold text-gray-600 uppercase mb-2">Total Value</h3>
-            <p className="text-3xl font-bold text-green-600">{formatAmount(totalValue)}</p>
-            <p className="text-xs text-gray-500 mt-1">From completed activities</p>
-          </div>
-        </div>
+        <ActivityStats 
+          totalActivities={totalActivitiesByUser}
+          completedActivities={completedActivitiesCount}
+          totalValue={totalValue}
+          formatAmount={formatAmount}
+        />
 
-        <div className="flex justify-between items-center mb-6">
-          <div className="flex space-x-2">
-            <Button
-              onClick={() => setFilterStatus('all')}
-              variant={filterStatus === 'all' ? 'default' : 'outline'}
-              className={filterStatus === 'all' ? 'bg-gradient-to-r from-blue-700 to-green-700' : ''}
-            >
-              All
-            </Button>
-            <Button
-              onClick={() => setFilterStatus('pending')}
-              variant={filterStatus === 'pending' ? 'default' : 'outline'}
-              className={filterStatus === 'pending' ? 'bg-amber-600' : ''}
-            >
-              Pending
-            </Button>
-            <Button
-              onClick={() => setFilterStatus('in_progress')}
-              variant={filterStatus === 'in_progress' ? 'default' : 'outline'}
-              className={filterStatus === 'in_progress' ? 'bg-blue-600' : ''}
-            >
-              In Progress
-            </Button>
-            <Button
-              onClick={() => setFilterStatus('completed')}
-              variant={filterStatus === 'completed' ? 'default' : 'outline'}
-              className={filterStatus === 'completed' ? 'bg-green-600' : ''}
-            >
-              Completed
-            </Button>
-          </div>
-          
-          {/* Search Box - for Support Users */}
-          {currentUser?.role === 'support' && (
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search by Serial #, Customer, Invoice #, Work Order #..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg w-80 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-2 top-2.5 text-gray-400 hover:text-gray-600"
-                >
-                  ✕
-                </button>
-              )}
-            </div>
-          )}
-          
-          {canCreateActivity && (
-            <Button
-              onClick={() => setShowAddForm(!showAddForm)}
-              className="bg-gradient-to-r from-blue-700 to-green-700"
-            >
-              + Create Activity
-            </Button>
-          )}
-        </div>
+        <ActivityFilters
+          filterStatus={filterStatus}
+          setFilterStatus={setFilterStatus}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          canCreateActivity={canCreateActivity}
+          setShowAddForm={setShowAddForm}
+          showAddForm={showAddForm}
+          currentUser={currentUser}
+        />
 
-        {/* Search Bar */}
-        <div className="mb-6">
-          <input
-            type="text"
-            placeholder="🔍 Search by Serial #, Customer, Assigned To, Invoice #, Work Order #, Title..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
-          {searchQuery && (
-            <p className="text-sm text-gray-600 mt-2">
-              Found {filteredActivities.length} activit{filteredActivities.length !== 1 ? 'ies' : 'y'}
-            </p>
-          )}
-        </div>
+        {/* Main Search Bar */}
+        <ActivitySearchBar
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          resultsCount={filteredActivities.length}
+        />
 
         {/* Performance Chart - Assigned To Performance */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="text-xl">📊 Performance by Assigned User</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b-2 border-gray-200">
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Assigned To</th>
-                    <th className="text-center py-3 px-4 font-semibold text-gray-700">Total Activities</th>
-                    <th className="text-center py-3 px-4 font-semibold text-gray-700">Completed</th>
-                    <th className="text-center py-3 px-4 font-semibold text-gray-700">In Progress</th>
-                    <th className="text-center py-3 px-4 font-semibold text-gray-700">Invoices</th>
-                    <th className="text-center py-3 px-4 font-semibold text-gray-700">Work Orders</th>
-                    <th className="text-right py-3 px-4 font-semibold text-gray-700">Total Value</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {(() => {
-                    // Calculate performance by assigned user
-                    const performanceMap = {};
-                    
-                    filteredActivities.forEach(activity => {
-                      const assignedTo = activity.assigned_to || 'Unassigned';
-                      const userName = getUserName(assignedTo);
-                      
-                      if (!performanceMap[userName]) {
-                        performanceMap[userName] = {
-                          total: 0,
-                          completed: 0,
-                          inProgress: 0,
-                          invoices: 0,
-                          workOrders: 0,
-                          totalValue: 0
-                        };
-                      }
-                      
-                      performanceMap[userName].total++;
-                      
-                      if (activity.status === 'completed') {
-                        performanceMap[userName].completed++;
-                        if (activity.invoice_number) performanceMap[userName].invoices++;
-                        if (activity.work_order_no) performanceMap[userName].workOrders++;
-                        if (activity.total_amount) {
-                          performanceMap[userName].totalValue += parseFloat(activity.total_amount);
-                        }
-                      }
-                      
-                      if (activity.status === 'in_progress') {
-                        performanceMap[userName].inProgress++;
-                      }
-                    });
-                    
-                    // Convert to array and sort by total activities
-                    const performanceData = Object.entries(performanceMap)
-                      .map(([name, stats]) => ({ name, ...stats }))
-                      .sort((a, b) => b.total - a.total);
-                    
-                    return performanceData.length > 0 ? (
-                      performanceData.map((perf, index) => (
-                        <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
-                          <td className="py-3 px-4">
-                            <div className="flex items-center">
-                              <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-700 to-green-700 flex items-center justify-center text-white font-bold mr-3">
-                                {perf.name.charAt(0).toUpperCase()}
-                              </div>
-                              <span className="font-medium text-gray-900">{perf.name}</span>
-                            </div>
-                          </td>
-                          <td className="text-center py-3 px-4">
-                            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-blue-100 text-blue-800">
-                              {perf.total}
-                            </span>
-                          </td>
-                          <td className="text-center py-3 px-4">
-                            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-800">
-                              {perf.completed}
-                            </span>
-                          </td>
-                          <td className="text-center py-3 px-4">
-                            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-amber-100 text-amber-800">
-                              {perf.inProgress}
-                            </span>
-                          </td>
-                          <td className="text-center py-3 px-4">
-                            <span className="text-gray-700 font-medium">
-                              {perf.invoices > 0 ? `📄 ${perf.invoices}` : '-'}
-                            </span>
-                          </td>
-                          <td className="text-center py-3 px-4">
-                            <span className="text-gray-700 font-medium">
-                              {perf.workOrders > 0 ? `🔧 ${perf.workOrders}` : '-'}
-                            </span>
-                          </td>
-                          <td className="text-right py-3 px-4">
-                            <span className="font-bold text-green-700">
-                              {perf.totalValue > 0 ? formatAmount(perf.totalValue) : '-'}
-                            </span>
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan="7" className="text-center py-8 text-gray-500">
-                          No activities found
-                        </td>
-                      </tr>
-                    );
-                  })()}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
+        <ActivityPerformanceChart
+          activities={filteredActivities}
+          getUserName={getUserName}
+          formatAmount={formatAmount}
+        />
 
         {/* Activities List */}
         <div className="space-y-4">
