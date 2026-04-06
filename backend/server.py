@@ -43,7 +43,11 @@ from routes import (
     location_routes,
     product_routes,
     lead_routes,
-    company_routes
+    company_routes,
+    user_routes,
+    team_routes,
+    geofence_routes,
+    dashboard_routes
 )
 
 ROOT_DIR = Path(__file__).parent
@@ -1410,6 +1414,10 @@ app.include_router(location_routes.router, prefix="/api")
 app.include_router(product_routes.router, prefix="/api")
 app.include_router(lead_routes.router, prefix="/api")
 app.include_router(company_routes.router, prefix="/api")
+app.include_router(user_routes.router, prefix="/api")
+app.include_router(team_routes.router, prefix="/api")
+app.include_router(geofence_routes.router, prefix="/api")
+app.include_router(dashboard_routes.router, prefix="/api")
 
 app.add_middleware(
     CORSMiddleware,

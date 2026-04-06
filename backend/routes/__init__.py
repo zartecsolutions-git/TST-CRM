@@ -7,3 +7,7 @@ from . import location_routes
 from . import product_routes
 from . import lead_routes
 from . import company_routes
+from . import user_routes
+from . import team_routes
+from . import geofence_routes
+from . import dashboard_routes
