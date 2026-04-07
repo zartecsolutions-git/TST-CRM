@@ -11,54 +11,15 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../contexts/AuthContext';
 import { colors } from '../utils/colors';
-import {
-  requestLocationPermissions,
-  startLocationTracking,
-  stopLocationTracking,
-  isLocationTrackingActive,
-} from '../services/locationService';
+// Location tracking is automatic and silent - no UI needed
 
 export default function DashboardScreen({ navigation }) {
   const { user, logout } = useAuth();
-  const [tracking, setTracking] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-
-  useEffect(() => {
-    checkTracking();
-  }, []);
-
-  const checkTracking = async () => {
-    const isActive = await isLocationTrackingActive();
-    setTracking(isActive);
-  };
-
-  const handleLocationTracking = async () => {
-    if (tracking) {
-      const result = await stopLocationTracking();
-      if (result.success) {
-        setTracking(false);
-        Alert.alert('Success', 'Location tracking stopped');
-      }
-    } else {
-      const permission = await requestLocationPermissions();
-      if (!permission.success) {
-        Alert.alert('Permission Required', permission.message);
-        return;
-      }
-
-      const result = await startLocationTracking();
-      if (result.success) {
-        setTracking(true);
-        Alert.alert('Success', 'Location tracking started');
-      } else {
-        Alert.alert('Error', result.error);
-      }
-    }
-  };
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await checkTracking();
+    // Refresh data if needed
     setRefreshing(false);
   };
 
@@ -91,35 +52,6 @@ export default function DashboardScreen({ navigation }) {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        {/* Location Tracking Card */}
-        <View style={styles.card}>
-          <View style={styles.cardHeader}>
-            <Text style={styles.cardTitle}>📍 Location Tracking</Text>
-            <View
-              style={[
-                styles.statusDot,
-                { backgroundColor: tracking ? colors.success : colors.textSecondary },
-              ]}
-            />
-          </View>
-          <Text style={styles.cardDescription}>
-            {tracking
-              ? 'Your location is being tracked in the background'
-              : 'Start tracking to share your location'}
-          </Text>
-          <TouchableOpacity
-            style={[
-              styles.trackingButton,
-              { backgroundColor: tracking ? colors.error : colors.primary },
-            ]}
-            onPress={handleLocationTracking}
-          >
-            <Text style={styles.trackingButtonText}>
-              {tracking ? 'Stop Tracking' : 'Start Tracking'}
-            </Text>
-          </TouchableOpacity>
-        </View>
-
         {/* Quick Actions */}
         <Text style={styles.sectionTitle}>Quick Actions</Text>
         
@@ -259,48 +191,6 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: 20,
-  },
-  card: {
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: colors.text,
-  },
-  statusDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-  },
-  cardDescription: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    marginBottom: 16,
-  },
-  trackingButton: {
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  trackingButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 16,
   },
   sectionTitle: {
     fontSize: 20,
