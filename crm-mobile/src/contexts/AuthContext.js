@@ -1,7 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authAPI } from '../services/api';
-import { requestLocationPermissions, startLocationTracking } from '../services/locationService';
 
 const AuthContext = createContext();
 
@@ -31,20 +30,35 @@ export const AuthProvider = ({ children }) => {
         setToken(storedToken);
         setUser(JSON.parse(storedUser));
         
-        // Auto-start location tracking (silent, no user interaction)
-        setTimeout(async () => {
-          try {
-            await requestLocationPermissions();
-            await startLocationTracking();
-          } catch (error) {
-            console.log('Location tracking setup:', error.message);
-          }
-        }, 2000);
+        // Location tracking is completely optional - don't crash if it fails
+        startLocationTrackingOptional();
       }
     } catch (error) {
-      console.error('Auth check error:', error);
+      console.log('Auth check error:', error);
+      // Don't crash - just continue without auth
     } finally {
       setLoading(false);
+    }
+  };
+
+  const startLocationTrackingOptional = async () => {
+    // Import location service only when needed to avoid crashes
+    try {
+      const locationService = require('../services/locationService');
+      
+      setTimeout(async () => {
+        try {
+          await locationService.requestLocationPermissions();
+          await locationService.startLocationTracking();
+          console.log('Location tracking started successfully');
+        } catch (error) {
+          console.log('Location tracking not available:', error.message);
+          // Continue without location tracking - not critical
+        }
+      }, 2000);
+    } catch (error) {
+      console.log('Location service not available:', error.message);
+      // Continue without location service - not critical
     }
   };
 
@@ -59,15 +73,8 @@ export const AuthProvider = ({ children }) => {
       setToken(access_token);
       setUser(userData);
       
-      // Auto-start location tracking after login (silent)
-      setTimeout(async () => {
-        try {
-          await requestLocationPermissions();
-          await startLocationTracking();
-        } catch (error) {
-          console.log('Location tracking setup:', error.message);
-        }
-      }, 2000);
+      // Start location tracking after login (optional)
+      startLocationTrackingOptional();
       
       return { success: true };
     } catch (error) {
@@ -79,10 +86,17 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
-    await AsyncStorage.removeItem('token');
-    await AsyncStorage.removeItem('user');
-    setToken(null);
-    setUser(null);
+    try {
+      await AsyncStorage.removeItem('token');
+      await AsyncStorage.removeItem('user');
+      setToken(null);
+      setUser(null);
+    } catch (error) {
+      console.log('Logout error:', error);
+      // Force logout anyway
+      setToken(null);
+      setUser(null);
+    }
   };
 
   return (
