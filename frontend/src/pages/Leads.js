@@ -235,8 +235,8 @@ export default function Leads() {
   if (loading) return <div className="flex items-center justify-center min-h-screen"><div>Loading...</div></div>;
 
   return (
-    <div className="w-full h-full overflow-y-auto p-3 sm:p-4 lg:p-6">
-      <div className="w-full max-w-7xl lg:mx-auto">
+    <div className="w-full h-full overflow-x-hidden overflow-y-auto p-2 sm:p-4 lg:p-6">
+      <div className="w-full max-w-7xl lg:mx-auto overflow-x-hidden">
         <PageHeader title="Leads Management" />
         
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 sm:mb-6 mt-4 sm:mt-6">

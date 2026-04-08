@@ -96,17 +96,17 @@ export default function Customers() {
   if (loading) return <div className="flex items-center justify-center min-h-screen"><div>Loading...</div></div>;
 
   return (
-    <div className="w-full h-full overflow-y-auto">
+    <div className="w-full h-full overflow-x-hidden overflow-y-auto">
       <PageHeader title="👥 Customer Management">
         <div className="flex gap-2">
-          <button onClick={() => window.location.href = '/dashboard'} className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 hidden lg:inline-flex">
+          <button onClick={() => window.location.href = '/dashboard'} className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 hidden lg:inline-flex text-sm">
             Dashboard
           </button>
-          <button onClick={() => setShowForm(true)} className="bg-gradient-to-r from-blue-700 to-green-700 text-white px-6 py-2 rounded-lg">+ Add Customer</button>
+          <button onClick={() => setShowForm(true)} className="bg-gradient-to-r from-blue-700 to-green-700 text-white px-4 py-2 rounded-lg text-sm">+ Add</button>
         </div>
       </PageHeader>
 
-      <div className="w-full px-3 sm:px-4 lg:px-6 py-4 sm:py-6">
+      <div className="w-full px-2 sm:px-4 lg:px-6 py-3 sm:py-6 overflow-x-hidden">
 
         {/* Search Bar */}
         <div className="mobile-section">

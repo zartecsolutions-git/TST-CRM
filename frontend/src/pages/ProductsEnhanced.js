@@ -384,8 +384,8 @@ export default function ProductsEnhanced() {
   if (loading) return <div className="p-8">Loading...</div>;
 
   return (
-    <div className="w-full h-full overflow-y-auto p-3 sm:p-4 lg:p-6">
-      <div className="w-full max-w-7xl lg:mx-auto">
+    <div className="w-full h-full overflow-x-hidden overflow-y-auto p-2 sm:p-4 lg:p-6">
+      <div className="w-full max-w-7xl lg:mx-auto overflow-x-hidden">
         <PageHeader title="Products Master" />
         <button
           onClick={() => navigate('/dashboard')}

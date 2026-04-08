@@ -20,6 +20,7 @@ import Reports from './pages/Reports';
 import '@/App.css';
 import './mobile.css';
 import './mobile-responsive.css';
+import './mobile-aggressive.css';
 
 // Protected Route Component with MobileLayout
 const ProtectedRoute = ({ children }) => {

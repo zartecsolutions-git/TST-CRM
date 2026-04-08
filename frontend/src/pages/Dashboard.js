@@ -28,9 +28,9 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="w-full h-full overflow-y-auto">
+    <div className="w-full h-full overflow-x-hidden overflow-y-auto">
       {/* Main Content - Mobile Responsive */}
-      <main className="w-full px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8 max-w-7xl lg:mx-auto">
+      <main className="w-full px-2 sm:px-4 lg:px-6 py-3 sm:py-6 lg:py-8 max-w-7xl lg:mx-auto overflow-x-hidden">
         <div className="mb-6 sm:mb-8">
           <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Welcome back, {user?.name}!</h2>
           <p className="text-sm sm:text-base text-gray-600 mt-1">Here's what's happening with your team today.</p>
