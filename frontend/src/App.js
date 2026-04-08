@@ -21,6 +21,7 @@ import '@/App.css';
 import './mobile.css';
 import './mobile-responsive.css';
 import './mobile-aggressive.css';
+import './mobile-portrait.css';
 
 // Protected Route Component with MobileLayout
 const ProtectedRoute = ({ children }) => {

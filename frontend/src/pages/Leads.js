@@ -239,35 +239,32 @@ export default function Leads() {
       <div className="w-full max-w-7xl lg:mx-auto overflow-x-hidden">
         <PageHeader title="Leads Management" />
         
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 sm:mb-6 mt-4 sm:mt-6">
-          <div></div>
-          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-            <button onClick={() => window.location.href = '/dashboard'} className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 hidden lg:inline-flex">
-              Back to Dashboard
-            </button>
-            <button onClick={() => setShowForm(true)} className="bg-gradient-to-r from-blue-700 to-green-700 text-white px-6 py-2 rounded-lg w-full sm:w-auto">+ Add Lead</button>
-          </div>
+        <div className="flex flex-col gap-2 mb-3 sm:mb-4 mt-3 sm:mt-4">
+          <button onClick={() => window.location.href = '/dashboard'} className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 hidden lg:inline-flex text-sm w-auto">
+            Back to Dashboard
+          </button>
+          <button onClick={() => setShowForm(true)} className="bg-gradient-to-r from-blue-700 to-green-700 text-white px-4 py-2 rounded-lg w-full sm:w-auto text-sm">+ Add Lead</button>
         </div>
 
         {/* Statistics Cards - Mobile Responsive */}
-        <div className="mobile-stat-grid mb-4 sm:mb-6">
-          <div className="bg-white rounded-lg shadow p-4 sm:p-6 border-l-4 border-blue-500">
-            <h3 className="text-xs sm:text-sm font-semibold text-gray-600 uppercase mb-2">Total Leads</h3>
-            <p className="text-2xl sm:text-3xl font-bold text-blue-600">{leads.length}</p>
+        <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4 mb-4 sm:mb-6">
+          <div className="bg-white rounded-lg shadow p-3 sm:p-4 lg:p-6 border-l-4 border-blue-500">
+            <h3 className="text-xs sm:text-sm font-semibold text-gray-600 uppercase mb-1 sm:mb-2">Total Leads</h3>
+            <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-blue-600">{leads.length}</p>
           </div>
-          <div className="bg-white rounded-lg shadow p-4 sm:p-6 border-l-4 border-green-600">
-            <h3 className="text-xs sm:text-sm font-semibold text-gray-600 uppercase mb-2">Total Quote Value</h3>
-            <p className="text-2xl sm:text-3xl font-bold text-green-600">{formatAmount(totalQuoteValue)}</p>
+          <div className="bg-white rounded-lg shadow p-3 sm:p-4 lg:p-6 border-l-4 border-green-600">
+            <h3 className="text-xs sm:text-sm font-semibold text-gray-600 uppercase mb-1 sm:mb-2">Total Quote</h3>
+            <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-green-600">{formatAmount(totalQuoteValue)}</p>
           </div>
-          <div className="bg-white rounded-lg shadow p-4 sm:p-6 border-l-4 border-amber-500">
-            <h3 className="text-xs sm:text-sm font-semibold text-gray-600 uppercase mb-2">Active Pipeline</h3>
-            <p className="text-2xl sm:text-3xl font-bold text-amber-600">{formatAmount(activePipelineValue)}</p>
+          <div className="bg-white rounded-lg shadow p-3 sm:p-4 lg:p-6 border-l-4 border-amber-500">
+            <h3 className="text-xs sm:text-sm font-semibold text-gray-600 uppercase mb-1 sm:mb-2">Pipeline</h3>
+            <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-amber-600">{formatAmount(activePipelineValue)}</p>
             <p className="text-xs text-gray-500 mt-1">Excluding closed</p>
           </div>
-          <div className="bg-white rounded-lg shadow p-4 sm:p-6 border-l-4 border-green-500">
-            <h3 className="text-xs sm:text-sm font-semibold text-gray-600 uppercase mb-2">Total Project Value</h3>
-            <p className="text-2xl sm:text-3xl font-bold text-green-600">{formatAmount(totalProjectValue)}</p>
-            <p className="text-xs text-gray-500 mt-1">From closed won</p>
+          <div className="bg-white rounded-lg shadow p-3 sm:p-4 lg:p-6 border-l-4 border-green-500">
+            <h3 className="text-xs sm:text-sm font-semibold text-gray-600 uppercase mb-1 sm:mb-2">Project Value</h3>
+            <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-green-600">{formatAmount(totalProjectValue)}</p>
+            <p className="text-xs text-gray-500 mt-1">Closed won</p>
           </div>
         </div>
 

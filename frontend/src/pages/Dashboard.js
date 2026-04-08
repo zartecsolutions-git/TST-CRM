@@ -37,7 +37,7 @@ const Dashboard = () => {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+        <div className="grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-4 mb-4 sm:mb-6 lg:mb-8">
           {user?.role === 'admin' && (
             <Button
               onClick={() => window.location.href = '/users'}
@@ -137,7 +137,7 @@ const Dashboard = () => {
         ) : (
           <>
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+            <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4 mb-4 sm:mb-6">
               {/* Total Users - Hidden for Sales Users */}
               {user?.role !== 'sales' && (
                 <Card className="hover:shadow-lg transition-shadow" data-testid="stat-total-users">
