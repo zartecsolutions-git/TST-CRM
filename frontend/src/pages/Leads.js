@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useCurrency } from '../contexts/CurrencyContext';
-import PageHeader from '../components/PageHeader';
 import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
@@ -237,14 +236,30 @@ export default function Leads() {
   return (
     <div className="w-screen max-w-full overflow-x-hidden overflow-y-auto p-2 sm:p-4 lg:p-6">
       <div className="w-full max-w-full overflow-x-hidden">
-        <PageHeader title="Leads Management" />
-        
-        <div className="flex flex-col gap-2 mb-3 sm:mb-4 mt-3 sm:mt-4">
-          <button onClick={() => window.location.href = '/dashboard'} className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 hidden lg:inline-flex text-sm w-auto">
+        {/* Desktop Only: Header with Back Button */}
+        <div className="hidden lg:flex lg:items-center lg:justify-between mb-6">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
+            🎯 Leads Management
+          </h1>
+          <button 
+            onClick={() => window.location.href = '/dashboard'}
+            className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm"
+          >
             Back to Dashboard
           </button>
+        </div>
+        
+        {/* Mobile Only: Add Lead Button */}
+        <div className="lg:hidden mb-3">
           {(user.role === 'admin' || user.role === 'sales') && (
             <button onClick={() => setShowForm(true)} className="bg-gradient-to-r from-blue-700 to-green-700 text-white px-3 py-1.5 rounded-lg w-auto text-base font-bold hover:shadow-lg transition-shadow">+ Add Lead</button>
+          )}
+        </div>
+        
+        {/* Desktop Only: Add Lead Button */}
+        <div className="hidden lg:block mb-4">
+          {(user.role === 'admin' || user.role === 'sales') && (
+            <button onClick={() => setShowForm(true)} className="bg-gradient-to-r from-blue-700 to-green-700 text-white px-4 py-2 rounded-lg text-sm font-bold hover:shadow-lg transition-shadow">+ Add Lead</button>
           )}
         </div>
 
