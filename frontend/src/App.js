@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LocationProvider } from './contexts/LocationContext';
 import { CurrencyProvider } from './contexts/CurrencyContext';
+import MobileLayout from './components/layout/MobileLayout';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
@@ -17,8 +18,9 @@ import Leads from './pages/Leads';
 import CompanySettings from './pages/CompanySettings';
 import Reports from './pages/Reports';
 import '@/App.css';
+import './mobile.css';
 
-// Protected Route Component
+// Protected Route Component with MobileLayout
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
 
@@ -37,7 +39,7 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/login" replace />;
   }
 
-  return children;
+  return <MobileLayout>{children}</MobileLayout>;
 };
 
 // Public Route Component (redirect to dashboard if already logged in)
@@ -63,6 +65,45 @@ const PublicRoute = ({ children }) => {
 };
 
 function App() {
+  // Register Service Worker for PWA
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker
+          .register('/service-worker.js')
+          .then((registration) => {
+            console.log('SW registered:', registration);
+          })
+          .catch((error) => {
+            console.log('SW registration failed:', error);
+          });
+      });
+    }
+
+    // Listen for online/offline events
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  const handleOnline = () => {
+    console.log('App is online');
+    // Trigger background sync
+    if ('serviceWorker' in navigator && 'sync' in navigator.serviceWorker) {
+      navigator.serviceWorker.ready.then((registration) => {
+        return registration.sync.register('sync-locations');
+      });
+    }
+  };
+
+  const handleOffline = () => {
+    console.log('App is offline - data will sync when back online');
+  };
+
   return (
     <AuthProvider>
       <CurrencyProvider>

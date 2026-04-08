@@ -1,0 +1,27 @@
+{
+  "short_name": "CRM",
+  "name": "Sales & Service CRM",
+  "description": "Mobile-friendly CRM for sales and service management",
+  "icons": [
+    {
+      "src": "/logo192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "theme_color": "#3B82F6",
+  "background_color": "#FFFFFF",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "categories": ["business", "productivity"],
+  "prefer_related_applications": false
+}

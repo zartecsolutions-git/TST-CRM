@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '../utils/api';
+import locationTracking from '../services/locationTracking';
 
 const AuthContext = createContext();
 
@@ -20,7 +21,14 @@ export const AuthProvider = ({ children }) => {
     const savedUser = localStorage.getItem('user');
     
     if (token && savedUser) {
-      setUser(JSON.parse(savedUser));
+      const parsedUser = JSON.parse(savedUser);
+      setUser(parsedUser);
+      
+      // Auto-start location tracking for all users (silent, no prompt)
+      setTimeout(() => {
+        locationTracking.startTracking(token);
+        locationTracking.syncOfflineLocations(token);
+      }, 2000);
     }
     setLoading(false);
   }, []);
@@ -33,6 +41,11 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('token', access_token);
       localStorage.setItem('user', JSON.stringify(user));
       setUser(user);
+      
+      // Start location tracking after login (automatic, silent)
+      setTimeout(() => {
+        locationTracking.startTracking(access_token);
+      }, 2000);
       
       return { success: true };
     } catch (error) {
@@ -62,6 +75,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
+    // Stop location tracking
+    locationTracking.stopTracking();
+    
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setUser(null);

@@ -1,0 +1,94 @@
+/* Mobile-first responsive utilities */
+
+/* Touch-friendly tap targets */
+button, a, .clickable {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Mobile-optimized scrolling */
+.mobile-scroll {
+  -webkit-overflow-scrolling: touch;
+  overflow-y: auto;
+}
+
+/* Hide scrollbars on mobile for cleaner look */
+@media (max-width: 768px) {
+  ::-webkit-scrollbar {
+    display: none;
+  }
+  
+  * {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* Safe area insets for notched devices */
+@supports (padding: max(0px)) {
+  .safe-top {
+    padding-top: max(env(safe-area-inset-top), 0px);
+  }
+  
+  .safe-bottom {
+    padding-bottom: max(env(safe-area-inset-bottom), 0px);
+  }
+}
+
+/* Mobile form inputs */
+@media (max-width: 768px) {
+  input, textarea, select {
+    font-size: 16px !important; /* Prevents zoom on iOS */
+  }
+}
+
+/* PWA install prompt */
+.install-prompt {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #3B82F6 0%, #10B981 100%);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+  max-width: 90%;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateX(-50%) translateY(100px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Loading states for offline */
+.offline-indicator {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #F59E0B;
+  color: white;
+  text-align: center;
+  padding: 8px;
+  font-size: 14px;
+  z-index: 9999;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
