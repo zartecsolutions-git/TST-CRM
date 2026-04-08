@@ -152,6 +152,48 @@ async def get_user_location_history(
     return locations
 
 
+
+@router.get("/locations/history/{user_id}")
+async def get_user_location_history_filtered(
+    user_id: str,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    current_user_id: str = Depends(get_current_user),
+    db = Depends(get_db)
+):
+    """Get user's location history with date filtering - Admin only"""
+    await require_admin(current_user_id)
+    
+    # Build query
+    query = {"user_id": user_id}
+    
+    # Add date filtering if provided
+    if start_date or end_date:
+        timestamp_filter = {}
+        if start_date:
+            start_dt = datetime.fromisoformat(start_date).replace(hour=0, minute=0, second=0, microsecond=0)
+            timestamp_filter["$gte"] = start_dt.isoformat()
+        if end_date:
+            end_dt = datetime.fromisoformat(end_date).replace(hour=23, minute=59, second=59, microsecond=999999)
+            timestamp_filter["$lte"] = end_dt.isoformat()
+        
+        if timestamp_filter:
+            query["timestamp"] = timestamp_filter
+    
+    # Fetch locations
+    locations = await db.locations.find(
+        query,
+        {"_id": 0}
+    ).sort("timestamp", -1).limit(1000).to_list(1000)
+    
+    # Convert timestamps
+    for location in locations:
+        if isinstance(location.get('timestamp'), str):
+            location['timestamp'] = datetime.fromisoformat(location['timestamp'])
+    
+    return locations
+
+
 @router.get("/locations/user/{user_id}/route")
 async def get_user_route(
     user_id: str,

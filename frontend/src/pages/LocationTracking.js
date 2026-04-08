@@ -10,17 +10,20 @@ export default function LocationTracking() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState('all');
-  const [timeRange, setTimeRange] = useState('today');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (user?.role === 'admin') {
       fetchData();
-      // Refresh every 30 seconds
-      const interval = setInterval(fetchData, 30000);
-      return () => clearInterval(interval);
+      // Refresh every 30 seconds for "all users" view only
+      if (selectedUser === 'all') {
+        const interval = setInterval(fetchData, 30000);
+        return () => clearInterval(interval);
+      }
     }
-  }, [selectedUser, timeRange, user]);
+  }, [selectedUser, user]);
 
   // Only admins can access this page
   if (user?.role !== 'admin') {
@@ -40,11 +43,17 @@ export default function LocationTracking() {
 
   const fetchData = async () => {
     try {
+      setLoading(true);
       const [usersResponse, locationsResponse] = await Promise.all([
         api.get('/users'),
         selectedUser === 'all'
           ? api.get('/locations/current')
-          : api.get(`/locations/history/${selectedUser}?range=${timeRange}`)
+          : api.get(`/locations/history/${selectedUser}`, {
+              params: {
+                start_date: startDate || undefined,
+                end_date: endDate || undefined
+              }
+            })
       ]);
       // Extract data from axios response objects
       setUsers(Array.isArray(usersResponse.data) ? usersResponse.data : []);
@@ -126,38 +135,66 @@ export default function LocationTracking() {
       </div>
 
       {/* Filters */}
-      <div className="flex gap-4 mb-6">
+      <div className="flex flex-wrap gap-4 mb-6">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">User</label>
           <select
             value={selectedUser}
-            onChange={(e) => setSelectedUser(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+            onChange={(e) => {
+              setSelectedUser(e.target.value);
+              // Reset dates when changing user
+              if (e.target.value === 'all') {
+                setStartDate('');
+                setEndDate('');
+              }
+            }}
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white"
           >
             <option value="all">All Users (Current Location)</option>
-            {users.filter(u => u.role !== 'admin').map(user => (
-              <option key={user.id} value={user.id}>{user.name}</option>
+            {users.filter(u => u.role !== 'admin').map(u => (
+              <option key={u.id} value={u.id}>{u.name}</option>
             ))}
           </select>
         </div>
 
         {selectedUser !== 'all' && (
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Time Range</label>
-            <select
-              value={timeRange}
-              onChange={(e) => setTimeRange(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="today">Today</option>
-              <option value="week">This Week</option>
-              <option value="month">This Month</option>
-            </select>
-          </div>
+          <>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white"
+              />
+            </div>
+
+            <div className="flex items-end">
+              <Button 
+                onClick={() => fetchData()} 
+                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2"
+              >
+                📅 Filter
+              </Button>
+            </div>
+          </>
         )}
 
         <div className="flex items-end">
-          <Button onClick={fetchData} className="bg-blue-600 hover:bg-blue-700">
+          <Button 
+            onClick={() => fetchData()} 
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2"
+          >
             🔄 Refresh
           </Button>
         </div>
