@@ -108,3 +108,44 @@ async def delete_user(
         raise HTTPException(status_code=404, detail="User not found")
     
     return {"message": "User deleted successfully"}
+
+
+
+@router.put("/users/{user_id}/password")
+async def change_user_password(
+    user_id: str,
+    password_data: dict,
+    current_user_id: str = Depends(get_current_user),
+    db = Depends(get_db)
+):
+    """Admin endpoint to change any user's password"""
+    # Only admins can change other users' passwords
+    await require_admin(current_user_id)
+    
+    new_password = password_data.get('new_password')
+    if not new_password or len(new_password) < 6:
+        raise HTTPException(status_code=400, detail="Password must be at least 6 characters")
+    
+    # Check if user exists
+    user_doc = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user_doc:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Hash the new password
+    from passlib.context import CryptContext
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    hashed_password = pwd_context.hash(new_password)
+    
+    # Update password
+    result = await db.users.update_one(
+        {"id": user_id},
+        {"$set": {
+            "password_hash": hashed_password,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    return {"message": f"Password updated successfully for user {user_doc.get('name', user_id)}"}

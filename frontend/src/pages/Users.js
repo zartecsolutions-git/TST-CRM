@@ -13,6 +13,9 @@ const Users = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [newPassword, setNewPassword] = useState('');
   const [filterRole, setFilterRole] = useState('all');
   const [newUser, setNewUser] = useState({
     name: '',
@@ -65,6 +68,32 @@ const Users = () => {
         alert('Error deleting user: ' + (error.response?.data?.detail || error.message));
       }
     }
+  };
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    if (!newPassword || newPassword.length < 6) {
+      alert('Password must be at least 6 characters');
+      return;
+    }
+    
+    try {
+      await api.put(`/users/${selectedUser.id}/password`, {
+        new_password: newPassword
+      });
+      alert(`Password updated successfully for ${selectedUser.name}!`);
+      setShowPasswordModal(false);
+      setSelectedUser(null);
+      setNewPassword('');
+    } catch (error) {
+      alert('Error changing password: ' + (error.response?.data?.detail || error.message));
+    }
+  };
+
+  const openPasswordModal = (user) => {
+    setSelectedUser(user);
+    setNewPassword('');
+    setShowPasswordModal(true);
   };
 
   const isAdmin = currentUser?.role === 'admin';
@@ -242,13 +271,23 @@ const Users = () => {
                       {user.role === 'sales' ? 'Sales' : user.role === 'support' ? 'Support' : user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                     </Badge>
                     {isAdmin && user.id !== currentUser?.id && (
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => handleDeleteUser(user.id)}
-                      >
-                        Delete
-                      </Button>
+                      <div className="flex space-x-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => openPasswordModal(user)}
+                          className="bg-blue-600 text-white hover:bg-blue-700"
+                        >
+                          🔑 Password
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleDeleteUser(user.id)}
+                        >
+                          Delete
+                        </Button>
+                      </div>
                     )}
                   </div>
                   {user.phone && (
@@ -275,6 +314,56 @@ const Users = () => {
           </Card>
         )}
       </div>
+
+
+      {/* Change Password Modal */}
+      {showPasswordModal && selectedUser && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <h2 className="text-2xl font-bold mb-4 text-gray-800">
+              Change Password for {selectedUser.name}
+            </h2>
+            <form onSubmit={handleChangePassword}>
+              <div className="mb-4">
+                <Label htmlFor="newPassword">New Password</Label>
+                <Input
+                  id="newPassword"
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Enter new password (min 6 characters)"
+                  required
+                  minLength={6}
+                  className="mt-1"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Password will be changed for: {selectedUser.email}
+                </p>
+              </div>
+              <div className="flex justify-end space-x-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setShowPasswordModal(false);
+                    setSelectedUser(null);
+                    setNewPassword('');
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  Update Password
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
