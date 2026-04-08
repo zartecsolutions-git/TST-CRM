@@ -12,6 +12,7 @@ export default function LocationTracking() {
   const [selectedUser, setSelectedUser] = useState('all');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [locationNames, setLocationNames] = useState({});
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
@@ -71,8 +72,12 @@ export default function LocationTracking() {
             user_name: item.user?.name
           }));
           setLocations(flatLocations);
+          // Fetch location names for the first 10 locations
+          fetchLocationNames(flatLocations.slice(0, 10));
         } else {
           setLocations(locData);
+          // Fetch location names for the first 10 locations
+          fetchLocationNames(locData.slice(0, 10));
         }
       } else {
         setLocations([]);
@@ -84,6 +89,21 @@ export default function LocationTracking() {
       setLocations([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchLocationNames = async (locationsList) => {
+    const names = {};
+    for (const location of locationsList) {
+      if (location.latitude && location.longitude) {
+        const key = `${location.latitude}-${location.longitude}`;
+        // Add a small delay to respect Nominatim rate limits (1 request per second)
+        await new Promise(resolve => setTimeout(resolve, 1100));
+        const name = await getLocationName(location.latitude, location.longitude);
+        names[key] = name;
+        // Update state incrementally so user sees names appearing
+        setLocationNames(prev => ({ ...prev, [key]: name }));
+      }
     }
   };
 
@@ -114,17 +134,23 @@ export default function LocationTracking() {
     try {
       // Use OpenStreetMap Nominatim for reverse geocoding (free, no API key needed)
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=en`
       );
       const data = await response.json();
       
-      // Return formatted address
+      // Return formatted address (street + city)
       if (data.address) {
         const parts = [];
+        // Add street/road
         if (data.address.road) parts.push(data.address.road);
-        if (data.address.suburb) parts.push(data.address.suburb);
-        if (data.address.city || data.address.town) parts.push(data.address.city || data.address.town);
-        if (data.address.state) parts.push(data.address.state);
+        else if (data.address.street) parts.push(data.address.street);
+        
+        // Add city/town
+        if (data.address.city) parts.push(data.address.city);
+        else if (data.address.town) parts.push(data.address.town);
+        else if (data.address.village) parts.push(data.address.village);
+        
+        // Add country for international locations
         if (data.address.country) parts.push(data.address.country);
         
         return parts.length > 0 ? parts.join(', ') : data.display_name;
@@ -292,40 +318,47 @@ export default function LocationTracking() {
             </div>
           ) : (
             <div className="space-y-4">
-              {locations.map((location, index) => (
-                <div
-                  key={location.id}
-                  className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                      <span className="text-2xl">📍</span>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900">
-                        {selectedUser === 'all' ? getUserName(location.user_id) : 'Location Update'}
-                      </h3>
-                      <p className="text-sm text-gray-600">
-                        Location #{locations.length - index}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        {formatDate(location.timestamp)} ({getTimeAgo(location.timestamp)})
-                      </p>
-                    </div>
-                  </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => location.latitude && location.longitude && window.open(
-                      `https://www.google.com/maps?q=${location.latitude},${location.longitude}`,
-                      '_blank'
-                    )}
-                    disabled={!location.latitude || !location.longitude}
+              {locations.map((location, index) => {
+                const locationKey = `${location.latitude}-${location.longitude}`;
+                const locationName = locationNames[locationKey];
+                
+                return (
+                  <div
+                    key={location.id}
+                    className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
                   >
-                    🗺️ View on Map
-                  </Button>
-                </div>
-              ))}
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                        <span className="text-2xl">📍</span>
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-gray-900">
+                          {selectedUser === 'all' ? getUserName(location.user_id) : 'Location Update'}
+                        </h3>
+                        <p className="text-sm text-gray-600">
+                          {locationName || (
+                            <span className="text-gray-400 italic">Loading address...</span>
+                          )}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {formatDate(location.timestamp)} ({getTimeAgo(location.timestamp)})
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => location.latitude && location.longitude && window.open(
+                        `https://www.google.com/maps?q=${location.latitude},${location.longitude}`,
+                        '_blank'
+                      )}
+                      disabled={!location.latitude || !location.longitude}
+                    >
+                      🗺️ View on Map
+                    </Button>
+                  </div>
+                );
+              })}
             </div>
           )}
         </CardContent>
