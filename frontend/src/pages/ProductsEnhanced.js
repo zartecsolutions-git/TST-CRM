@@ -755,15 +755,17 @@ export default function ProductsEnhanced() {
             )}
 
             <div className="mt-6 flex justify-between">
-              <button
-                onClick={() => {
-                  setShowDetails(false);
-                  openBulkAssignModal(selectedProduct);
-                }}
-                className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-              >
-                Assign Serials to Customer
-              </button>
+              {user.role === 'admin' && (
+                <button
+                  onClick={() => {
+                    setShowDetails(false);
+                    openBulkAssignModal(selectedProduct);
+                  }}
+                  className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                >
+                  Assign Serials to Customer
+                </button>
+              )}
               <button
                 onClick={() => setShowDetails(false)}
                 className="px-6 py-2 bg-gradient-to-r from-blue-700 to-green-700 text-white rounded-lg hover:shadow-lg"
