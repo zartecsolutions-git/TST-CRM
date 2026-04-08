@@ -5,8 +5,7 @@ const PageHeader = ({ title, subtitle, children }) => {
   const { companySettings } = useCurrency();
 
   return (
-    <header className="bg-white shadow-sm border-b lg:block hidden">
-      {/* Desktop Only - Hidden on Mobile (MobileLayout provides header) */}
+    <header className="hidden lg:block bg-white shadow-sm border-b">\n      {/* COMPLETELY HIDDEN ON MOBILE - MobileLayout provides the header */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           {/* Company Branding + Page Title */}

@@ -96,17 +96,25 @@ export default function Customers() {
   if (loading) return <div className="flex items-center justify-center min-h-screen"><div>Loading...</div></div>;
 
   return (
-    <div className="w-full h-full overflow-x-hidden overflow-y-auto">
-      <PageHeader title="👥 Customer Management">
-        <div className="flex gap-2">
-          <button onClick={() => window.location.href = '/dashboard'} className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 hidden lg:inline-flex text-sm">
-            Dashboard
-          </button>
-          <button onClick={() => setShowForm(true)} className="bg-gradient-to-r from-blue-700 to-green-700 text-white px-4 py-2 rounded-lg text-sm">+ Add</button>
+    <div className="w-screen max-w-full overflow-x-hidden overflow-y-auto">
+      {/* Customers page - No PageHeader on mobile */}
+      <div className="w-full px-2 sm:px-4 lg:px-6 py-3 sm:py-6 overflow-x-hidden max-w-full">
+        {/* Desktop only header */}
+        <div className="hidden lg:block mb-4">
+          <PageHeader title="👥 Customer Management">
+            <div className="flex gap-2">
+              <button onClick={() => window.location.href = '/dashboard'} className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm">
+                Dashboard
+              </button>
+              <button onClick={() => setShowForm(true)} className="bg-gradient-to-r from-blue-700 to-green-700 text-white px-4 py-2 rounded-lg text-sm">+ Add Customer</button>
+            </div>
+          </PageHeader>
         </div>
-      </PageHeader>
-
-      <div className="w-full px-2 sm:px-4 lg:px-6 py-3 sm:py-6 overflow-x-hidden">
+        
+        {/* Mobile only: Add Customer button */}
+        <div className="lg:hidden mb-3">
+          <button onClick={() => setShowForm(true)} className="bg-gradient-to-r from-blue-700 to-green-700 text-white px-4 py-2 rounded-lg text-sm w-full">+ Add Customer</button>
+        </div>
 
         {/* Search Bar */}
         <div className="mobile-section">
