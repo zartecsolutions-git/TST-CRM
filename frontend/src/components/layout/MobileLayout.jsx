@@ -132,9 +132,9 @@ const MobileLayout = ({ children }) => {
       <div className="hidden lg:flex h-screen">
         <aside className="w-64 bg-white shadow-lg border-r flex flex-col">
           <div className="p-6 border-b">
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center justify-center">
               {companySettings?.logo_url ? (
-                <img src={companySettings.logo_url} alt="Logo" className="h-12 w-auto" />
+                <img src={companySettings.logo_url} alt="Logo" className="h-16 w-auto" />
               ) : (
                 <div className="bg-gradient-to-r from-blue-600 to-green-600 p-2 rounded-lg">
                   <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -142,13 +142,15 @@ const MobileLayout = ({ children }) => {
                   </svg>
                 </div>
               )}
-              <div className="flex-1">
-                <h1 className="text-2xl font-bold text-gray-800">{user?.name}</h1>
-              </div>
             </div>
           </div>
 
           <nav className="flex-1 overflow-y-auto py-4">
+            {/* User Welcome - Near Dashboard */}
+            <div className="mx-4 mb-3 px-3 py-2 bg-gradient-to-r from-blue-50 to-green-50 rounded-lg">
+              <p className="text-xs text-gray-600">Welcome,</p>
+              <h3 className="text-base font-bold text-gray-800">{user?.name}</h3>
+            </div>
             {filteredNavItems.map((item) => (
               <button
                 key={item.path}
