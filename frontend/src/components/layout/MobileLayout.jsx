@@ -209,29 +209,9 @@ const MobileLayout = ({ children }) => {
       </div>
 
       {/* Mobile Content */}
-      <main className="lg:hidden flex-1 overflow-y-auto pb-16">
+      <main className="lg:hidden flex-1 overflow-y-auto">
         {children}
       </main>
-
-      {/* Bottom Navigation - Mobile Only - Role-Based */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-50">
-        <div className="flex justify-around items-center h-16">
-          {filteredNavItems.map((item) => (
-            <button
-              key={item.path}
-              onClick={() => navigate(item.path)}
-              className={`flex flex-col items-center justify-center flex-1 h-full transition-colors ${
-                isActive(item.path)
-                  ? 'text-blue-600 bg-blue-50'
-                  : 'text-gray-500'
-              }`}
-            >
-              <span className="text-2xl mb-1">{item.icon}</span>
-              <span className="text-xs font-medium">{item.label}</span>
-            </button>
-          ))}
-        </div>
-      </nav>
     </div>
   );
 };
