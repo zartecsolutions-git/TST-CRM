@@ -395,8 +395,8 @@ export default function ProductsEnhanced() {
           <span>Back to Dashboard</span>
         </button>
 
-      {/* Stats Cards */}
-      <ProductStats 
+        {/* Stats Cards */}
+        <ProductStats 
         products={products}
         inStockCount={inStockCount}
         soldCount={soldCount}
@@ -1028,6 +1028,7 @@ export default function ProductsEnhanced() {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }
