@@ -384,7 +384,7 @@ export default function ProductsEnhanced() {
   if (loading) return <div className="p-8">Loading...</div>;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-50 p-8">
+    <div className="w-full h-full overflow-y-auto p-3 sm:p-4 lg:p-6 max-w-7xl lg:mx-auto">
       <div className="flex justify-between items-center mb-6">
         <PageHeader title="Products Master" />
         <button

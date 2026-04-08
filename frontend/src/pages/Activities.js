@@ -407,14 +407,14 @@ const Activities = () => {
   const canCreateActivity = true; // All users can create activities
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-green-50 to-blue-50">
+    <div className="w-full h-full overflow-y-auto">
       <PageHeader title="📋 Activities Management">
-        <Button onClick={() => window.location.href = '/dashboard'} variant="outline">
+        <Button onClick={() => window.location.href = '/dashboard'} variant="outline" className="hidden lg:inline-flex">
           Back to Dashboard
         </Button>
       </PageHeader>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="w-full px-3 sm:px-4 lg:px-6 py-4 sm:py-6 max-w-7xl lg:mx-auto">
         {/* Statistics Cards */}
         <ActivityStats 
           totalActivities={totalActivitiesByUser}
