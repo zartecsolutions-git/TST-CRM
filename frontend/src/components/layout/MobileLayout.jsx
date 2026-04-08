@@ -49,6 +49,7 @@ const MobileLayout = ({ children }) => {
       {/* Top Header - Mobile */}
       <header className="lg:hidden bg-white shadow-sm border-b sticky top-0 z-40">
         <div className="flex justify-between items-center px-3 py-2.5">
+          {/* Logo - Left Side */}
           <div className="flex items-center space-x-2 flex-shrink-0">
             {companySettings?.logo_url ? (
               <img 
@@ -65,13 +66,9 @@ const MobileLayout = ({ children }) => {
             )}
           </div>
           
-          {/* User Name - Large and Bold on Right */}
-          <div className="flex-1 text-right px-3">
-            <h2 className="text-xl font-bold text-gray-800">{user?.name}</h2>
-          </div>
-          
-          {/* Profile Menu Button - ALL USERS */}
-          <div className="relative">
+          {/* User Name and Profile - Right Side */}
+          <div className="flex items-center space-x-3">
+            <h2 className="text-base sm:text-lg md:text-xl font-bold text-gray-800">{user?.name}</h2>
             <button
               onClick={() => setShowProfileMenu(!showProfileMenu)}
               className="p-1.5 rounded-lg hover:bg-gray-100 flex items-center gap-1"
