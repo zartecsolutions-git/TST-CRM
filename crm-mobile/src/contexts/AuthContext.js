@@ -29,36 +29,11 @@ export const AuthProvider = ({ children }) => {
       if (storedToken && storedUser) {
         setToken(storedToken);
         setUser(JSON.parse(storedUser));
-        
-        // Location tracking is completely optional - don't crash if it fails
-        startLocationTrackingOptional();
       }
     } catch (error) {
       console.log('Auth check error:', error);
-      // Don't crash - just continue without auth
     } finally {
       setLoading(false);
-    }
-  };
-
-  const startLocationTrackingOptional = async () => {
-    // Import location service only when needed to avoid crashes
-    try {
-      const locationService = require('../services/locationService');
-      
-      setTimeout(async () => {
-        try {
-          await locationService.requestLocationPermissions();
-          await locationService.startLocationTracking();
-          console.log('Location tracking started successfully');
-        } catch (error) {
-          console.log('Location tracking not available:', error.message);
-          // Continue without location tracking - not critical
-        }
-      }, 2000);
-    } catch (error) {
-      console.log('Location service not available:', error.message);
-      // Continue without location service - not critical
     }
   };
 
@@ -72,9 +47,6 @@ export const AuthProvider = ({ children }) => {
       
       setToken(access_token);
       setUser(userData);
-      
-      // Start location tracking after login (optional)
-      startLocationTrackingOptional();
       
       return { success: true };
     } catch (error) {
@@ -93,7 +65,6 @@ export const AuthProvider = ({ children }) => {
       setUser(null);
     } catch (error) {
       console.log('Logout error:', error);
-      // Force logout anyway
       setToken(null);
       setUser(null);
     }

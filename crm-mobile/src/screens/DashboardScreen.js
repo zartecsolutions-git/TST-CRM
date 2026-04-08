@@ -11,7 +11,6 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../contexts/AuthContext';
 import { colors } from '../utils/colors';
-// Location tracking is automatic and silent - no UI needed
 
 export default function DashboardScreen({ navigation }) {
   const { user, logout } = useAuth();

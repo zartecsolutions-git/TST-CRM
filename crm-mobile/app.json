@@ -2,7 +2,7 @@
   "expo": {
     "name": "CRM Mobile",
     "slug": "crm-mobile",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -16,49 +16,18 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.crm.mobile",
-      "infoPlist": {
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "This app needs access to your location to track your work activities.",
-        "NSLocationWhenInUseUsageDescription": "This app needs access to your location to track your work activities.",
-        "UIBackgroundModes": [
-          "location"
-        ]
-      }
+      "bundleIdentifier": "com.crm.mobile"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#3B82F6"
       },
-      "package": "com.crm.mobile",
-      "permissions": [
-        "ACCESS_COARSE_LOCATION",
-        "ACCESS_FINE_LOCATION",
-        "ACCESS_BACKGROUND_LOCATION",
-        "FOREGROUND_SERVICE",
-        "FOREGROUND_SERVICE_LOCATION",
-        "android.permission.ACCESS_COARSE_LOCATION",
-        "android.permission.ACCESS_FINE_LOCATION",
-        "android.permission.ACCESS_BACKGROUND_LOCATION",
-        "android.permission.FOREGROUND_SERVICE",
-        "android.permission.FOREGROUND_SERVICE_LOCATION"
-      ]
+      "package": "com.crm.mobile"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": [
-      [
-        "expo-location",
-        {
-          "locationAlwaysAndWhenInUsePermission": "Allow CRM Mobile to use your location to track work activities.",
-          "locationAlwaysPermission": "Allow CRM Mobile to use your location in the background to track work activities.",
-          "locationWhenInUsePermission": "Allow CRM Mobile to use your location to track work activities.",
-          "isAndroidBackgroundLocationEnabled": true,
-          "isAndroidForegroundServiceEnabled": true
-        }
-      ]
-    ],
     "extra": {
       "eas": {
         "projectId": "d9500a46-1d32-435e-947f-2f23b3c8fce3"
