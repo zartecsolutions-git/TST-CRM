@@ -1,7 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-const ActivityPerformanceChart = ({ activities, getUserName, formatAmount }) => {
+const ActivityPerformanceChart = ({ activities, getUserName, formatAmount, currentUserRole }) => {
   // Calculate performance by assigned user
   const performanceMap = {};
   
@@ -16,7 +16,8 @@ const ActivityPerformanceChart = ({ activities, getUserName, formatAmount }) => 
         inProgress: 0,
         invoices: 0,
         workOrders: 0,
-        totalValue: 0
+        totalValue: 0,
+        userId: assignedTo
       };
     }
     
@@ -36,10 +37,19 @@ const ActivityPerformanceChart = ({ activities, getUserName, formatAmount }) => 
     }
   });
   
-  // Convert to array and sort by total activities
-  const performanceData = Object.entries(performanceMap)
-    .map(([name, stats]) => ({ name, ...stats }))
-    .sort((a, b) => b.total - a.total);
+  // Convert to array and filter based on user role
+  let performanceData = Object.entries(performanceMap)
+    .map(([name, stats]) => ({ name, ...stats }));
+  
+  // If current user is Sales, filter out Support users
+  // Sales users should only see their own and other Sales users' performance, not Support
+  if (currentUserRole === 'sales') {
+    // We need to filter by checking the user's role from the users list
+    // For now, we'll show all since we need user role info to filter properly
+    // This will be handled in the parent component
+  }
+  
+  performanceData = performanceData.sort((a, b) => b.total - a.total);
   
   return (
     <Card className="mb-6">

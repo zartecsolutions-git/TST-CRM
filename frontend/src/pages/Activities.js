@@ -445,10 +445,19 @@ const Activities = () => {
         />
 
         {/* Performance Chart - Assigned To Performance */}
+        {/* Sales users should not see Support users' performance */}
         <ActivityPerformanceChart
-          activities={filteredActivities}
+          activities={
+            currentUser?.role === 'sales'
+              ? filteredActivities.filter(activity => {
+                  const assignedUser = users.find(u => u.id === activity.assigned_to);
+                  return assignedUser?.role !== 'support';
+                })
+              : filteredActivities
+          }
           getUserName={getUserName}
           formatAmount={formatAmount}
+          currentUserRole={currentUser?.role}
         />
 
         {/* Activities List */}
