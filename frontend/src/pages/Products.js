@@ -229,7 +229,10 @@ export default function Products() {
         <div className="flex justify-between items-center mb-6 mt-6">
           <div></div>
           <div className="flex gap-2">
-            <button onClick={() => window.location.href = '/dashboard'} className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+            <button 
+              onClick={() => window.location.href = '/dashboard'} 
+              className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm"
+            >
               Back to Dashboard
             </button>
             {user.role === 'admin' && (

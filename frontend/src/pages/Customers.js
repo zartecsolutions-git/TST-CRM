@@ -104,7 +104,7 @@ export default function Customers() {
           <PageHeader title="👥 Customer Management">
             <div className="flex gap-2">
               <button onClick={() => window.location.href = '/dashboard'} className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm">
-                Dashboard
+                Back to Dashboard
               </button>
               <button onClick={() => setShowForm(true)} className="bg-gradient-to-r from-blue-700 to-green-700 text-white px-4 py-2 rounded-lg text-sm">+ Add Customer</button>
             </div>

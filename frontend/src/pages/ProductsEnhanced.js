@@ -391,10 +391,9 @@ export default function ProductsEnhanced() {
           <PageHeader title="Products Master" />
           <button
             onClick={() => navigate('/dashboard')}
-            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 shadow mb-4"
+            className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm mb-4"
           >
-            <span>←</span>
-            <span>Back to Dashboard</span>
+            Back to Dashboard
           </button>
         </div>
 
