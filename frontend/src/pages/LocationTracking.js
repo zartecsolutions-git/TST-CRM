@@ -133,29 +133,61 @@ export default function LocationTracking() {
   const getLocationName = async (latitude, longitude) => {
     try {
       // Use OpenStreetMap Nominatim for reverse geocoding (free, no API key needed)
+      // zoom=18 provides most precise location details
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&accept-language=en`
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1&accept-language=en`
       );
       const data = await response.json();
       
-      // Return formatted address (street + city)
+      // Return formatted address with maximum precision
       if (data.address) {
         const parts = [];
-        // Add street/road
-        if (data.address.road) parts.push(data.address.road);
-        else if (data.address.street) parts.push(data.address.street);
         
-        // Add city/town
-        if (data.address.city) parts.push(data.address.city);
-        else if (data.address.town) parts.push(data.address.town);
-        else if (data.address.village) parts.push(data.address.village);
+        // Add house number + street/road for precision
+        if (data.address.house_number && data.address.road) {
+          parts.push(`${data.address.house_number} ${data.address.road}`);
+        } else if (data.address.road) {
+          parts.push(data.address.road);
+        } else if (data.address.street) {
+          parts.push(data.address.street);
+        } else if (data.address.pedestrian) {
+          parts.push(data.address.pedestrian);
+        }
         
-        // Add country for international locations
-        if (data.address.country) parts.push(data.address.country);
+        // Add neighborhood/suburb for more precision (helps distinguish Tubli from Manama)
+        if (data.address.neighbourhood) {
+          parts.push(data.address.neighbourhood);
+        } else if (data.address.suburb) {
+          parts.push(data.address.suburb);
+        } else if (data.address.quarter) {
+          parts.push(data.address.quarter);
+        } else if (data.address.district) {
+          parts.push(data.address.district);
+        }
         
-        return parts.length > 0 ? parts.join(', ') : data.display_name;
+        // Add city/town (important for context)
+        if (data.address.city) {
+          parts.push(data.address.city);
+        } else if (data.address.town) {
+          parts.push(data.address.town);
+        } else if (data.address.village) {
+          parts.push(data.address.village);
+        } else if (data.address.municipality) {
+          parts.push(data.address.municipality);
+        }
+        
+        // If we only got city level, try to use the full display name for more context
+        if (parts.length === 1 && (data.address.city || data.address.town)) {
+          // Extract first 3 meaningful parts from display name
+          const displayParts = data.display_name.split(',').slice(0, 3).map(s => s.trim());
+          return displayParts.join(', ');
+        }
+        
+        return parts.length > 0 ? parts.join(', ') : data.display_name.split(',').slice(0, 3).join(', ');
       }
-      return data.display_name || 'Location';
+      
+      // Fallback to shortened display name
+      return data.display_name ? data.display_name.split(',').slice(0, 3).join(', ') : 'Location';
     } catch (error) {
       console.error('Geocoding error:', error);
       return `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
