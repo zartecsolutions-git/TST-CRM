@@ -49,26 +49,25 @@ const MobileLayout = ({ children }) => {
       {/* Top Header - Mobile */}
       <header className="lg:hidden bg-white shadow-sm border-b sticky top-0 z-40">
         <div className="flex justify-between items-center px-3 py-2.5">
-          <div className="flex items-center space-x-2 flex-1 min-w-0">
+          <div className="flex items-center space-x-2 flex-shrink-0">
             {companySettings?.logo_url ? (
               <img 
                 src={companySettings.logo_url} 
                 alt="Logo" 
-                className="h-8 w-auto object-contain flex-shrink-0"
+                className="h-10 w-auto object-contain"
               />
             ) : (
-              <div className="bg-gradient-to-r from-blue-600 to-green-600 p-1.5 rounded-lg flex-shrink-0">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="bg-gradient-to-r from-blue-600 to-green-600 p-2 rounded-lg">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
               </div>
             )}
-            <div className="flex-1 min-w-0">
-              <h1 className="text-sm font-bold text-gray-800 truncate">
-                {companySettings?.name || 'CRM'}
-              </h1>
-              <p className="text-xs text-gray-500 truncate">{user?.name}</p>
-            </div>
+          </div>
+          
+          {/* User Name - Large and Bold on Right */}
+          <div className="flex-1 text-right px-3">
+            <h2 className="text-xl font-bold text-gray-800">{user?.name}</h2>
           </div>
           
           {/* Profile Menu Button - ALL USERS */}
@@ -146,9 +145,8 @@ const MobileLayout = ({ children }) => {
                   </svg>
                 </div>
               )}
-              <div>
-                <h1 className="text-xl font-bold text-gray-800">{companySettings?.name || 'CRM'}</h1>
-                <p className="text-sm text-gray-500">{user?.name}</p>
+              <div className="flex-1">
+                <h1 className="text-2xl font-bold text-gray-800">{user?.name}</h1>
               </div>
             </div>
           </div>
