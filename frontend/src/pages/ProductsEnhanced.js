@@ -426,6 +426,7 @@ export default function ProductsEnhanced() {
         formatAmount={formatAmount}
         onViewDetails={handleViewDetails}
         onEdit={handleEditClick}
+        userRole={user.role}
       />
 
       {/* Create/Edit Product Modal */}

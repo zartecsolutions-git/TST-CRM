@@ -7,7 +7,8 @@ const ProductTable = ({
   soldCount, 
   formatAmount, 
   onViewDetails, 
-  onEdit 
+  onEdit,
+  userRole 
 }) => {
   if (products.length === 0) {
     return (
@@ -57,12 +58,14 @@ const ProductTable = ({
                 >
                   👁️ View
                 </button>
-                <button
-                  onClick={() => onEdit(product)}
-                  className="text-green-600 hover:text-green-800"
-                >
-                  ✏️ Edit
-                </button>
+                {userRole === 'admin' && (
+                  <button
+                    onClick={() => onEdit(product)}
+                    className="text-green-600 hover:text-green-800"
+                  >
+                    ✏️ Edit
+                  </button>
+                )}
               </td>
             </tr>
           ))}

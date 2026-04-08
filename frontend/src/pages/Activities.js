@@ -404,7 +404,7 @@ const Activities = () => {
   });
 
   const isAdmin = currentUser?.role === 'admin';
-  const canCreateActivity = true; // All users can create activities
+  const canCreateActivity = currentUser?.role === 'admin' || currentUser?.role === 'support'; // Only Admin and Support can create
 
   return (
     <div className="w-screen max-w-full overflow-x-hidden overflow-y-auto">
@@ -555,8 +555,8 @@ const Activities = () => {
                     >
                       👁️ View Details
                     </Button>
-                    {/* Only creator, assignee, or admin can modify activity */}
-                    {(currentUser?.role === 'admin' || activity.created_by === currentUser?.id || activity.assigned_to === currentUser?.id) && (
+                    {/* Only Admin and Support can modify activity (Sales is read-only) */}
+                    {(currentUser?.role === 'admin' || currentUser?.role === 'support') && (currentUser?.role === 'admin' || activity.created_by === currentUser?.id || activity.assigned_to === currentUser?.id) && (
                       <>
                         {activity.status === 'pending' && (
                           <Button

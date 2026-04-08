@@ -44,14 +44,14 @@ const ProductFilters = ({
               >
                 📤 Import CSV
               </button>
+              <button
+                onClick={onAddProduct}
+                className="bg-gradient-to-r from-blue-700 to-green-700 text-white px-6 py-2 rounded-lg hover:shadow-lg"
+              >
+                + Add Product
+              </button>
             </>
           )}
-          <button
-            onClick={onAddProduct}
-            className="bg-gradient-to-r from-blue-700 to-green-700 text-white px-6 py-2 rounded-lg hover:shadow-lg"
-          >
-            + Add Product
-          </button>
         </div>
       </div>
     </div>

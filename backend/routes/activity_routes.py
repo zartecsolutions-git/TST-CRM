@@ -14,7 +14,13 @@ async def create_activity(
     activity_data: ActivityCreate,
     current_user_id: str = Depends(get_current_user)
 ):
-    """Create a new activity"""
+    """Create a new activity (Admin and Support only)"""
+    user_data = await get_current_user_data(current_user_id)
+    
+    # Only Admin and Support can create activities
+    if user_data['role'] == 'sales':
+        raise HTTPException(status_code=403, detail="Sales users have read-only access to activities")
+    
     activity = Activity(**activity_data.model_dump(), created_by=current_user_id)
     activity_dict = activity.model_dump()
     activity_dict['created_at'] = activity_dict['created_at'].isoformat()
@@ -109,12 +115,16 @@ async def update_activity(
     activity_update: ActivityUpdate,
     current_user_id: str = Depends(get_current_user)
 ):
-    """Update an activity"""
+    """Update an activity (Admin and Support only)"""
     activity_doc = await db.activities.find_one({"id": activity_id}, {"_id": 0})
     if not activity_doc:
         raise HTTPException(status_code=404, detail="Activity not found")
     
     user_data = await get_current_user_data(current_user_id)
+    
+    # Sales users cannot edit activities
+    if user_data['role'] == 'sales':
+        raise HTTPException(status_code=403, detail="Sales users have read-only access to activities")
     
     # Admin, creator, or assignee can edit
     if (user_data['role'] != 'admin' and 
@@ -173,7 +183,13 @@ async def add_progress_update(
     update_data: dict,
     current_user_id: str = Depends(get_current_user)
 ):
-    """Add a progress update to an in-progress activity"""
+    """Add a progress update to an in-progress activity (Admin and Support only)"""
+    user_data = await get_current_user_data(current_user_id)
+    
+    # Sales users cannot add progress updates
+    if user_data['role'] == 'sales':
+        raise HTTPException(status_code=403, detail="Sales users have read-only access to activities")
+    
     activity_doc = await db.activities.find_one({"id": activity_id}, {"_id": 0})
     if not activity_doc:
         raise HTTPException(status_code=404, detail="Activity not found")
