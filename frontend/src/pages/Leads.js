@@ -270,61 +270,63 @@ export default function Leads() {
           </div>
         </div>
 
-        {/* Sales Rep-wise Performance Table - Mobile Responsive */}
-        <div className="mobile-table-wrapper bg-white rounded-lg shadow mb-4 sm:mb-6">
-          <div className="bg-gradient-to-r from-blue-700 to-green-700 px-4 sm:px-6 py-3 sm:py-4">
-            <h2 className="text-lg sm:text-xl font-bold text-white">📊 Sales Rep Performance</h2>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-100 border-b-2 border-gray-200">
-                <tr>
-                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Sales Rep</th>
-                  <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">Total Leads</th>
-                  <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">Total Quote Value</th>
-                  <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">Total Project Value</th>
-                </tr>
-              </thead>
-              <tbody>
-                {salesRepArray.length > 0 ? (
-                  salesRepArray.map((rep, idx) => (
-                    <tr key={idx} className="border-b hover:bg-blue-50 transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center">
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-r from-orange-400 to-sky-400 flex items-center justify-center text-white font-bold mr-3">
-                            {rep.name.charAt(0).toUpperCase()}
+        {/* Sales Rep-wise Performance Table - Admin Only */}
+        {user.role === 'admin' && (
+          <div className="mobile-table-wrapper bg-white rounded-lg shadow mb-4 sm:mb-6">
+            <div className="bg-gradient-to-r from-blue-700 to-green-700 px-4 sm:px-6 py-3 sm:py-4">
+              <h2 className="text-lg sm:text-xl font-bold text-white">📊 Sales Rep Performance</h2>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-100 border-b-2 border-gray-200">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">Sales Rep</th>
+                    <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">Total Leads</th>
+                    <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">Total Quote Value</th>
+                    <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">Total Project Value</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {salesRepArray.length > 0 ? (
+                    salesRepArray.map((rep, idx) => (
+                      <tr key={idx} className="border-b hover:bg-blue-50 transition-colors">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-orange-400 to-sky-400 flex items-center justify-center text-white font-bold mr-3">
+                              {rep.name.charAt(0).toUpperCase()}
+                            </div>
+                            <span className="font-semibold text-gray-900">{rep.name}</span>
                           </div>
-                          <span className="font-semibold text-gray-900">{rep.name}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        <span className="inline-block bg-blue-100 text-blue-800 px-4 py-2 rounded-full font-bold">
-                          {rep.totalLeads}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        <span className="font-semibold text-green-600 text-lg">
-                          {formatAmount(rep.totalQuoteValue)}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        <span className="font-semibold text-green-600 text-lg">
-                          {formatAmount(rep.totalProjectValue)}
-                        </span>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span className="inline-block bg-blue-100 text-blue-800 px-4 py-2 rounded-full font-bold">
+                            {rep.totalLeads}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span className="font-semibold text-green-600 text-lg">
+                            {formatAmount(rep.totalQuoteValue)}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-center">
+                          <span className="font-semibold text-green-600 text-lg">
+                            {formatAmount(rep.totalProjectValue)}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="4" className="px-6 py-8 text-center text-gray-500">
+                        No sales rep data available
                       </td>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="4" className="px-6 py-8 text-center text-gray-500">
-                      No sales rep data available
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="mb-4">
           <input
