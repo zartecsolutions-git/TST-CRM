@@ -106,16 +106,16 @@ export default function Customers() {
         </div>
       </PageHeader>
 
-      <div className="w-full px-3 sm:px-4 lg:px-6 py-4 sm:py-6 max-w-7xl lg:mx-auto">
+      <div className="w-full px-3 sm:px-4 lg:px-6 py-4 sm:py-6">
 
         {/* Search Bar */}
-        <div className="mb-4">
+        <div className="mobile-section">
           <input
             type="text"
-            placeholder="🔍 Search customers by name, email, phone, region, or business vertical..."
+            placeholder="🔍 Search customers..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="mobile-search"
           />
           {searchQuery && (
             <p className="text-sm text-gray-600 mt-2">

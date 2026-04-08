@@ -384,17 +384,16 @@ export default function ProductsEnhanced() {
   if (loading) return <div className="p-8">Loading...</div>;
 
   return (
-    <div className="w-full h-full overflow-y-auto p-3 sm:p-4 lg:p-6 max-w-7xl lg:mx-auto">
-      <div className="flex justify-between items-center mb-6">
+    <div className="w-full h-full overflow-y-auto p-3 sm:p-4 lg:p-6">
+      <div className="w-full max-w-7xl lg:mx-auto">
         <PageHeader title="Products Master" />
         <button
           onClick={() => navigate('/dashboard')}
-          className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 shadow"
+          className="hidden lg:flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 shadow mb-4"
         >
           <span>←</span>
           <span>Back to Dashboard</span>
         </button>
-      </div>
 
       {/* Stats Cards */}
       <ProductStats 
