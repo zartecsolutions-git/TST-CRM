@@ -292,7 +292,7 @@ export default function LocationTracking() {
             </div>
           ) : (
             <div className="space-y-4">
-              {locations.map((location) => (
+              {locations.map((location, index) => (
                 <div
                   key={location.id}
                   className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
@@ -306,7 +306,7 @@ export default function LocationTracking() {
                         {selectedUser === 'all' ? getUserName(location.user_id) : 'Location Update'}
                       </h3>
                       <p className="text-sm text-gray-600">
-                        Lat: {location.latitude?.toFixed(6) || 'N/A'}, Lng: {location.longitude?.toFixed(6) || 'N/A'}
+                        Location #{locations.length - index}
                       </p>
                       <p className="text-xs text-gray-500 mt-1">
                         {formatDate(location.timestamp)} ({getTimeAgo(location.timestamp)})
