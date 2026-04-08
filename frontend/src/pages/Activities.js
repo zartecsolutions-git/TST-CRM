@@ -444,21 +444,15 @@ const Activities = () => {
           resultsCount={filteredActivities.length}
         />
 
-        {/* Performance Chart - Assigned To Performance */}
-        {/* Sales users should not see Support users' performance */}
-        <ActivityPerformanceChart
-          activities={
-            currentUser?.role === 'sales'
-              ? filteredActivities.filter(activity => {
-                  const assignedUser = users.find(u => u.id === activity.assigned_to);
-                  return assignedUser?.role !== 'support';
-                })
-              : filteredActivities
-          }
-          getUserName={getUserName}
-          formatAmount={formatAmount}
-          currentUserRole={currentUser?.role}
-        />
+        {/* Performance Chart - Admin and Support only */}
+        {(currentUser?.role === 'admin' || currentUser?.role === 'support') && (
+          <ActivityPerformanceChart
+            activities={filteredActivities}
+            getUserName={getUserName}
+            formatAmount={formatAmount}
+            currentUserRole={currentUser?.role}
+          />
+        )}
 
         {/* Activities List */}
         <div className="space-y-4">
