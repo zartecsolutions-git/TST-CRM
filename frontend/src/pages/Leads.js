@@ -243,7 +243,9 @@ export default function Leads() {
           <button onClick={() => window.location.href = '/dashboard'} className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 hidden lg:inline-flex text-sm w-auto">
             Back to Dashboard
           </button>
-          <button onClick={() => setShowForm(true)} className="bg-gradient-to-r from-blue-700 to-green-700 text-white px-4 py-2 rounded-lg w-full sm:w-auto text-sm">+ Add Lead</button>
+          {(user.role === 'admin' || user.role === 'sales') && (
+            <button onClick={() => setShowForm(true)} className="bg-gradient-to-r from-blue-700 to-green-700 text-white px-3 py-1.5 rounded-lg w-auto text-base font-bold hover:shadow-lg transition-shadow">+ Add Lead</button>
+          )}
         </div>
 
         {/* Statistics Cards - Mobile Responsive */}
