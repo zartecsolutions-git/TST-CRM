@@ -19,6 +19,7 @@ import CompanySettings from './pages/CompanySettings';
 import Reports from './pages/Reports';
 import '@/App.css';
 import './mobile.css';
+import './mobile-responsive.css';
 
 // Protected Route Component with MobileLayout
 const ProtectedRoute = ({ children }) => {

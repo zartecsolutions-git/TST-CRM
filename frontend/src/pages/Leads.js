@@ -239,42 +239,42 @@ export default function Leads() {
       <div className="max-w-7xl mx-auto">
         <PageHeader title="Leads Management" />
         
-        <div className="flex justify-between items-center mb-6 mt-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 sm:mb-6 mt-4 sm:mt-6">
           <div></div>
-          <div className="flex gap-2">
-            <button onClick={() => window.location.href = '/dashboard'} className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+          <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <button onClick={() => window.location.href = '/dashboard'} className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 hidden lg:inline-flex">
               Back to Dashboard
             </button>
-            <button onClick={() => setShowForm(true)} className="bg-gradient-to-r from-blue-700 to-green-700 text-white px-6 py-2 rounded-lg">+ Add Lead</button>
+            <button onClick={() => setShowForm(true)} className="bg-gradient-to-r from-blue-700 to-green-700 text-white px-6 py-2 rounded-lg w-full sm:w-auto">+ Add Lead</button>
           </div>
         </div>
 
-        {/* Statistics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
-            <h3 className="text-sm font-semibold text-gray-600 uppercase mb-2">Total Leads</h3>
-            <p className="text-3xl font-bold text-blue-600">{leads.length}</p>
+        {/* Statistics Cards - Mobile Responsive */}
+        <div className="mobile-stat-grid mb-4 sm:mb-6">
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6 border-l-4 border-blue-500">
+            <h3 className="text-xs sm:text-sm font-semibold text-gray-600 uppercase mb-2">Total Leads</h3>
+            <p className="text-2xl sm:text-3xl font-bold text-blue-600">{leads.length}</p>
           </div>
-          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-600">
-            <h3 className="text-sm font-semibold text-gray-600 uppercase mb-2">Total Quote Value</h3>
-            <p className="text-3xl font-bold text-green-600">{formatAmount(totalQuoteValue)}</p>
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6 border-l-4 border-green-600">
+            <h3 className="text-xs sm:text-sm font-semibold text-gray-600 uppercase mb-2">Total Quote Value</h3>
+            <p className="text-2xl sm:text-3xl font-bold text-green-600">{formatAmount(totalQuoteValue)}</p>
           </div>
-          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-amber-500">
-            <h3 className="text-sm font-semibold text-gray-600 uppercase mb-2">Active Pipeline</h3>
-            <p className="text-3xl font-bold text-amber-600">{formatAmount(activePipelineValue)}</p>
-            <p className="text-xs text-gray-500 mt-1">Excluding closed deals</p>
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6 border-l-4 border-amber-500">
+            <h3 className="text-xs sm:text-sm font-semibold text-gray-600 uppercase mb-2">Active Pipeline</h3>
+            <p className="text-2xl sm:text-3xl font-bold text-amber-600">{formatAmount(activePipelineValue)}</p>
+            <p className="text-xs text-gray-500 mt-1">Excluding closed</p>
           </div>
-          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
-            <h3 className="text-sm font-semibold text-gray-600 uppercase mb-2">Total Project Value</h3>
-            <p className="text-3xl font-bold text-green-600">{formatAmount(totalProjectValue)}</p>
-            <p className="text-xs text-gray-500 mt-1">From closed won deals</p>
+          <div className="bg-white rounded-lg shadow p-4 sm:p-6 border-l-4 border-green-500">
+            <h3 className="text-xs sm:text-sm font-semibold text-gray-600 uppercase mb-2">Total Project Value</h3>
+            <p className="text-2xl sm:text-3xl font-bold text-green-600">{formatAmount(totalProjectValue)}</p>
+            <p className="text-xs text-gray-500 mt-1">From closed won</p>
           </div>
         </div>
 
-        {/* Sales Rep-wise Performance Table */}
-        <div className="bg-white rounded-lg shadow mb-6 overflow-hidden">
-          <div className="bg-gradient-to-r from-blue-700 to-green-700 px-6 py-4">
-            <h2 className="text-xl font-bold text-white">📊 Sales Rep Performance</h2>
+        {/* Sales Rep-wise Performance Table - Mobile Responsive */}
+        <div className="mobile-table-wrapper bg-white rounded-lg shadow mb-4 sm:mb-6">
+          <div className="bg-gradient-to-r from-blue-700 to-green-700 px-4 sm:px-6 py-3 sm:py-4">
+            <h2 className="text-lg sm:text-xl font-bold text-white">📊 Sales Rep Performance</h2>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">

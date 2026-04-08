@@ -125,24 +125,26 @@ export default function Customers() {
         </div>
 
         {showForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 max-w-2xl w-full m-4">
-              <h2 className="text-2xl font-bold mb-4">Add New Customer</h2>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div><label className="block text-sm mb-1">Name *</label><input type="text" required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full border rounded px-3 py-2" /></div>
-                  <div><label className="block text-sm mb-1">Email *</label><input type="email" required value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="w-full border rounded px-3 py-2" /></div>
-                  <div><label className="block text-sm mb-1">Phone</label><input type="tel" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className="w-full border rounded px-3 py-2" /></div>
-                  <div><label className="block text-sm mb-1">Contact Person</label><input type="text" value={formData.contact_person} onChange={(e) => setFormData({...formData, contact_person: e.target.value})} className="w-full border rounded px-3 py-2" /></div>
-                  <div><label className="block text-sm mb-1">Region</label><input type="text" value={formData.region} onChange={(e) => setFormData({...formData, region: e.target.value})} className="w-full border rounded px-3 py-2" /></div>
-                  <div><label className="block text-sm mb-1">Business Vertical</label><input type="text" value={formData.business_vertical} onChange={(e) => setFormData({...formData, business_vertical: e.target.value})} className="w-full border rounded px-3 py-2" /></div>
+          <div className="mobile-modal">
+            <div className="mobile-modal-content">
+              <div className="mobile-modal-header">
+                <h2 className="text-xl sm:text-2xl font-bold">Add New Customer</h2>
+              </div>
+              <form onSubmit={handleSubmit} className="mobile-modal-body">
+                <div className="mobile-form">
+                  <div><label className="block text-sm mb-1 font-medium">Name *</label><input type="text" required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="mobile-input" /></div>
+                  <div><label className="block text-sm mb-1 font-medium">Email *</label><input type="email" required value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="mobile-input" /></div>
+                  <div><label className="block text-sm mb-1 font-medium">Phone</label><input type="tel" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className="mobile-input" /></div>
+                  <div><label className="block text-sm mb-1 font-medium">Contact Person</label><input type="text" value={formData.contact_person} onChange={(e) => setFormData({...formData, contact_person: e.target.value})} className="mobile-input" /></div>
+                  <div><label className="block text-sm mb-1 font-medium">Region</label><input type="text" value={formData.region} onChange={(e) => setFormData({...formData, region: e.target.value})} className="mobile-input" /></div>
+                  <div><label className="block text-sm mb-1 font-medium">Business Vertical</label><input type="text" value={formData.business_vertical} onChange={(e) => setFormData({...formData, business_vertical: e.target.value})} className="mobile-input" /></div>
                 </div>
-                <div><label className="block text-sm mb-1">Address</label><textarea value={formData.address} onChange={(e) => setFormData({...formData, address: e.target.value})} className="w-full border rounded px-3 py-2" rows="2" /></div>
-                <div className="flex gap-2 justify-end">
-                  <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 border rounded">Cancel</button>
-                  <button type="submit" className="px-4 py-2 bg-gradient-to-r from-blue-700 to-green-700 text-white rounded">Create</button>
-                </div>
+                <div className="mt-4"><label className="block text-sm mb-1 font-medium">Address</label><textarea value={formData.address} onChange={(e) => setFormData({...formData, address: e.target.value})} className="mobile-input" rows="2" /></div>
               </form>
+              <div className="mobile-modal-footer">
+                <button type="button" onClick={() => setShowForm(false)} className="mobile-btn border border-gray-300 w-full sm:w-auto">Cancel</button>
+                <button type="submit" onClick={handleSubmit} className="mobile-btn bg-gradient-to-r from-blue-700 to-green-700 text-white w-full sm:w-auto">Create Customer</button>
+              </div>
             </div>
           </div>
         )}

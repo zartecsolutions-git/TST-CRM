@@ -1,0 +1,176 @@
+/* Comprehensive Mobile Responsive Utilities */
+
+/* Mobile-friendly tables - horizontal scroll */
+.mobile-table-wrapper {
+  @apply w-full overflow-x-auto -mx-3 sm:mx-0;
+}
+
+.mobile-table-wrapper table {
+  @apply min-w-full;
+}
+
+@media (max-width: 768px) {
+  .mobile-table-wrapper {
+    @apply rounded-none;
+  }
+  
+  .mobile-table-wrapper table {
+    @apply text-sm;
+  }
+  
+  .mobile-table-wrapper th,
+  .mobile-table-wrapper td {
+    @apply px-2 py-2 text-xs;
+  }
+}
+
+/* Mobile-friendly forms */
+.mobile-form {
+  @apply grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4;
+}
+
+.mobile-form-full {
+  @apply grid grid-cols-1 gap-3 sm:gap-4;
+}
+
+.mobile-input {
+  @apply w-full px-3 py-2 sm:px-4 sm:py-3 text-base border rounded-lg;
+}
+
+/* Mobile-friendly buttons */
+.mobile-btn {
+  @apply px-3 py-2 sm:px-4 sm:py-2 text-sm sm:text-base rounded-lg;
+}
+
+.mobile-btn-group {
+  @apply flex flex-col sm:flex-row gap-2 sm:gap-3;
+}
+
+/* Mobile-friendly modals */
+.mobile-modal {
+  @apply fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4;
+}
+
+.mobile-modal-content {
+  @apply w-full sm:max-w-lg bg-white rounded-t-2xl sm:rounded-2xl max-h-[90vh] overflow-y-auto;
+}
+
+.mobile-modal-header {
+  @apply sticky top-0 bg-white border-b p-4 sm:p-6 z-10;
+}
+
+.mobile-modal-body {
+  @apply p-4 sm:p-6;
+}
+
+.mobile-modal-footer {
+  @apply sticky bottom-0 bg-white border-t p-4 sm:p-6 flex flex-col sm:flex-row gap-2 sm:gap-3;
+}
+
+/* Mobile-friendly cards */
+.mobile-card {
+  @apply bg-white rounded-lg shadow-sm border p-3 sm:p-4 mb-3 sm:mb-4;
+}
+
+.mobile-card-grid {
+  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4;
+}
+
+/* Mobile-friendly stats */
+.mobile-stat-grid {
+  @apply grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4;
+}
+
+/* Mobile-friendly headers */
+.mobile-page-header {
+  @apply mb-4 sm:mb-6;
+}
+
+.mobile-page-title {
+  @apply text-xl sm:text-2xl lg:text-3xl font-bold;
+}
+
+.mobile-page-subtitle {
+  @apply text-sm sm:text-base text-gray-600 mt-1;
+}
+
+/* Mobile-friendly search */
+.mobile-search {
+  @apply w-full px-3 py-2 sm:px-4 sm:py-3 text-sm sm:text-base border rounded-lg;
+}
+
+/* Mobile-friendly badges */
+.mobile-badge {
+  @apply px-2 py-1 text-xs sm:text-sm rounded-full;
+}
+
+/* Mobile-friendly action buttons */
+.mobile-action-btns {
+  @apply flex flex-wrap gap-2;
+}
+
+.mobile-action-btns button {
+  @apply px-2 py-1 sm:px-3 sm:py-2 text-xs sm:text-sm;
+}
+
+/* Hide on mobile */
+.hide-mobile {
+  @apply hidden lg:block;
+}
+
+/* Hide on desktop */
+.hide-desktop {
+  @apply block lg:hidden;
+}
+
+/* Mobile-friendly table alternative - Card View */
+.mobile-card-list {
+  @apply space-y-3;
+}
+
+.mobile-list-item {
+  @apply bg-white rounded-lg shadow-sm border p-4;
+}
+
+.mobile-list-item-header {
+  @apply flex justify-between items-start mb-3 pb-3 border-b;
+}
+
+.mobile-list-item-title {
+  @apply font-semibold text-base;
+}
+
+.mobile-list-item-content {
+  @apply space-y-2;
+}
+
+.mobile-list-item-row {
+  @apply flex justify-between items-center text-sm;
+}
+
+.mobile-list-item-label {
+  @apply text-gray-600 font-medium;
+}
+
+.mobile-list-item-value {
+  @apply text-gray-900;
+}
+
+.mobile-list-item-actions {
+  @apply flex gap-2 mt-3 pt-3 border-t;
+}
+
+/* Responsive text truncation */
+.mobile-truncate {
+  @apply truncate max-w-[150px] sm:max-w-none;
+}
+
+/* Mobile-friendly spacing */
+.mobile-section {
+  @apply mb-4 sm:mb-6 lg:mb-8;
+}
+
+/* Mobile-friendly grid adjustments */
+.mobile-grid-auto {
+  @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4;
+}
