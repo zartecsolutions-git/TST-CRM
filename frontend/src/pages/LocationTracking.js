@@ -110,6 +110,32 @@ export default function LocationTracking() {
     return `${diffDays}d ago`;
   };
 
+  const getLocationName = async (latitude, longitude) => {
+    try {
+      // Use OpenStreetMap Nominatim for reverse geocoding (free, no API key needed)
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+      );
+      const data = await response.json();
+      
+      // Return formatted address
+      if (data.address) {
+        const parts = [];
+        if (data.address.road) parts.push(data.address.road);
+        if (data.address.suburb) parts.push(data.address.suburb);
+        if (data.address.city || data.address.town) parts.push(data.address.city || data.address.town);
+        if (data.address.state) parts.push(data.address.state);
+        if (data.address.country) parts.push(data.address.country);
+        
+        return parts.length > 0 ? parts.join(', ') : data.display_name;
+      }
+      return data.display_name || 'Location';
+    } catch (error) {
+      console.error('Geocoding error:', error);
+      return `${latitude.toFixed(4)}, ${longitude.toFixed(4)}`;
+    }
+  };
+
   const getUserName = (userId) => {
     const user = users.find(u => u.id === userId);
     return user ? user.name : 'Unknown';
