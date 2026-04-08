@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import PageHeader from '../components/PageHeader';
 import { useCurrency } from '../contexts/CurrencyContext';
 import api from '../utils/api';
 
@@ -387,11 +386,14 @@ export default function ProductsEnhanced() {
     <div className="w-screen max-w-full overflow-x-hidden overflow-y-auto p-2 sm:p-4 lg:p-6">
       <div className="w-full max-w-full overflow-x-hidden">
         {/* Desktop only header */}
-        <div className="hidden lg:block mb-4">
-          <PageHeader title="Products Master" />
+        {/* Desktop Header - Heading and Back Button on Same Line */}
+        <div className="hidden lg:flex lg:items-center lg:justify-between mb-4">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
+            📦 Products Master
+          </h1>
           <button
             onClick={() => navigate('/dashboard')}
-            className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm mb-4"
+            className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-sm"
           >
             Back to Dashboard
           </button>
