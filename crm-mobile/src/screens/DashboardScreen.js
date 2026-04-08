@@ -55,6 +55,7 @@ export default function DashboardScreen({ navigation }) {
         {/* Quick Actions */}
         <Text style={styles.sectionTitle}>Quick Actions</Text>
         
+        {/* Activities - Available to ALL users */}
         <TouchableOpacity
           style={styles.actionCard}
           onPress={() => navigation.navigate('Activities')}
@@ -73,6 +74,7 @@ export default function DashboardScreen({ navigation }) {
           </LinearGradient>
         </TouchableOpacity>
 
+        {/* Create Activity - Available to ALL users */}
         <TouchableOpacity
           style={styles.actionCard}
           onPress={() => navigation.navigate('CreateActivity')}
@@ -91,6 +93,7 @@ export default function DashboardScreen({ navigation }) {
           </LinearGradient>
         </TouchableOpacity>
 
+        {/* Customers - Available to ALL users */}
         <TouchableOpacity
           style={styles.actionCard}
           onPress={() => navigation.navigate('Customers')}
@@ -101,7 +104,7 @@ export default function DashboardScreen({ navigation }) {
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
           >
-            <Text style={styles.actionIcon}>\ud83d\udcc1</Text>
+            <Text style={styles.actionIcon}>📁</Text>
             <Text style={styles.actionTitle}>Customers</Text>
             <Text style={styles.actionDescription}>
               View and manage customer database
@@ -109,45 +112,49 @@ export default function DashboardScreen({ navigation }) {
           </LinearGradient>
         </TouchableOpacity>
 
+        {/* Products - Only for ADMIN and SALES users */}
         {(user?.role === 'admin' || user?.role === 'sales') && (
           <TouchableOpacity
-          style={styles.actionCard}
-          onPress={() => navigation.navigate('Products')}
-        >
-          <LinearGradient
-            colors={['#F59E0B', '#D97706']}
-            style={styles.actionGradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
+            style={styles.actionCard}
+            onPress={() => navigation.navigate('Products')}
           >
-            <Text style={styles.actionIcon}>\ud83d\udce6</Text>
-            <Text style={styles.actionTitle}>Products</Text>
-            <Text style={styles.actionDescription}>
-              Browse and manage product catalog
-            </Text>
-          </LinearGradient>
-        </TouchableOpacity>
+            <LinearGradient
+              colors={['#F59E0B', '#D97706']}
+              style={styles.actionGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <Text style={styles.actionIcon}>📦</Text>
+              <Text style={styles.actionTitle}>Products</Text>
+              <Text style={styles.actionDescription}>
+                Browse and manage product catalog
+              </Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        )}
 
+        {/* Leads - Only for ADMIN and SALES users */}
         {(user?.role === 'admin' || user?.role === 'sales') && (
           <TouchableOpacity
-          style={styles.actionCard}
-          onPress={() => navigation.navigate('Leads')}
-        >
-          <LinearGradient
-            colors={['#8B5CF6', '#7C3AED']}
-            style={styles.actionGradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
+            style={styles.actionCard}
+            onPress={() => navigation.navigate('Leads')}
           >
-            <Text style={styles.actionIcon}>\ud83c\udfaf</Text>
-            <Text style={styles.actionTitle}>Leads</Text>
-            <Text style={styles.actionDescription}>
-              Track sales pipeline and opportunities
-            </Text>
-          </LinearGradient>
-        </TouchableOpacity>
+            <LinearGradient
+              colors={['#8B5CF6', '#7C3AED']}
+              style={styles.actionGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <Text style={styles.actionIcon}>🎯</Text>
+              <Text style={styles.actionTitle}>Leads</Text>
+              <Text style={styles.actionDescription}>
+                Track sales pipeline and opportunities
+              </Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        )}
 
-        {/* Logout Button */}
+        {/* Logout Button - Available to ALL users */}
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Text style={styles.logoutButtonText}>Logout</Text>
         </TouchableOpacity>
