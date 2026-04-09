@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '../contexts/AuthContext';
@@ -12,9 +12,12 @@ export default function SalesInvoices() {
   const [categories, setCategories] = useState([]);
   const [brands, setBrands] = useState([]);
   const [divisions, setDivisions] = useState([]);
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingInvoice, setEditingInvoice] = useState(null);
+  const [productSearchTerm, setProductSearchTerm] = useState({});
+  const [showProductDropdown, setShowProductDropdown] = useState({});
 
   // Form state
   const [formData, setFormData] = useState({
@@ -35,18 +38,29 @@ export default function SalesInvoices() {
 
   useEffect(() => {
     fetchData();
+    
+    // Close dropdown when clicking outside
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.product-dropdown-container')) {
+        setShowProductDropdown({});
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [invoicesRes, customersRes, usersRes, categoriesRes, brandsRes, divisionsRes] = await Promise.all([
+      const [invoicesRes, customersRes, usersRes, categoriesRes, brandsRes, divisionsRes, productsRes] = await Promise.all([
         api.get('/sales/invoices'),
         api.get('/customers'),
         api.get('/users'),
         api.get('/master-data/categories'),
         api.get('/master-data/brands'),
-        api.get('/master-data/divisions')
+        api.get('/master-data/divisions'),
+        api.get('/products')
       ]);
       
       setInvoices(invoicesRes.data || []);
@@ -55,6 +69,7 @@ export default function SalesInvoices() {
       setCategories(categoriesRes.data || []);
       setBrands(brandsRes.data || []);
       setDivisions(divisionsRes.data || []);
+      setProducts(productsRes.data || []);
     } catch (error) {
       console.error('Failed to fetch data:', error);
     } finally {
@@ -88,6 +103,34 @@ export default function SalesInvoices() {
     
     setFormData(prev => ({ ...prev, items: updatedItems }));
     calculateTotals(updatedItems);
+  };
+
+  const handleProductSelect = (index, product) => {
+    const updatedItems = [...formData.items];
+    updatedItems[index] = {
+      ...updatedItems[index],
+      product_name: product.name,
+      category: product.category || '',
+      brand: product.brand || '',
+      division: product.division || ''
+    };
+    setFormData(prev => ({ ...prev, items: updatedItems }));
+    setShowProductDropdown(prev => ({ ...prev, [index]: false }));
+    setProductSearchTerm(prev => ({ ...prev, [index]: product.name }));
+  };
+
+  const handleProductSearch = (index, value) => {
+    setProductSearchTerm(prev => ({ ...prev, [index]: value }));
+    handleItemChange(index, 'product_name', value);
+    setShowProductDropdown(prev => ({ ...prev, [index]: true }));
+  };
+
+  const getFilteredProducts = (index) => {
+    const searchTerm = productSearchTerm[index] || '';
+    if (!searchTerm) return products;
+    return products.filter(product =>
+      product.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
   };
 
   const addItem = () => {
@@ -320,15 +363,34 @@ export default function SalesInvoices() {
                   {formData.items.map((item, index) => (
                     <div key={index} className="border border-gray-200 rounded p-3 bg-gray-50">
                       <div className="grid grid-cols-1 md:grid-cols-6 gap-2">
-                        <div className="md:col-span-2">
+                        <div className="md:col-span-2 relative product-dropdown-container">
                           <input
                             type="text"
-                            placeholder="Product Name *"
-                            value={item.product_name}
-                            onChange={(e) => handleItemChange(index, 'product_name', e.target.value)}
+                            placeholder="Search Product *"
+                            value={productSearchTerm[index] || item.product_name}
+                            onChange={(e) => handleProductSearch(index, e.target.value)}
+                            onFocus={() => setShowProductDropdown(prev => ({ ...prev, [index]: true }))}
                             className="w-full p-2 border border-gray-300 rounded text-sm"
                             required
                           />
+                          {showProductDropdown[index] && getFilteredProducts(index).length > 0 && (
+                            <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                              {getFilteredProducts(index).map((product) => (
+                                <div
+                                  key={product.id}
+                                  onClick={() => handleProductSelect(index, product)}
+                                  className="px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm border-b border-gray-100"
+                                >
+                                  <div className="font-medium">{product.name}</div>
+                                  {product.category && (
+                                    <div className="text-xs text-gray-500">
+                                      {product.category} {product.brand && `• ${product.brand}`}
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
                         <div>
                           <select
