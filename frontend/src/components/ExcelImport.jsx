@@ -89,50 +89,92 @@ const ExcelImport = ({ onImport, onClose }) => {
   // Parse Excel data and group by invoice
   const parseExcelData = (data) => {
     const invoiceMap = new Map();
+    const skippedRows = [];
+    const warnings = [];
+
+    console.log('Starting parse - Total rows:', data.length);
+    console.log('First row columns:', data[0] ? Object.keys(data[0]) : 'No data');
 
     data.forEach((row, index) => {
+      // Debug: Show first few rows
+      if (index < 3) {
+        console.log(`Row ${index + 2} raw data:`, row);
+      }
+
       // Flexible column name matching (case-insensitive)
       const getColumnValue = (possibleNames) => {
         for (const name of possibleNames) {
-          const key = Object.keys(row).find(k => 
-            k.toLowerCase().replace(/\s+/g, '').includes(name.toLowerCase().replace(/\s+/g, ''))
-          );
-          if (key && row[key]) return row[key];
+          const key = Object.keys(row).find(k => {
+            const normalizedKey = k.toLowerCase().replace(/\s+/g, '').replace(/[_-]/g, '');
+            const normalizedName = name.toLowerCase().replace(/\s+/g, '').replace(/[_-]/g, '');
+            return normalizedKey.includes(normalizedName) || normalizedName.includes(normalizedKey);
+          });
+          if (key !== undefined) {
+            const value = row[key];
+            // Handle various empty values
+            if (value !== null && value !== undefined && value !== '' && value !== ' ') {
+              return String(value).trim();
+            }
+          }
         }
         return '';
       };
 
       // Map user's columns to our fields
-      const invoiceNum = getColumnValue(['INV NUMBER', 'INVNUMBER', 'Invoice Number', 'invoice_number']) || `INV-${Date.now()}-${index}`;
-      const dateValue = getColumnValue(['DATE', 'Invoice Date', 'invoice_date']);
-      const date = dateValue || new Date().toISOString().split('T')[0]; // Use today if empty
-      const customer = getColumnValue(['CUSTOMER NAME', 'Customer Name', 'customer_name', 'Customer']);
-      const product = getColumnValue(['ITEM DETAILS', 'Product Name', 'product_name', 'Item', 'Product']);
-      const division = getColumnValue(['Division', 'division']);
-      const categoryValue = getColumnValue(['Category', 'Prodcut Category', 'Product Category', 'category']);
-      const brand = getColumnValue(['Brand', 'brand']);
-      const model = getColumnValue(['Model', 'model']);
+      let invoiceNum = getColumnValue(['INV NUMBER', 'INVNUMBER', 'Invoice Number', 'invoice_number', 'InvoiceNumber']);
+      const dateValue = getColumnValue(['DATE', 'Invoice Date', 'invoice_date', 'InvoiceDate']);
+      const date = dateValue || new Date().toISOString().split('T')[0];
+      let customer = getColumnValue(['CUSTOMER NAME', 'Customer Name', 'customer_name', 'Customer', 'CustomerName']);
+      const product = getColumnValue(['ITEM DETAILS', 'Product Name', 'product_name', 'Item', 'Product', 'ItemDetails']);
+      const division = getColumnValue(['Division', 'division', 'DIV']);
+      const categoryValue = getColumnValue(['Category', 'Prodcut Category', 'Product Category', 'category', 'ProductCategory']);
+      const brand = getColumnValue(['Brand', 'brand', 'BRAND']);
+      const model = getColumnValue(['Model', 'model', 'MODEL']);
       
       // Handle quantity and price
-      const quantity = parseFloat(getColumnValue(['Qty', 'Quantity', 'quantity', 'QTY']) || 0);
+      const quantityStr = getColumnValue(['Qty', 'Quantity', 'quantity', 'QTY', 'Quantity (pieces)']);
+      const quantity = parseFloat(quantityStr) || 0;
       
       // Calculate unit price from invoice amount or use direct unit price
-      let unitPrice = parseFloat(getColumnValue(['Unit Price', 'unit_price', 'Price', 'price']) || 0);
-      const invoiceAmount = parseFloat(getColumnValue(['INVOICE AMOUNT', 'Invoice Amount', 'Amount', 'Total Amount']) || 0);
+      const unitPriceStr = getColumnValue(['Unit Price', 'unit_price', 'Price', 'price', 'UnitPrice']);
+      let unitPrice = parseFloat(unitPriceStr) || 0;
+      
+      const invoiceAmountStr = getColumnValue(['INVOICE AMOUNT', 'Invoice Amount', 'Amount', 'Total Amount', 'InvoiceAmount']);
+      const invoiceAmount = parseFloat(invoiceAmountStr) || 0;
       
       // If we have invoice amount but no unit price, calculate it
       if (invoiceAmount > 0 && unitPrice === 0 && quantity > 0) {
         unitPrice = invoiceAmount / quantity;
       }
 
-      if (!invoiceNum) {
-        console.warn(`Row ${index + 2}: Missing invoice number, skipping`);
+      // Skip completely empty rows
+      if (!invoiceNum && !product && !customer && quantity === 0) {
+        if (index < 10) console.log(`Row ${index + 2}: Completely empty, skipping`);
         return;
       }
 
-      // Skip rows with no product or quantity
-      if (!product || quantity <= 0) {
-        console.warn(`Row ${index + 2}: Missing product or invalid quantity, skipping`);
+      // Generate invoice number if missing but has data
+      if (!invoiceNum && product) {
+        invoiceNum = `AUTO-INV-${Date.now()}-${index}`;
+        warnings.push(`Row ${index + 2}: No invoice number, generated ${invoiceNum}`);
+      }
+
+      // Use generic customer name if missing
+      if (!customer) {
+        customer = 'Unknown Customer';
+      }
+
+      // Skip rows with no product name
+      if (!product || product.trim() === '') {
+        skippedRows.push(`Row ${index + 2}: No product name`);
+        if (index < 10) console.log(`Row ${index + 2}: No product, skipping`);
+        return;
+      }
+
+      // Skip rows with zero or negative quantity
+      if (quantity <= 0) {
+        skippedRows.push(`Row ${index + 2}: Invalid quantity (${quantity})`);
+        if (index < 10) console.log(`Row ${index + 2}: Invalid quantity ${quantity}, skipping`);
         return;
       }
 
@@ -140,7 +182,7 @@ const ExcelImport = ({ onImport, onClose }) => {
         invoiceMap.set(invoiceNum, {
           invoice_number: invoiceNum,
           invoice_date: date,
-          customer_name: customer || 'Unknown Customer',
+          customer_name: customer,
           items: [],
           validation: { isValid: true, errors: [] }
         });
@@ -150,8 +192,6 @@ const ExcelImport = ({ onImport, onClose }) => {
       
       // Validate item
       const itemErrors = [];
-      if (!product) itemErrors.push('Product name required');
-      if (quantity <= 0) itemErrors.push('Quantity must be > 0');
       if (unitPrice < 0) itemErrors.push('Unit price cannot be negative');
 
       invoice.items.push({
@@ -166,19 +206,28 @@ const ExcelImport = ({ onImport, onClose }) => {
         validation: { isValid: itemErrors.length === 0, errors: itemErrors }
       });
 
-      // Validate invoice header
-      if (!customer) {
-        invoice.validation.errors.push('Customer name missing, using "Unknown Customer"');
-      }
-      if (!dateValue) {
-        invoice.validation.errors.push(`Date missing, using today's date`);
-      }
       if (invoice.items.some(item => !item.validation.isValid)) {
         invoice.validation.isValid = false;
       }
     });
 
-    return Array.from(invoiceMap.values());
+    console.log('Parse complete - Found invoices:', invoiceMap.size);
+    console.log('Skipped rows:', skippedRows.length);
+    if (skippedRows.length > 0) {
+      console.log('First few skipped:', skippedRows.slice(0, 5));
+    }
+    if (warnings.length > 0) {
+      console.log('Warnings:', warnings.slice(0, 5));
+    }
+
+    const result = Array.from(invoiceMap.values());
+    
+    // Show user feedback
+    if (result.length === 0 && skippedRows.length > 0) {
+      setError(`No valid invoices found. ${skippedRows.length} rows skipped. Common issues: missing product names, invalid quantities, or empty rows. Check browser console for details.`);
+    }
+
+    return result;
   };
 
   // Handle cell edit
