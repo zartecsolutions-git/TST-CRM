@@ -11,9 +11,10 @@ export default function MasterData() {
   const [subcategories, setSubcategories] = useState([]);
   const [brands, setBrands] = useState([]);
   const [divisions, setDivisions] = useState([]);
+  const [models, setModels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({ name: '', description: '', parent_category: '' });
+  const [formData, setFormData] = useState({ name: '', description: '', parent_category: '', parent_division: '' });
   const [editingItem, setEditingItem] = useState(null);
 
   useEffect(() => {
@@ -29,6 +30,9 @@ export default function MasterData() {
       
       if (activeTab === 'categories') {
         setCategories(res.data || []);
+        // Fetch divisions for parent selection
+        const divRes = await api.get('/master-data/divisions');
+        setDivisions(divRes.data || []);
       } else if (activeTab === 'subcategories') {
         setSubcategories(res.data || []);
         // Also fetch categories for parent selection
@@ -38,6 +42,8 @@ export default function MasterData() {
         setBrands(res.data || []);
       } else if (activeTab === 'divisions') {
         setDivisions(res.data || []);
+      } else if (activeTab === 'models') {
+        setModels(res.data || []);
       }
     } catch (error) {
       console.error('Failed to fetch data:', error);
@@ -87,7 +93,8 @@ export default function MasterData() {
     if (activeTab === 'categories') return categories;
     if (activeTab === 'subcategories') return subcategories;
     if (activeTab === 'brands') return brands;
-    return divisions;
+    if (activeTab === 'divisions') return divisions;
+    return models;
   };
 
   const tabLabel = activeTab === 'subcategories' ? 'Sub-Category' : activeTab.charAt(0).toUpperCase() + activeTab.slice(1, -1);
@@ -142,6 +149,21 @@ export default function MasterData() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
+              {activeTab === 'categories' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Parent Division</label>
+                  <select
+                    value={formData.parent_division}
+                    onChange={(e) => setFormData(prev => ({ ...prev, parent_division: e.target.value }))}
+                    className="w-full p-2 border border-gray-300 rounded"
+                  >
+                    <option value="">Select Division (Optional)</option>
+                    {divisions.map(div => (
+                      <option key={div.name} value={div.name}>{div.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
               {activeTab === 'subcategories' && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Parent Category *</label>
@@ -220,6 +242,9 @@ export default function MasterData() {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                    {activeTab === 'categories' && (
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Parent Division</th>
+                    )}
                     {activeTab === 'subcategories' && (
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Parent Category</th>
                     )}
@@ -231,6 +256,9 @@ export default function MasterData() {
                   {getCurrentData().map((item) => (
                     <tr key={item.name} className="hover:bg-gray-50">
                       <td className="px-4 py-3 text-sm font-medium text-gray-900">{item.name}</td>
+                      {activeTab === 'categories' && (
+                        <td className="px-4 py-3 text-sm text-purple-600">{item.parent_division || '-'}</td>
+                      )}
                       {activeTab === 'subcategories' && (
                         <td className="px-4 py-3 text-sm text-blue-600">{item.parent_category}</td>
                       )}

@@ -17,6 +17,7 @@ export default function ProductsEnhanced() {
   const [subcategories, setSubcategories] = useState([]);
   const [brands, setBrands] = useState([]);
   const [divisions, setDivisions] = useState([]);
+  const [models, setModels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
@@ -69,13 +70,14 @@ export default function ProductsEnhanced() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [productsRes, customersRes, categoriesRes, subcategoriesRes, brandsRes, divisionsRes] = await Promise.all([
+      const [productsRes, customersRes, categoriesRes, subcategoriesRes, brandsRes, divisionsRes, modelsRes] = await Promise.all([
         api.get('/products'),
         api.get('/customers'),
         api.get('/master-data/categories'),
         api.get('/master-data/subcategories'),
         api.get('/master-data/brands'),
-        api.get('/master-data/divisions')
+        api.get('/master-data/divisions'),
+        api.get('/master-data/models')
       ]);
       
       setProducts(productsRes.data || []);
@@ -84,6 +86,7 @@ export default function ProductsEnhanced() {
       setSubcategories(subcategoriesRes.data || []);
       setBrands(brandsRes.data || []);
       setDivisions(divisionsRes.data || []);
+      setModels(modelsRes.data || []);
     } catch (error) {
       console.error('Error:', error);
     } finally {
@@ -536,12 +539,16 @@ export default function ProductsEnhanced() {
                   
                   <div>
                     <label className="block text-sm font-medium mb-1">Model</label>
-                    <input
-                      type="text"
+                    <select
                       value={formData.model}
                       onChange={(e) => setFormData({...formData, model: e.target.value})}
                       className="w-full border rounded px-3 py-2"
-                    />
+                    >
+                      <option value="">Select Model</option>
+                      {models.map(model => (
+                        <option key={model.name} value={model.name}>{model.name}</option>
+                      ))}
+                    </select>
                   </div>
                   
                   <div>
