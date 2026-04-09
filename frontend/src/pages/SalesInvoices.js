@@ -22,6 +22,9 @@ export default function SalesInvoices() {
   const [showProductDropdown, setShowProductDropdown] = useState({});
   const [showExcelImport, setShowExcelImport] = useState(false);
   const [expandedInvoice, setExpandedInvoice] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [dateFilter, setDateFilter] = useState({ start: '', end: '' });
 
   // Form state
   const [formData, setFormData] = useState({
@@ -349,6 +352,35 @@ export default function SalesInvoices() {
       console.error('Failed to delete invoice:', error);
       alert('Failed to delete invoice');
     }
+  };
+
+  // Filter invoices based on search and filters
+  const filteredInvoices = invoices.filter(invoice => {
+    // Search filter (invoice number, customer name)
+    const matchesSearch = searchTerm === '' || 
+      invoice.invoice_number.toString().toLowerCase().includes(searchTerm.toLowerCase()) ||
+      invoice.customer_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      invoice.sales_rep_name.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    // Status filter
+    const matchesStatus = filterStatus === 'all' || invoice.payment_status === filterStatus;
+    
+    // Date filter
+    let matchesDate = true;
+    if (dateFilter.start && invoice.invoice_date < dateFilter.start) {
+      matchesDate = false;
+    }
+    if (dateFilter.end && invoice.invoice_date > dateFilter.end) {
+      matchesDate = false;
+    }
+    
+    return matchesSearch && matchesStatus && matchesDate;
+  });
+
+  const clearFilters = () => {
+    setSearchTerm('');
+    setFilterStatus('all');
+    setDateFilter({ start: '', end: '' });
   };
 
   if (loading) {
@@ -711,17 +743,111 @@ export default function SalesInvoices() {
       <Card>
         <CardHeader>
           <CardTitle>
-            {user?.role === 'sales' ? 'My Invoices' : 'All Invoices'} ({invoices.length})
+            {user?.role === 'sales' ? 'My Invoices' : 'All Invoices'} ({filteredInvoices.length})
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {invoices.length === 0 ? (
+          {/* Search and Filters */}
+          <div className="mb-6 space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {/* Search Bar */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  🔍 Search
+                </label>
+                <input
+                  type="text"
+                  placeholder="Search by invoice #, customer, or sales rep..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              
+              {/* Payment Status Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Payment Status
+                </label>
+                <select
+                  value={filterStatus}
+                  onChange={(e) => setFilterStatus(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="all">All Status</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Paid">Paid</option>
+                  <option value="Partial">Partial</option>
+                </select>
+              </div>
+
+              {/* Clear Filters */}
+              <div className="flex items-end">
+                <Button
+                  onClick={clearFilters}
+                  variant="outline"
+                  className="w-full"
+                >
+                  Clear Filters
+                </Button>
+              </div>
+            </div>
+
+            {/* Date Range Filter */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  From Date
+                </label>
+                <input
+                  type="date"
+                  value={dateFilter.start}
+                  onChange={(e) => setDateFilter(prev => ({ ...prev, start: e.target.value }))}
+                  className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  To Date
+                </label>
+                <input
+                  type="date"
+                  value={dateFilter.end}
+                  onChange={(e) => setDateFilter(prev => ({ ...prev, end: e.target.value }))}
+                  className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+
+            {/* Active Filters Summary */}
+            {(searchTerm || filterStatus !== 'all' || dateFilter.start || dateFilter.end) && (
+              <div className="flex items-center gap-2 text-sm text-gray-600 bg-blue-50 p-2 rounded">
+                <span className="font-medium">Active Filters:</span>
+                {searchTerm && <span className="px-2 py-1 bg-blue-100 rounded">Search: "{searchTerm}"</span>}
+                {filterStatus !== 'all' && <span className="px-2 py-1 bg-blue-100 rounded">Status: {filterStatus}</span>}
+                {dateFilter.start && <span className="px-2 py-1 bg-blue-100 rounded">From: {dateFilter.start}</span>}
+                {dateFilter.end && <span className="px-2 py-1 bg-blue-100 rounded">To: {dateFilter.end}</span>}
+              </div>
+            )}
+          </div>
+
+          {filteredInvoices.length === 0 ? (
             <div className="text-center py-12">
               <div className="text-6xl mb-4">📄</div>
-              <p className="text-xl font-semibold text-gray-700 mb-2">No Invoices Yet</p>
-              <p className="text-gray-500">
-                {user?.role === 'sales' ? 'You haven\'t created any invoices yet.' : 'Create your first invoice to get started.'}
+              <p className="text-xl font-semibold text-gray-700 mb-2">
+                {invoices.length === 0 ? 'No Invoices Yet' : 'No Matching Invoices'}
               </p>
+              <p className="text-gray-500">
+                {invoices.length === 0 
+                  ? (user?.role === 'sales' ? 'You haven\'t created any invoices yet.' : 'Create your first invoice to get started.')
+                  : 'Try adjusting your search or filters.'
+                }
+              </p>
+              {invoices.length > 0 && (
+                <Button onClick={clearFilters} className="mt-4" variant="outline">
+                  Clear Filters
+                </Button>
+              )}
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -739,7 +865,7 @@ export default function SalesInvoices() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {invoices.map((invoice) => (
+                  {filteredInvoices.map((invoice) => (
                     <React.Fragment key={invoice.invoice_number}>
                       <tr className="hover:bg-gray-50 cursor-pointer" onClick={() => setExpandedInvoice(expandedInvoice === invoice.invoice_number ? null : invoice.invoice_number)}>
                         <td className="px-4 py-3 text-sm text-gray-600">
