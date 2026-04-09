@@ -241,12 +241,14 @@ export default function SalesInvoices() {
           
           if (!customer) {
             console.log(`Creating new customer: ${invoice.customer_name}`);
-            // Create new customer
+            // Create new customer with generated email
+            const generatedEmail = `${invoice.customer_name.toLowerCase().replace(/\s+/g, '_')}@imported.local`;
+            
             try {
               const customerRes = await api.post('/customers', {
                 name: invoice.customer_name,
+                email: generatedEmail,
                 contact_person: invoice.customer_name,
-                email: '',
                 phone: '',
                 address: ''
               });
@@ -254,7 +256,11 @@ export default function SalesInvoices() {
               console.log(`Customer created: ${customer.id}`);
             } catch (custErr) {
               console.error('Customer creation failed:', custErr);
-              errors.push(`Invoice ${invoice.invoice_number}: Customer creation failed - ${custErr.response?.data?.detail || custErr.message}`);
+              console.error('Customer creation error response:', custErr.response?.data);
+              const errorMsg = custErr.response?.data?.detail || 
+                              JSON.stringify(custErr.response?.data) || 
+                              custErr.message;
+              errors.push(`Invoice ${invoice.invoice_number}: Customer creation failed - ${errorMsg}`);
               errorCount++;
               continue;
             }
