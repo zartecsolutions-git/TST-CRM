@@ -13,6 +13,10 @@ export default function ProductsEnhanced() {
   const { formatAmount } = useCurrency();
   const [products, setProducts] = useState([]);
   const [customers, setCustomers] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [subcategories, setSubcategories] = useState([]);
+  const [brands, setBrands] = useState([]);
+  const [divisions, setDivisions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
@@ -64,15 +68,25 @@ export default function ProductsEnhanced() {
 
   const fetchData = async () => {
     try {
-      const [productsRes, customersRes] = await Promise.all([
+      setLoading(true);
+      const [productsRes, customersRes, categoriesRes, subcategoriesRes, brandsRes, divisionsRes] = await Promise.all([
         api.get('/products'),
-        api.get('/customers')
+        api.get('/customers'),
+        api.get('/master-data/categories'),
+        api.get('/master-data/subcategories'),
+        api.get('/master-data/brands'),
+        api.get('/master-data/divisions')
       ]);
-      setProducts(productsRes.data);
-      setCustomers(customersRes.data);
-      setLoading(false);
+      
+      setProducts(productsRes.data || []);
+      setCustomers(customersRes.data || []);
+      setCategories(categoriesRes.data || []);
+      setSubcategories(subcategoriesRes.data || []);
+      setBrands(brandsRes.data || []);
+      setDivisions(divisionsRes.data || []);
     } catch (error) {
       console.error('Error:', error);
+    } finally {
       setLoading(false);
     }
   };
@@ -243,8 +257,10 @@ export default function ProductsEnhanced() {
       // Clean up formData - convert empty strings to null for optional fields
       const cleanedData = {
         name: formData.name,
-        category: formData.category || 'others',
+        category: formData.category || '',
         sub_category: formData.sub_category || null,
+        brand: formData.brand || null,
+        division: formData.division || null,
         description: formData.description || null,
         model: formData.model || null,
         specifications: formData.specifications || null,
@@ -282,8 +298,10 @@ export default function ProductsEnhanced() {
     setSelectedProduct(null);
     setFormData({
       name: '',
-      category: 'others',
+      category: '',
       sub_category: '',
+      brand: '',
+      division: '',
       description: '',
       price: '',
       model: '',
@@ -460,24 +478,60 @@ export default function ProductsEnhanced() {
                     <label className="block text-sm font-medium mb-1">Category *</label>
                     <select
                       value={formData.category}
-                      onChange={(e) => setFormData({...formData, category: e.target.value})}
+                      onChange={(e) => setFormData({...formData, category: e.target.value, sub_category: ''})}
                       className="w-full border rounded px-3 py-2"
+                      required
                     >
-                      <option value="industrial">Industrial</option>
-                      <option value="retails">Retails</option>
-                      <option value="others">Others</option>
+                      <option value="">Select Category</option>
+                      {categories.map(cat => (
+                        <option key={cat.name} value={cat.name}>{cat.name}</option>
+                      ))}
                     </select>
                   </div>
                   
                   <div>
                     <label className="block text-sm font-medium mb-1">Sub-Category</label>
-                    <input
-                      type="text"
+                    <select
                       value={formData.sub_category}
                       onChange={(e) => setFormData({...formData, sub_category: e.target.value})}
-                      placeholder="e.g., Office Equipment, Heavy Machinery"
                       className="w-full border rounded px-3 py-2"
-                    />
+                      disabled={!formData.category}
+                    >
+                      <option value="">Select Sub-Category</option>
+                      {subcategories
+                        .filter(sub => sub.parent_category === formData.category)
+                        .map(sub => (
+                          <option key={sub.name} value={sub.name}>{sub.name}</option>
+                        ))}
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Brand</label>
+                    <select
+                      value={formData.brand}
+                      onChange={(e) => setFormData({...formData, brand: e.target.value})}
+                      className="w-full border rounded px-3 py-2"
+                    >
+                      <option value="">Select Brand</option>
+                      {brands.map(brand => (
+                        <option key={brand.name} value={brand.name}>{brand.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Division</label>
+                    <select
+                      value={formData.division}
+                      onChange={(e) => setFormData({...formData, division: e.target.value})}
+                      className="w-full border rounded px-3 py-2"
+                    >
+                      <option value="">Select Division</option>
+                      {divisions.map(div => (
+                        <option key={div.name} value={div.name}>{div.name}</option>
+                      ))}
+                    </select>
                   </div>
                   
                   <div>
