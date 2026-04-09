@@ -14,7 +14,13 @@ export default function MasterData() {
   const [models, setModels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({ name: '', description: '', parent_category: '', parent_division: '' });
+  const [formData, setFormData] = useState({ 
+    name: '', 
+    description: '', 
+    parent_category: '', 
+    parent_division: '',
+    parent_brand: ''
+  });
   const [editingItem, setEditingItem] = useState(null);
 
   useEffect(() => {
@@ -40,10 +46,16 @@ export default function MasterData() {
         setCategories(catRes.data || []);
       } else if (activeTab === 'brands') {
         setBrands(res.data || []);
+        // Fetch categories for parent selection
+        const catRes = await api.get('/master-data/categories');
+        setCategories(catRes.data || []);
       } else if (activeTab === 'divisions') {
         setDivisions(res.data || []);
       } else if (activeTab === 'models') {
         setModels(res.data || []);
+        // Fetch brands for parent selection
+        const brandRes = await api.get('/master-data/brands');
+        setBrands(brandRes.data || []);
       }
     } catch (error) {
       console.error('Failed to fetch data:', error);
@@ -74,7 +86,9 @@ export default function MasterData() {
     setFormData({
       name: item.name,
       description: item.description || '',
-      parent_category: item.parent_category || ''
+      parent_category: item.parent_category || '',
+      parent_division: item.parent_division || '',
+      parent_brand: item.parent_brand || ''
     });
     setShowForm(true);
   };
@@ -180,6 +194,36 @@ export default function MasterData() {
                   </select>
                 </div>
               )}
+              {activeTab === 'brands' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Parent Category</label>
+                  <select
+                    value={formData.parent_category}
+                    onChange={(e) => setFormData(prev => ({ ...prev, parent_category: e.target.value }))}
+                    className="w-full p-2 border border-gray-300 rounded"
+                  >
+                    <option value="">Select Category (Optional)</option>
+                    {categories.map(cat => (
+                      <option key={cat.name} value={cat.name}>{cat.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              {activeTab === 'models' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Parent Brand</label>
+                  <select
+                    value={formData.parent_brand}
+                    onChange={(e) => setFormData(prev => ({ ...prev, parent_brand: e.target.value }))}
+                    className="w-full p-2 border border-gray-300 rounded"
+                  >
+                    <option value="">Select Brand (Optional)</option>
+                    {brands.map(brand => (
+                      <option key={brand.name} value={brand.name}>{brand.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
                 <input
@@ -248,6 +292,12 @@ export default function MasterData() {
                     {activeTab === 'subcategories' && (
                       <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Parent Category</th>
                     )}
+                    {activeTab === 'brands' && (
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Parent Category</th>
+                    )}
+                    {activeTab === 'models' && (
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Parent Brand</th>
+                    )}
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                   </tr>
@@ -261,6 +311,12 @@ export default function MasterData() {
                       )}
                       {activeTab === 'subcategories' && (
                         <td className="px-4 py-3 text-sm text-blue-600">{item.parent_category}</td>
+                      )}
+                      {activeTab === 'brands' && (
+                        <td className="px-4 py-3 text-sm text-green-600">{item.parent_category || '-'}</td>
+                      )}
+                      {activeTab === 'models' && (
+                        <td className="px-4 py-3 text-sm text-orange-600">{item.parent_brand || '-'}</td>
                       )}
                       <td className="px-4 py-3 text-sm text-gray-600">{item.description || '-'}</td>
                       <td className="px-4 py-3 text-sm">

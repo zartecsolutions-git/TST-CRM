@@ -25,6 +25,18 @@ class SubCategoryItem(BaseModel):
     description: Optional[str] = ""
     active: bool = True
 
+class BrandItem(BaseModel):
+    name: str
+    parent_category: Optional[str] = ""  # Brand linked to Category
+    description: Optional[str] = ""
+    active: bool = True
+
+class ModelItem(BaseModel):
+    name: str
+    parent_brand: Optional[str] = ""  # Model linked to Brand
+    description: Optional[str] = ""
+    active: bool = True
+
 class MasterDataUpdate(BaseModel):
     name: Optional[str] = None
     parent_division: Optional[str] = None
@@ -34,6 +46,18 @@ class MasterDataUpdate(BaseModel):
 class SubCategoryUpdate(BaseModel):
     name: Optional[str] = None
     parent_category: Optional[str] = None
+    description: Optional[str] = None
+    active: Optional[bool] = None
+
+class BrandUpdate(BaseModel):
+    name: Optional[str] = None
+    parent_category: Optional[str] = None
+    description: Optional[str] = None
+    active: Optional[bool] = None
+
+class ModelUpdate(BaseModel):
+    name: Optional[str] = None
+    parent_brand: Optional[str] = None
     description: Optional[str] = None
     active: Optional[bool] = None
 
@@ -108,7 +132,7 @@ async def get_brands():
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/master-data/brands")
-async def create_brand(item: MasterDataItem):
+async def create_brand(item: BrandItem):
     try:
         existing = await db.brands.find_one({"name": item.name}, {"_id": 0})
         if existing:
@@ -126,7 +150,7 @@ async def create_brand(item: MasterDataItem):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.put("/master-data/brands/{name}")
-async def update_brand(name: str, update: MasterDataUpdate):
+async def update_brand(name: str, update: BrandUpdate):
     try:
         existing = await db.brands.find_one({"name": name}, {"_id": 0})
         if not existing:
@@ -305,7 +329,7 @@ async def get_models():
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/master-data/models")
-async def create_model(item: MasterDataItem):
+async def create_model(item: ModelItem):
     try:
         existing = await db.models.find_one({"name": item.name}, {"_id": 0})
         if existing:
@@ -323,7 +347,7 @@ async def create_model(item: MasterDataItem):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.put("/master-data/models/{name}")
-async def update_model(name: str, update: MasterDataUpdate):
+async def update_model(name: str, update: ModelUpdate):
     try:
         existing = await db.models.find_one({"name": name}, {"_id": 0})
         if not existing:
