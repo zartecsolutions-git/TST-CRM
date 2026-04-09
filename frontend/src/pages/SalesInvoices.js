@@ -228,26 +228,47 @@ export default function SalesInvoices() {
       setLoading(true);
       let successCount = 0;
       let errorCount = 0;
+      const errors = [];
+
+      console.log(`Starting import of ${importedInvoices.length} invoices...`);
 
       for (const invoice of importedInvoices) {
         try {
+          console.log(`Processing invoice: ${invoice.invoice_number}`);
+          
           // Find or create customer
           let customer = customers.find(c => c.name.toLowerCase() === invoice.customer_name.toLowerCase());
           
           if (!customer) {
+            console.log(`Creating new customer: ${invoice.customer_name}`);
             // Create new customer
-            const customerRes = await api.post('/customers', {
-              name: invoice.customer_name,
-              contact_person: invoice.customer_name,
-              email: '',
-              phone: '',
-              address: ''
-            });
-            customer = customerRes.data;
+            try {
+              const customerRes = await api.post('/customers', {
+                name: invoice.customer_name,
+                contact_person: invoice.customer_name,
+                email: '',
+                phone: '',
+                address: ''
+              });
+              customer = customerRes.data;
+              console.log(`Customer created: ${customer.id}`);
+            } catch (custErr) {
+              console.error('Customer creation failed:', custErr);
+              errors.push(`Invoice ${invoice.invoice_number}: Customer creation failed - ${custErr.response?.data?.detail || custErr.message}`);
+              errorCount++;
+              continue;
+            }
+          } else {
+            console.log(`Using existing customer: ${customer.name}`);
           }
 
+          // Calculate totals
+          const subtotal = invoice.items.reduce((sum, item) => sum + item.total, 0);
+          const vatAmount = subtotal * 0.1;
+          const totalAmount = subtotal + vatAmount;
+
           // Create invoice
-          await api.post('/sales/invoices', {
+          const invoiceData = {
             invoice_number: invoice.invoice_number,
             invoice_date: invoice.invoice_date,
             customer_id: customer.id,
@@ -255,24 +276,40 @@ export default function SalesInvoices() {
             sales_rep_id: user?.id || '',
             sales_rep_name: user?.name || '',
             items: invoice.items,
-            subtotal: invoice.items.reduce((sum, item) => sum + item.total, 0),
+            subtotal: subtotal,
             vat_percentage: 10,
-            vat_amount: invoice.items.reduce((sum, item) => sum + item.total, 0) * 0.1,
-            total_amount: invoice.items.reduce((sum, item) => sum + item.total, 0) * 1.1,
+            vat_amount: vatAmount,
+            total_amount: totalAmount,
             payment_status: 'Pending',
             notes: 'Imported from Excel'
-          });
+          };
 
+          console.log(`Creating invoice:`, invoiceData);
+          
+          await api.post('/sales/invoices', invoiceData);
+          console.log(`Invoice ${invoice.invoice_number} created successfully`);
           successCount++;
         } catch (err) {
           console.error('Error importing invoice:', invoice.invoice_number, err);
+          console.error('Error details:', err.response?.data);
+          errors.push(`Invoice ${invoice.invoice_number}: ${err.response?.data?.detail || err.message}`);
           errorCount++;
         }
       }
 
-      alert(`Import complete!\nSuccessful: ${successCount}\nFailed: ${errorCount}`);
+      console.log(`Import complete - Success: ${successCount}, Failed: ${errorCount}`);
+      
+      if (errors.length > 0) {
+        console.log('First 10 errors:', errors.slice(0, 10));
+      }
+
+      const message = `Import complete!\nSuccessful: ${successCount}\nFailed: ${errorCount}${errors.length > 0 ? '\n\nFirst few errors:\n' + errors.slice(0, 5).join('\n') : ''}`;
+      alert(message);
+      
       setShowExcelImport(false);
-      fetchData(); // Refresh the list
+      if (successCount > 0) {
+        fetchData(); // Refresh the list
+      }
     } catch (error) {
       console.error('Import error:', error);
       alert('Error during import: ' + error.message);
