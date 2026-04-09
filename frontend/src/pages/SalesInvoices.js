@@ -21,6 +21,7 @@ export default function SalesInvoices() {
   const [productSearchTerm, setProductSearchTerm] = useState({});
   const [showProductDropdown, setShowProductDropdown] = useState({});
   const [showExcelImport, setShowExcelImport] = useState(false);
+  const [expandedInvoice, setExpandedInvoice] = useState(null);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -373,26 +374,30 @@ export default function SalesInvoices() {
           >
             ← Back to Dashboard
           </Button>
-          <h1 className="text-2xl font-bold text-gray-900">💰 Sales Invoices</h1>
+          <h1 className="text-2xl font-bold text-gray-900">
+            💰 {user?.role === 'sales' ? 'My Sales Invoices' : 'Sales Invoices'}
+          </h1>
         </div>
-        <div className="flex gap-2">
-          <Button
-            onClick={() => setShowExcelImport(true)}
-            className="bg-green-600 hover:bg-green-700"
-          >
-            📥 Import from Excel
-          </Button>
-          <Button
-            onClick={() => {
-              resetForm();
-              setEditingInvoice(null);
-              setShowForm(true);
-            }}
-            className="bg-blue-600 hover:bg-blue-700"
-          >
-            + New Invoice
-          </Button>
-        </div>
+        {user?.role === 'admin' && (
+          <div className="flex gap-2">
+            <Button
+              onClick={() => setShowExcelImport(true)}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              📥 Import from Excel
+            </Button>
+            <Button
+              onClick={() => {
+                resetForm();
+                setEditingInvoice(null);
+                setShowForm(true);
+              }}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              + New Invoice
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Excel Import Modal */}
@@ -705,20 +710,25 @@ export default function SalesInvoices() {
       {/* Invoices List */}
       <Card>
         <CardHeader>
-          <CardTitle>All Invoices ({invoices.length})</CardTitle>
+          <CardTitle>
+            {user?.role === 'sales' ? 'My Invoices' : 'All Invoices'} ({invoices.length})
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {invoices.length === 0 ? (
             <div className="text-center py-12">
               <div className="text-6xl mb-4">📄</div>
               <p className="text-xl font-semibold text-gray-700 mb-2">No Invoices Yet</p>
-              <p className="text-gray-500">Create your first invoice to get started.</p>
+              <p className="text-gray-500">
+                {user?.role === 'sales' ? 'You haven\'t created any invoices yet.' : 'Create your first invoice to get started.'}
+              </p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-8"></th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Invoice #</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
@@ -730,44 +740,149 @@ export default function SalesInvoices() {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {invoices.map((invoice) => (
-                    <tr key={invoice.invoice_number} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 text-sm font-medium text-gray-900">{invoice.invoice_number}</td>
-                      <td className="px-4 py-3 text-sm text-gray-600">{invoice.invoice_date}</td>
-                      <td className="px-4 py-3 text-sm text-gray-600">{invoice.customer_name}</td>
-                      <td className="px-4 py-3 text-sm text-gray-600">{invoice.sales_rep_name}</td>
-                      <td className="px-4 py-3 text-sm font-semibold text-gray-900">BHD {invoice.total_amount.toFixed(2)}</td>
-                      <td className="px-4 py-3">
-                        <span className={`px-2 py-1 text-xs rounded-full ${
-                          invoice.payment_status === 'Paid' ? 'bg-green-100 text-green-800' :
-                          invoice.payment_status === 'Partial' ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-red-100 text-red-800'
-                        }`}>
-                          {invoice.payment_status}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-sm">
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleEdit(invoice)}
-                            className="text-blue-600 border-blue-600 hover:bg-blue-50"
-                          >
-                            Edit
-                          </Button>
-                          {user?.role === 'admin' && (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleDelete(invoice.invoice_number)}
-                              className="text-red-600 border-red-600 hover:bg-red-50"
-                            >
-                              Delete
-                            </Button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
+                    <React.Fragment key={invoice.invoice_number}>
+                      <tr className="hover:bg-gray-50 cursor-pointer" onClick={() => setExpandedInvoice(expandedInvoice === invoice.invoice_number ? null : invoice.invoice_number)}>
+                        <td className="px-4 py-3 text-sm text-gray-600">
+                          <span className="inline-block transform transition-transform" style={{ transform: expandedInvoice === invoice.invoice_number ? 'rotate(90deg)' : 'rotate(0deg)' }}>
+                            ▶
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-sm font-medium text-gray-900">{invoice.invoice_number}</td>
+                        <td className="px-4 py-3 text-sm text-gray-600">{invoice.invoice_date}</td>
+                        <td className="px-4 py-3 text-sm text-gray-600">{invoice.customer_name}</td>
+                        <td className="px-4 py-3 text-sm text-gray-600">{invoice.sales_rep_name}</td>
+                        <td className="px-4 py-3 text-sm font-semibold text-gray-900">BHD {invoice.total_amount.toFixed(2)}</td>
+                        <td className="px-4 py-3">
+                          <span className={`px-2 py-1 text-xs rounded-full ${
+                            invoice.payment_status === 'Paid' ? 'bg-green-100 text-green-800' :
+                            invoice.payment_status === 'Partial' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-red-100 text-red-800'
+                          }`}>
+                            {invoice.payment_status}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-sm" onClick={(e) => e.stopPropagation()}>
+                          <div className="flex gap-2">
+                            {user?.role === 'admin' && (
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleEdit(invoice)}
+                                  className="text-blue-600 border-blue-600 hover:bg-blue-50"
+                                >
+                                  Edit
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleDelete(invoice.invoice_number)}
+                                  className="text-red-600 border-red-600 hover:bg-red-50"
+                                >
+                                  Delete
+                                </Button>
+                              </>
+                            )}
+                            {user?.role === 'sales' && (
+                              <span className="text-xs text-gray-500 italic px-2 py-1">View Only</span>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                      {/* Expandable Invoice Details */}
+                      {expandedInvoice === invoice.invoice_number && (
+                        <tr>
+                          <td colSpan="8" className="px-4 py-4 bg-gray-50">
+                            <div className="space-y-4">
+                              <div className="flex justify-between items-start">
+                                <div>
+                                  <h4 className="font-semibold text-gray-900 mb-2">Invoice Details</h4>
+                                  <div className="grid grid-cols-2 gap-4 text-sm">
+                                    <div>
+                                      <span className="text-gray-600">Customer:</span>
+                                      <span className="ml-2 font-medium">{invoice.customer_name}</span>
+                                    </div>
+                                    <div>
+                                      <span className="text-gray-600">Sales Rep:</span>
+                                      <span className="ml-2 font-medium">{invoice.sales_rep_name}</span>
+                                    </div>
+                                    <div>
+                                      <span className="text-gray-600">Date:</span>
+                                      <span className="ml-2 font-medium">{invoice.invoice_date}</span>
+                                    </div>
+                                    <div>
+                                      <span className="text-gray-600">Payment Status:</span>
+                                      <span className={`ml-2 px-2 py-1 text-xs rounded-full ${
+                                        invoice.payment_status === 'Paid' ? 'bg-green-100 text-green-800' :
+                                        invoice.payment_status === 'Partial' ? 'bg-yellow-100 text-yellow-800' :
+                                        'bg-red-100 text-red-800'
+                                      }`}>
+                                        {invoice.payment_status}
+                                      </span>
+                                    </div>
+                                  </div>
+                                  {invoice.notes && (
+                                    <div className="mt-2 text-sm">
+                                      <span className="text-gray-600">Notes:</span>
+                                      <p className="mt-1 text-gray-700">{invoice.notes}</p>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                              
+                              {/* Invoice Items Table */}
+                              <div>
+                                <h5 className="font-medium text-gray-900 mb-2">Items</h5>
+                                <div className="overflow-x-auto">
+                                  <table className="min-w-full border border-gray-200">
+                                    <thead className="bg-gray-100">
+                                      <tr>
+                                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-600">Product</th>
+                                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-600">Division</th>
+                                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-600">Category</th>
+                                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-600">Brand</th>
+                                        <th className="px-3 py-2 text-left text-xs font-medium text-gray-600">Model</th>
+                                        <th className="px-3 py-2 text-right text-xs font-medium text-gray-600">Qty</th>
+                                        <th className="px-3 py-2 text-right text-xs font-medium text-gray-600">Unit Price</th>
+                                        <th className="px-3 py-2 text-right text-xs font-medium text-gray-600">Total</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-gray-200">
+                                      {invoice.items.map((item, idx) => (
+                                        <tr key={idx}>
+                                          <td className="px-3 py-2 text-sm text-gray-900">{item.product_name}</td>
+                                          <td className="px-3 py-2 text-sm text-gray-600">{item.division || '-'}</td>
+                                          <td className="px-3 py-2 text-sm text-gray-600">{item.category || '-'}</td>
+                                          <td className="px-3 py-2 text-sm text-gray-600">{item.brand || '-'}</td>
+                                          <td className="px-3 py-2 text-sm text-gray-600">{item.model || '-'}</td>
+                                          <td className="px-3 py-2 text-sm text-right text-gray-900">{item.quantity}</td>
+                                          <td className="px-3 py-2 text-sm text-right text-gray-900">BHD {item.unit_price.toFixed(2)}</td>
+                                          <td className="px-3 py-2 text-sm text-right font-medium text-gray-900">BHD {item.total.toFixed(2)}</td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                    <tfoot className="bg-gray-50">
+                                      <tr>
+                                        <td colSpan="7" className="px-3 py-2 text-sm text-right font-medium text-gray-700">Subtotal:</td>
+                                        <td className="px-3 py-2 text-sm text-right font-medium text-gray-900">BHD {invoice.subtotal.toFixed(2)}</td>
+                                      </tr>
+                                      <tr>
+                                        <td colSpan="7" className="px-3 py-2 text-sm text-right font-medium text-gray-700">VAT ({invoice.vat_percentage}%):</td>
+                                        <td className="px-3 py-2 text-sm text-right font-medium text-gray-900">BHD {invoice.vat_amount.toFixed(2)}</td>
+                                      </tr>
+                                      <tr className="border-t-2 border-gray-300">
+                                        <td colSpan="7" className="px-3 py-2 text-sm text-right font-bold text-gray-900">Total:</td>
+                                        <td className="px-3 py-2 text-sm text-right font-bold text-blue-600">BHD {invoice.total_amount.toFixed(2)}</td>
+                                      </tr>
+                                    </tfoot>
+                                  </table>
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
                   ))}
                 </tbody>
               </table>

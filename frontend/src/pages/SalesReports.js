@@ -46,9 +46,18 @@ export default function SalesReports() {
   const [salesRepData, setSalesRepData] = useState([]);
   const [analysisData, setAnalysisData] = useState({ by_category: [], by_brand: [], by_division: [] });
 
+  // Redirect non-admin users
   useEffect(() => {
-    fetchReports();
-  }, []);
+    if (user && user.role !== 'admin') {
+      window.location.href = '/dashboard';
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (user?.role === 'admin') {
+      fetchReports();
+    }
+  }, [user]);
 
   const fetchReports = async () => {
     try {
