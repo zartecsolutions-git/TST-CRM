@@ -12,6 +12,7 @@ export default function SalesInvoices() {
   const [categories, setCategories] = useState([]);
   const [brands, setBrands] = useState([]);
   const [divisions, setDivisions] = useState([]);
+  const [models, setModels] = useState([]);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -27,7 +28,7 @@ export default function SalesInvoices() {
     customer_name: '',
     sales_rep_id: user?.id || '',
     sales_rep_name: user?.name || '',
-    items: [{ product_name: '', category: '', brand: '', division: '', quantity: 1, unit_price: 0, total: 0 }],
+    items: [{ product_name: '', category: '', brand: '', division: '', model: '', quantity: 1, unit_price: 0, total: 0 }],
     subtotal: 0,
     vat_percentage: 10,
     vat_amount: 0,
@@ -112,7 +113,8 @@ export default function SalesInvoices() {
       product_name: product.name,
       category: product.category || '',
       brand: product.brand || '',
-      division: product.division || ''
+      division: product.division || '',
+      model: product.model || ''
     };
     setFormData(prev => ({ ...prev, items: updatedItems }));
     setShowProductDropdown(prev => ({ ...prev, [index]: false }));
@@ -136,7 +138,7 @@ export default function SalesInvoices() {
   const addItem = () => {
     setFormData(prev => ({
       ...prev,
-      items: [...prev.items, { product_name: '', category: '', brand: '', division: '', quantity: 1, unit_price: 0, total: 0 }]
+      items: [...prev.items, { product_name: '', category: '', brand: '', division: '', model: '', quantity: 1, unit_price: 0, total: 0 }]
     }));
   };
 
@@ -192,7 +194,7 @@ export default function SalesInvoices() {
       customer_name: '',
       sales_rep_id: user?.id || '',
       sales_rep_name: user?.name || '',
-      items: [{ product_name: '', category: '', brand: '', division: '', quantity: 1, unit_price: 0, total: 0 }],
+      items: [{ product_name: '', category: '', brand: '', division: '', model: '', quantity: 1, unit_price: 0, total: 0 }],
       subtotal: 0,
       vat_percentage: 10,
       vat_amount: 0,
@@ -362,7 +364,7 @@ export default function SalesInvoices() {
                 <div className="space-y-3">
                   {formData.items.map((item, index) => (
                     <div key={index} className="border border-gray-200 rounded p-3 bg-gray-50">
-                      <div className="grid grid-cols-1 md:grid-cols-6 gap-2">
+                      <div className="grid grid-cols-1 md:grid-cols-7 gap-2">
                         <div className="md:col-span-2 relative product-dropdown-container">
                           <input
                             type="text"
@@ -398,7 +400,7 @@ export default function SalesInvoices() {
                             onChange={(e) => handleItemChange(index, 'category', e.target.value)}
                             className="w-full p-2 border border-gray-300 rounded text-sm"
                           >
-                            <option value="">Select Category</option>
+                            <option value="">Category</option>
                             {categories.map(cat => (
                               <option key={cat.name} value={cat.name}>{cat.name}</option>
                             ))}
@@ -410,7 +412,7 @@ export default function SalesInvoices() {
                             onChange={(e) => handleItemChange(index, 'brand', e.target.value)}
                             className="w-full p-2 border border-gray-300 rounded text-sm"
                           >
-                            <option value="">Select Brand</option>
+                            <option value="">Brand</option>
                             {brands.map(brand => (
                               <option key={brand.name} value={brand.name}>{brand.name}</option>
                             ))}
@@ -422,9 +424,21 @@ export default function SalesInvoices() {
                             onChange={(e) => handleItemChange(index, 'division', e.target.value)}
                             className="w-full p-2 border border-gray-300 rounded text-sm"
                           >
-                            <option value="">Select Division</option>
+                            <option value="">Division</option>
                             {divisions.map(div => (
                               <option key={div.name} value={div.name}>{div.name}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <select
+                            value={item.model}
+                            onChange={(e) => handleItemChange(index, 'model', e.target.value)}
+                            className="w-full p-2 border border-gray-300 rounded text-sm"
+                          >
+                            <option value="">Model</option>
+                            {models.map(model => (
+                              <option key={model.name} value={model.name}>{model.name}</option>
                             ))}
                           </select>
                         </div>
