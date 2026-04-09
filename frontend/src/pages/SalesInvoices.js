@@ -423,7 +423,6 @@ export default function SalesInvoices() {
                             value={item.category}
                             onChange={(e) => handleItemChange(index, 'category', e.target.value)}
                             className="w-full p-2 border border-gray-300 rounded text-sm"
-                            disabled={!item.division}
                           >
                             <option value="">Category</option>
                             {categories
@@ -442,7 +441,7 @@ export default function SalesInvoices() {
                           >
                             <option value="">Brand</option>
                             {brands
-                              .filter(brand => !item.category || brand.parent_category === item.category)
+                              .filter(brand => item.category && brand.parent_category === item.category)
                               .map(brand => (
                                 <option key={brand.name} value={brand.name}>{brand.name}</option>
                               ))}
@@ -457,7 +456,7 @@ export default function SalesInvoices() {
                           >
                             <option value="">Model</option>
                             {models
-                              .filter(model => !item.brand || model.parent_brand === item.brand)
+                              .filter(model => item.brand && model.parent_brand === item.brand)
                               .map(model => (
                                 <option key={model.name} value={model.name}>{model.name}</option>
                               ))}
