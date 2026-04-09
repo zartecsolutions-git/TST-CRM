@@ -1041,13 +1041,3 @@ export default function ProductsEnhanced() {
     </div>
   );
 }
-ple-600 text-white rounded hover:bg-purple-700">Import</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-      </div>
-    </div>
-  );
-}
