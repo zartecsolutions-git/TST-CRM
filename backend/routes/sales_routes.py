@@ -215,7 +215,11 @@ async def get_monthly_sales_report(year: Optional[int] = None):
 
 # Customer Sales Report
 @router.get("/sales/reports/customers")
-async def get_customer_sales_report(start_date: Optional[str] = None, end_date: Optional[str] = None):
+async def get_customer_sales_report(
+    start_date: Optional[str] = None, 
+    end_date: Optional[str] = None,
+    sales_rep_id: Optional[str] = None
+):
     try:
         match_stage = {}
         if start_date or end_date:
@@ -225,6 +229,9 @@ async def get_customer_sales_report(start_date: Optional[str] = None, end_date: 
             if end_date:
                 date_query["$lte"] = end_date
             match_stage["invoice_date"] = date_query
+        
+        if sales_rep_id:
+            match_stage["sales_rep_id"] = sales_rep_id
         
         pipeline = [
             {"$match": match_stage} if match_stage else {"$match": {}},
@@ -257,7 +264,11 @@ async def get_customer_sales_report(start_date: Optional[str] = None, end_date: 
 
 # Product/Item Sales Report
 @router.get("/sales/reports/products")
-async def get_product_sales_report(start_date: Optional[str] = None, end_date: Optional[str] = None):
+async def get_product_sales_report(
+    start_date: Optional[str] = None, 
+    end_date: Optional[str] = None,
+    sales_rep_id: Optional[str] = None
+):
     try:
         match_stage = {}
         if start_date or end_date:
@@ -267,6 +278,9 @@ async def get_product_sales_report(start_date: Optional[str] = None, end_date: O
             if end_date:
                 date_query["$lte"] = end_date
             match_stage["invoice_date"] = date_query
+        
+        if sales_rep_id:
+            match_stage["sales_rep_id"] = sales_rep_id
         
         pipeline = [
             {"$match": match_stage} if match_stage else {"$match": {}},
@@ -355,7 +369,11 @@ async def get_salesrep_performance_report(
 
 # Category/Brand/Division Analysis
 @router.get("/sales/reports/analysis")
-async def get_sales_analysis(start_date: Optional[str] = None, end_date: Optional[str] = None):
+async def get_sales_analysis(
+    start_date: Optional[str] = None, 
+    end_date: Optional[str] = None,
+    sales_rep_id: Optional[str] = None
+):
     try:
         match_stage = {}
         if start_date or end_date:
@@ -365,6 +383,9 @@ async def get_sales_analysis(start_date: Optional[str] = None, end_date: Optiona
             if end_date:
                 date_query["$lte"] = end_date
             match_stage["invoice_date"] = date_query
+        
+        if sales_rep_id:
+            match_stage["sales_rep_id"] = sales_rep_id
         
         base_pipeline = [
             {"$match": match_stage} if match_stage else {"$match": {}},

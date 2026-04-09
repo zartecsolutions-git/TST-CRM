@@ -21,7 +21,7 @@ const MobileLayout = ({ children }) => {
     { path: '/products', label: 'Products', icon: '📦', roles: ['admin', 'sales'] },
     { path: '/leads', label: 'Leads', icon: '🎯', roles: ['admin', 'sales'] },
     { path: '/sales-invoices', label: 'Sales Invoices', icon: '💰', roles: ['admin', 'sales'] },
-    { path: '/sales-reports', label: 'Sales Reports', icon: '📈', roles: ['admin'] },
+    { path: '/sales-reports', label: 'Sales Reports', icon: '📈', roles: ['admin', 'sales'] },
   ];
 
   const adminMenuItems = [

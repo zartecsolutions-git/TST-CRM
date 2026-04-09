@@ -46,15 +46,16 @@ export default function SalesReports() {
   const [salesRepData, setSalesRepData] = useState([]);
   const [analysisData, setAnalysisData] = useState({ by_category: [], by_brand: [], by_division: [] });
 
-  // Redirect non-admin users
+  // Remove redirect for sales users - they can now access reports
   useEffect(() => {
-    if (user && user.role !== 'admin') {
+    if (user && user.role !== 'admin' && user.role !== 'sales') {
+      // Only support users are redirected
       window.location.href = '/dashboard';
     }
   }, [user]);
 
   useEffect(() => {
-    if (user?.role === 'admin') {
+    if (user?.role === 'admin' || user?.role === 'sales') {
       fetchReports();
     }
   }, [user]);
@@ -64,12 +65,15 @@ export default function SalesReports() {
       setLoading(true);
       const year = new Date().getFullYear();
       
+      // Add sales_rep_id filter for sales users
+      const salesRepFilter = user?.role === 'sales' ? { sales_rep_id: user.id } : {};
+      
       const [monthly, customers, products, salesreps, analysis] = await Promise.all([
-        api.get(`/sales/reports/monthly?year=${year}`),
-        api.get('/sales/reports/customers', { params: dateRange }),
-        api.get('/sales/reports/products', { params: dateRange }),
-        api.get('/sales/reports/salesreps', { params: dateRange }),
-        api.get('/sales/reports/analysis', { params: dateRange })
+        api.get(`/sales/reports/monthly?year=${year}`, { params: salesRepFilter }),
+        api.get('/sales/reports/customers', { params: { ...dateRange, ...salesRepFilter } }),
+        api.get('/sales/reports/products', { params: { ...dateRange, ...salesRepFilter } }),
+        api.get('/sales/reports/salesreps', { params: { ...dateRange, ...salesRepFilter } }),
+        api.get('/sales/reports/analysis', { params: { ...dateRange, ...salesRepFilter } })
       ]);
 
       setMonthlyData(monthly.data || []);
@@ -197,7 +201,9 @@ export default function SalesReports() {
           >
             ← Back to Dashboard
           </Button>
-          <h1 className="text-2xl font-bold text-gray-900">📊 Sales Reports</h1>
+          <h1 className="text-2xl font-bold text-gray-900">
+          📊 {user?.role === 'sales' ? 'My Sales Reports' : 'Sales Reports'}
+        </h1>
         </div>
         <div className="flex gap-2">
           <Button onClick={() => exportToPDF()} variant="outline" className="text-red-600 border-red-600">
