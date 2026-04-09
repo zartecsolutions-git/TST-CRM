@@ -482,7 +482,7 @@ export default function SalesInvoices() {
                       Avg Invoice
                     </th>
                     <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Commission (5%)
+                      Commission
                     </th>
                   </tr>
                 </thead>
@@ -514,6 +514,9 @@ export default function SalesInvoices() {
                       <td className="px-4 py-3 whitespace-nowrap text-right">
                         <div className="text-sm font-medium text-green-600">
                           BHD {rep.commission.toFixed(2)}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          ({rep.commission_percentage || 5}%)
                         </div>
                       </td>
                     </tr>

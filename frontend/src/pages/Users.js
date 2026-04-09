@@ -22,7 +22,8 @@ const Users = () => {
     email: '',
     password: '',
     phone: '',
-    role: 'sales'
+    role: 'sales',
+    commission_percentage: 5.0
   });
 
   useEffect(() => {
@@ -223,6 +224,24 @@ const Users = () => {
                       <option value="admin">Admin - Full system access</option>
                     </select>
                   </div>
+                  
+                  {/* Commission Percentage - Only show for sales role */}
+                  {newUser.role === 'sales' && (
+                    <div className="md:col-span-2">
+                      <Label>Commission % *</Label>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        min="0"
+                        max="100"
+                        value={newUser.commission_percentage}
+                        onChange={(e) => setNewUser({ ...newUser, commission_percentage: parseFloat(e.target.value) || 0 })}
+                        placeholder="Enter commission percentage (e.g., 5 for 5%)"
+                        required
+                      />
+                      <p className="text-xs text-gray-500 mt-1">This commission rate will be used for all sales performance calculations</p>
+                    </div>
+                  )}
                 </div>
                 <div className="flex space-x-2 pt-4 border-t">
                   <Button type="submit" className="bg-gradient-to-r from-blue-700 to-green-700">
@@ -263,6 +282,9 @@ const Users = () => {
                       <div>
                         <h3 className="font-bold text-gray-900">{user.name}</h3>
                         <p className="text-sm text-gray-600">{user.email}</p>
+                        {user.role === 'sales' && user.commission_percentage && (
+                          <p className="text-xs text-green-600 font-medium mt-1">💰 Commission: {user.commission_percentage}%</p>
+                        )}
                       </div>
                     </div>
                   </div>

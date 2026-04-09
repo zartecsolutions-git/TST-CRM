@@ -42,6 +42,7 @@ class UserBase(BaseModel):
     name: str
     phone: Optional[str] = None
     role: UserRole = UserRole.sales
+    commission_percentage: Optional[float] = 5.0  # Default 5% commission
 
 class UserCreate(UserBase):
     password: str
@@ -66,7 +67,7 @@ class UserUpdate(BaseModel):
     status: Optional[UserStatus] = None
     team_id: Optional[str] = None
     company_id: Optional[str] = None
-    company_id: Optional[str] = None
+    commission_percentage: Optional[float] = None
 
 # Location Models
 class LocationCreate(BaseModel):

@@ -352,14 +352,26 @@ async def get_salesrep_performance_report(
         
         results = await db.sales_invoices.aggregate(pipeline).to_list(1000)
         
+        # Get user commission percentages
+        user_ids = [r["_id"] for r in results]
+        users = await db.users.find(
+            {"id": {"$in": user_ids}}, 
+            {"_id": 0, "id": 1, "commission_percentage": 1}
+        ).to_list(1000)
+        
+        # Create a map of user_id to commission_percentage
+        commission_map = {u["id"]: u.get("commission_percentage", 5.0) for u in users}
+        
         formatted_results = []
         for r in results:
+            commission_pct = commission_map.get(r["_id"], 5.0)
             formatted_results.append({
                 "sales_rep_id": r["_id"],
                 "sales_rep_name": r["sales_rep_name"],
                 "total_sales": round(r["total_sales"], 2),
                 "invoice_count": r["invoice_count"],
-                "commission": round(r["total_sales"] * 0.05, 2)  # 5% commission
+                "commission_percentage": commission_pct,
+                "commission": round(r["total_sales"] * (commission_pct / 100), 2)
             })
         
         return formatted_results
