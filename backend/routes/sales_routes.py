@@ -304,7 +304,11 @@ async def get_product_sales_report(start_date: Optional[str] = None, end_date: O
 
 # Salesperson Performance Report
 @router.get("/sales/reports/salesreps")
-async def get_salesrep_performance_report(start_date: Optional[str] = None, end_date: Optional[str] = None):
+async def get_salesrep_performance_report(
+    start_date: Optional[str] = None, 
+    end_date: Optional[str] = None,
+    sales_rep_id: Optional[str] = None
+):
     try:
         match_stage = {}
         if start_date or end_date:
@@ -314,6 +318,10 @@ async def get_salesrep_performance_report(start_date: Optional[str] = None, end_
             if end_date:
                 date_query["$lte"] = end_date
             match_stage["invoice_date"] = date_query
+        
+        # Filter by sales_rep_id if provided
+        if sales_rep_id:
+            match_stage["sales_rep_id"] = sales_rep_id
         
         pipeline = [
             {"$match": match_stage} if match_stage else {"$match": {}},
