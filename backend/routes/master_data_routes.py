@@ -15,6 +15,7 @@ db = client[os.environ.get('DB_NAME', 'crm_db')]
 # Pydantic Models
 class MasterDataItem(BaseModel):
     name: str
+    parent_division: Optional[str] = ""  # For categories - link to division
     description: Optional[str] = ""
     active: bool = True
 
@@ -26,6 +27,7 @@ class SubCategoryItem(BaseModel):
 
 class MasterDataUpdate(BaseModel):
     name: Optional[str] = None
+    parent_division: Optional[str] = None
     description: Optional[str] = None
     active: Optional[bool] = None
 
@@ -57,7 +59,8 @@ async def create_category(item: MasterDataItem):
         item_dict["created_at"] = datetime.utcnow().isoformat()
         
         await db.categories.insert_one(item_dict)
-        return {"message": "Category created successfully", "category": item_dict}
+        created_item = await db.categories.find_one({"name": item.name}, {"_id": 0})
+        return {"message": "Category created successfully", "category": created_item}
     except HTTPException:
         raise
     except Exception as e:
@@ -287,3 +290,63 @@ async def delete_subcategory(name: str):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# Models CRUD
+@router.get("/master-data/models")
+async def get_models():
+    try:
+        models = await db.models.find({"_id": 0}).to_list(1000)
+        return models
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/master-data/models")
+async def create_model(item: MasterDataItem):
+    try:
+        existing = await db.models.find_one({"name": item.name}, {"_id": 0})
+        if existing:
+            raise HTTPException(status_code=400, detail="Model already exists")
+        
+        item_dict = item.dict()
+        item_dict["created_at"] = datetime.utcnow().isoformat()
+        
+        await db.models.insert_one(item_dict)
+        created_item = await db.models.find_one({"name": item.name}, {"_id": 0})
+        return {"message": "Model created successfully", "model": created_item}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.put("/master-data/models/{name}")
+async def update_model(name: str, update: MasterDataUpdate):
+    try:
+        existing = await db.models.find_one({"name": name}, {"_id": 0})
+        if not existing:
+            raise HTTPException(status_code=404, detail="Model not found")
+        
+        update_data = {k: v for k, v in update.dict().items() if v is not None}
+        update_data["updated_at"] = datetime.utcnow().isoformat()
+        
+        await db.models.update_one({"name": name}, {"$set": update_data})
+        updated = await db.models.find_one({"name": update.name or name}, {"_id": 0})
+        
+        return {"message": "Model updated successfully", "model": updated}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.delete("/master-data/models/{name}")
+async def delete_model(name: str):
+    try:
+        result = await db.models.delete_one({"name": name})
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Model not found")
+        return {"message": "Model deleted successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
