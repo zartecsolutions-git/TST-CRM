@@ -118,7 +118,8 @@ async def create_brand(item: MasterDataItem):
         item_dict["created_at"] = datetime.utcnow().isoformat()
         
         await db.brands.insert_one(item_dict)
-        return {"message": "Brand created successfully", "brand": item_dict}
+        created_item = await db.brands.find_one({"name": item.name}, {"_id": 0})
+        return {"message": "Brand created successfully", "brand": created_item}
     except HTTPException:
         raise
     except Exception as e:
@@ -176,7 +177,8 @@ async def create_division(item: MasterDataItem):
         item_dict["created_at"] = datetime.utcnow().isoformat()
         
         await db.divisions.insert_one(item_dict)
-        return {"message": "Division created successfully", "division": item_dict}
+        created_item = await db.divisions.find_one({"name": item.name}, {"_id": 0})
+        return {"message": "Division created successfully", "division": created_item}
     except HTTPException:
         raise
     except Exception as e:
@@ -240,7 +242,8 @@ async def create_subcategory(item: SubCategoryItem):
         item_dict["created_at"] = datetime.utcnow().isoformat()
         
         await db.subcategories.insert_one(item_dict)
-        return {"message": "Sub-Category created successfully", "subcategory": item_dict}
+        created_item = await db.subcategories.find_one({"name": item.name}, {"_id": 0})
+        return {"message": "Sub-Category created successfully", "subcategory": created_item}
     except HTTPException:
         raise
     except Exception as e:
