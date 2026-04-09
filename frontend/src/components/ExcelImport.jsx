@@ -65,12 +65,33 @@ const ExcelImport = ({ onImport, onClose }) => {
       try {
         const data = new Uint8Array(event.target.result);
         const workbook = XLSX.read(data, { type: 'array' });
+        
+        console.log('=== EXCEL FILE DEBUG ===');
+        console.log('Workbook sheet names:', workbook.SheetNames);
+        
         const sheetName = workbook.SheetNames[0];
+        console.log('Reading sheet:', sheetName);
+        
         const worksheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+        console.log('Worksheet range:', worksheet['!ref']);
+        
+        // Try different parsing options
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+        console.log('Parsed rows count:', jsonData.length);
+        
+        if (jsonData.length > 0) {
+          console.log('First row keys:', Object.keys(jsonData[0]));
+          console.log('First row values:', jsonData[0]);
+          console.log('Second row (if exists):', jsonData[1]);
+          console.log('Third row (if exists):', jsonData[2]);
+        } else {
+          // Try alternative parsing without headers
+          const jsonDataNoHeaders = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+          console.log('Raw data (no headers):', jsonDataNoHeaders.slice(0, 5));
+        }
 
         if (jsonData.length === 0) {
-          setError('Excel file is empty');
+          setError('Excel file appears empty or could not be parsed. Check console for details.');
           return;
         }
 
@@ -79,6 +100,7 @@ const ExcelImport = ({ onImport, onClose }) => {
         setPreviewData(groupedInvoices);
         setEditableData(JSON.parse(JSON.stringify(groupedInvoices))); // Deep copy
       } catch (err) {
+        console.error('Excel parsing error:', err);
         setError('Error parsing Excel file: ' + err.message);
       }
     };
