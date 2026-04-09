@@ -54,13 +54,14 @@ export default function SalesInvoices() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [invoicesRes, customersRes, usersRes, categoriesRes, brandsRes, divisionsRes, productsRes] = await Promise.all([
+      const [invoicesRes, customersRes, usersRes, categoriesRes, brandsRes, divisionsRes, modelsRes, productsRes] = await Promise.all([
         api.get('/sales/invoices'),
         api.get('/customers'),
         api.get('/users'),
         api.get('/master-data/categories'),
         api.get('/master-data/brands'),
         api.get('/master-data/divisions'),
+        api.get('/master-data/models'),
         api.get('/products')
       ]);
       
@@ -70,7 +71,10 @@ export default function SalesInvoices() {
       setCategories(categoriesRes.data || []);
       setBrands(brandsRes.data || []);
       setDivisions(divisionsRes.data || []);
+      setModels(modelsRes.data || []);
       setProducts(productsRes.data || []);
+      
+      console.log('Models loaded:', modelsRes.data || []);
     } catch (error) {
       console.error('Failed to fetch data:', error);
     } finally {
@@ -449,7 +453,7 @@ export default function SalesInvoices() {
                         </div>
                         <div>
                           <select
-                            value={item.model}
+                            value={item.model || ''}
                             onChange={(e) => handleItemChange(index, 'model', e.target.value)}
                             className="w-full p-2 border border-gray-300 rounded text-sm"
                             disabled={!item.brand}
