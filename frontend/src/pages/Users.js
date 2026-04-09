@@ -13,8 +13,10 @@ const Users = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [editingUser, setEditingUser] = useState(null);
   const [newPassword, setNewPassword] = useState('');
   const [filterRole, setFilterRole] = useState('all');
   const [newUser, setNewUser] = useState({
@@ -95,6 +97,44 @@ const Users = () => {
     setSelectedUser(user);
     setNewPassword('');
     setShowPasswordModal(true);
+  };
+
+  const openEditForm = (user) => {
+    setEditingUser({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone || '',
+      role: user.role,
+      status: user.status || 'active',
+      commission_percentage: user.commission_percentage || 5.0
+    });
+    setShowEditForm(true);
+  };
+
+  const handleUpdateUser = async (e) => {
+    e.preventDefault();
+    try {
+      await api.put(`/users/${editingUser.id}`, {
+        name: editingUser.name,
+        phone: editingUser.phone,
+        role: editingUser.role,
+        status: editingUser.status,
+        commission_percentage: editingUser.commission_percentage
+      });
+      alert('User updated successfully!');
+      setShowEditForm(false);
+      setEditingUser(null);
+      fetchUsers();
+    } catch (error) {
+      console.error('Error updating user:', error);
+      alert(error.response?.data?.detail || 'Failed to update user');
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setShowEditForm(false);
+    setEditingUser(null);
   };
 
   const isAdmin = currentUser?.role === 'admin';
@@ -256,6 +296,95 @@ const Users = () => {
           </Card>
         )}
 
+        {/* Edit User Form */}
+        {showEditForm && editingUser && (
+          <Card className="mb-6 border-2 border-blue-500">
+            <CardHeader className="bg-gradient-to-r from-blue-50 to-green-50">
+              <CardTitle>✏️ Edit User: {editingUser.name}</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <form onSubmit={handleUpdateUser}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>Name *</Label>
+                    <Input
+                      value={editingUser.name}
+                      onChange={(e) => setEditingUser({...editingUser, name: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label>Email (Read-only)</Label>
+                    <Input
+                      type="email"
+                      value={editingUser.email}
+                      disabled
+                      className="bg-gray-100"
+                    />
+                  </div>
+                  <div>
+                    <Label>Phone</Label>
+                    <Input
+                      type="tel"
+                      placeholder="+1234567890"
+                      value={editingUser.phone}
+                      onChange={(e) => setEditingUser({...editingUser, phone: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <Label>Role *</Label>
+                    <select
+                      className="w-full border rounded-md p-2 bg-white"
+                      value={editingUser.role}
+                      onChange={(e) => setEditingUser({...editingUser, role: e.target.value})}
+                    >
+                      <option value="sales">Sales</option>
+                      <option value="support">Support</option>
+                      <option value="admin">Admin</option>
+                    </select>
+                  </div>
+                  <div>
+                    <Label>Status *</Label>
+                    <select
+                      className="w-full border rounded-md p-2 bg-white"
+                      value={editingUser.status}
+                      onChange={(e) => setEditingUser({...editingUser, status: e.target.value})}
+                    >
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
+                    </select>
+                  </div>
+                  
+                  {/* Commission Percentage - Only show for sales role */}
+                  {editingUser.role === 'sales' && (
+                    <div>
+                      <Label>Commission % *</Label>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        min="0"
+                        max="100"
+                        value={editingUser.commission_percentage}
+                        onChange={(e) => setEditingUser({ ...editingUser, commission_percentage: parseFloat(e.target.value) || 0 })}
+                        required
+                      />
+                      <p className="text-xs text-gray-500 mt-1">This commission rate will be used for all sales performance calculations</p>
+                    </div>
+                  )}
+                </div>
+                <div className="flex space-x-2 pt-4 border-t mt-4">
+                  <Button type="submit" className="bg-gradient-to-r from-blue-700 to-green-700">
+                    ✓ Update User
+                  </Button>
+                  <Button type="button" variant="outline" onClick={handleCancelEdit}>
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Users List */}
         {loading ? (
           <div className="text-center py-12">
@@ -294,6 +423,14 @@ const Users = () => {
                     </Badge>
                     {isAdmin && user.id !== currentUser?.id && (
                       <div className="flex space-x-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => openEditForm(user)}
+                          className="bg-green-600 text-white hover:bg-green-700"
+                        >
+                          ✏️ Edit
+                        </Button>
                         <Button
                           size="sm"
                           variant="outline"

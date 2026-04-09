@@ -65,6 +65,7 @@ class UserUpdate(BaseModel):
     phone: Optional[str] = None
     avatar_url: Optional[str] = None
     status: Optional[UserStatus] = None
+    role: Optional[UserRole] = None
     team_id: Optional[str] = None
     company_id: Optional[str] = None
     commission_percentage: Optional[float] = None
