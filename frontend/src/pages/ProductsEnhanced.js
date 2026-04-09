@@ -7,6 +7,7 @@ import api from '../utils/api';
 import ProductStats from '../components/products/ProductStats';
 import ProductFilters from '../components/products/ProductFilters';
 import ProductTable from '../components/products/ProductTable';
+import SearchableSelect from '../components/ui/SearchableSelect';
 
 export default function ProductsEnhanced() {
   const navigate = useNavigate();
@@ -479,76 +480,56 @@ export default function ProductsEnhanced() {
                   
                   <div>
                     <label className="block text-sm font-medium mb-1">Category *</label>
-                    <select
+                    <SearchableSelect
                       value={formData.category}
-                      onChange={(e) => setFormData({...formData, category: e.target.value, sub_category: ''})}
-                      className="w-full border rounded px-3 py-2"
+                      onChange={(val) => setFormData({...formData, category: val, sub_category: ''})}
+                      options={categories.map(cat => ({ value: cat.name, label: cat.name }))}
+                      placeholder="Select Category"
                       required
-                    >
-                      <option value="">Select Category</option>
-                      {categories.map(cat => (
-                        <option key={cat.name} value={cat.name}>{cat.name}</option>
-                      ))}
-                    </select>
+                    />
                   </div>
                   
                   <div>
                     <label className="block text-sm font-medium mb-1">Sub-Category</label>
-                    <select
+                    <SearchableSelect
                       value={formData.sub_category}
-                      onChange={(e) => setFormData({...formData, sub_category: e.target.value})}
-                      className="w-full border rounded px-3 py-2"
-                      disabled={!formData.category}
-                    >
-                      <option value="">Select Sub-Category</option>
-                      {subcategories
+                      onChange={(val) => setFormData({...formData, sub_category: val})}
+                      options={subcategories
                         .filter(sub => sub.parent_category === formData.category)
-                        .map(sub => (
-                          <option key={sub.name} value={sub.name}>{sub.name}</option>
-                        ))}
-                    </select>
+                        .map(sub => ({ value: sub.name, label: sub.name }))}
+                      placeholder="Select Sub-Category"
+                      disabled={!formData.category}
+                    />
                   </div>
                   
                   <div>
                     <label className="block text-sm font-medium mb-1">Brand</label>
-                    <select
+                    <SearchableSelect
                       value={formData.brand}
-                      onChange={(e) => setFormData({...formData, brand: e.target.value})}
-                      className="w-full border rounded px-3 py-2"
-                    >
-                      <option value="">Select Brand</option>
-                      {brands.map(brand => (
-                        <option key={brand.name} value={brand.name}>{brand.name}</option>
-                      ))}
-                    </select>
+                      onChange={(val) => setFormData({...formData, brand: val})}
+                      options={brands.map(brand => ({ value: brand.name, label: brand.name }))}
+                      placeholder="Select Brand"
+                    />
                   </div>
                   
                   <div>
                     <label className="block text-sm font-medium mb-1">Division</label>
-                    <select
+                    <SearchableSelect
                       value={formData.division}
-                      onChange={(e) => setFormData({...formData, division: e.target.value})}
-                      className="w-full border rounded px-3 py-2"
-                    >
-                      <option value="">Select Division</option>
-                      {divisions.map(div => (
-                        <option key={div.name} value={div.name}>{div.name}</option>
-                      ))}
-                    </select>
+                      onChange={(val) => setFormData({...formData, division: val})}
+                      options={divisions.map(div => ({ value: div.name, label: div.name }))}
+                      placeholder="Select Division"
+                    />
                   </div>
                   
                   <div>
                     <label className="block text-sm font-medium mb-1">Model</label>
-                    <select
+                    <SearchableSelect
                       value={formData.model}
-                      onChange={(e) => setFormData({...formData, model: e.target.value})}
-                      className="w-full border rounded px-3 py-2"
-                    >
-                      <option value="">Select Model</option>
-                      {models.map(model => (
-                        <option key={model.name} value={model.name}>{model.name}</option>
-                      ))}
-                    </select>
+                      onChange={(val) => setFormData({...formData, model: val})}
+                      options={models.map(model => ({ value: model.name, label: model.name }))}
+                      placeholder="Select Model"
+                    />
                   </div>
                   
                   <div>
