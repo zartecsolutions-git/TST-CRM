@@ -162,20 +162,20 @@ const ExcelImport = ({ onImport, onClose }) => {
       // Use generic customer name if missing
       if (!customer) {
         customer = 'Unknown Customer';
+        warnings.push(`Row ${index + 2}: No customer name, using "Unknown Customer"`);
       }
 
-      // Skip rows with no product name
-      if (!product || product.trim() === '') {
-        skippedRows.push(`Row ${index + 2}: No product name`);
-        if (index < 10) console.log(`Row ${index + 2}: No product, skipping`);
-        return;
+      // Use generic product name if missing (LENIENT - don't skip)
+      let productName = product && product.trim() !== '' ? product : 'Unknown Product';
+      if (productName === 'Unknown Product') {
+        warnings.push(`Row ${index + 2}: No product name, using "Unknown Product"`);
       }
 
-      // Skip rows with zero or negative quantity
+      // Use quantity = 1 if zero or missing (LENIENT - don't skip)
+      let finalQuantity = quantity;
       if (quantity <= 0) {
-        skippedRows.push(`Row ${index + 2}: Invalid quantity (${quantity})`);
-        if (index < 10) console.log(`Row ${index + 2}: Invalid quantity ${quantity}, skipping`);
-        return;
+        finalQuantity = 1;
+        warnings.push(`Row ${index + 2}: Quantity missing or zero, defaulting to 1`);
       }
 
       if (!invoiceMap.has(invoiceNum)) {
@@ -212,19 +212,21 @@ const ExcelImport = ({ onImport, onClose }) => {
     });
 
     console.log('Parse complete - Found invoices:', invoiceMap.size);
-    console.log('Skipped rows:', skippedRows.length);
-    if (skippedRows.length > 0) {
-      console.log('First few skipped:', skippedRows.slice(0, 5));
-    }
-    if (warnings.length > 0) {
-      console.log('Warnings:', warnings.slice(0, 5));
+    console.log('Warnings:', warnings.length);
+    if (warnings.length > 0 && warnings.length <= 20) {
+      console.log('All warnings:', warnings);
+    } else if (warnings.length > 20) {
+      console.log('First 20 warnings:', warnings.slice(0, 20));
     }
 
     const result = Array.from(invoiceMap.values());
     
     // Show user feedback
-    if (result.length === 0 && skippedRows.length > 0) {
-      setError(`No valid invoices found. ${skippedRows.length} rows skipped. Common issues: missing product names, invalid quantities, or empty rows. Check browser console for details.`);
+    if (result.length === 0) {
+      setError(`No data found in Excel file. All rows were empty. Please check that the file has data.`);
+    } else if (warnings.length > 0) {
+      // Clear error and show as success with warnings
+      setError('');
     }
 
     return result;
