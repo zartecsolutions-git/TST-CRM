@@ -26,8 +26,10 @@ export default function ProductsEnhanced() {
   
   const [formData, setFormData] = useState({
     name: '',
-    category: 'others',
+    category: '',
     sub_category: '',
+    brand: '',
+    division: '',
     description: '',
     price: '',
     model: '',
@@ -1030,6 +1032,16 @@ export default function ProductsEnhanced() {
               <div className="flex gap-2 justify-end">
                 <button type="button" onClick={() => setShowImport(false)} className="px-4 py-2 border rounded">Cancel</button>
                 <button type="submit" className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">Import</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      </div>
+    </div>
+  );
+}
+ple-600 text-white rounded hover:bg-purple-700">Import</button>
               </div>
             </form>
           </div>

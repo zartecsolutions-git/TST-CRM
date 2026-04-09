@@ -8,11 +8,12 @@ export default function MasterData() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('categories');
   const [categories, setCategories] = useState([]);
+  const [subcategories, setSubcategories] = useState([]);
   const [brands, setBrands] = useState([]);
   const [divisions, setDivisions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({ name: '', description: '' });
+  const [formData, setFormData] = useState({ name: '', description: '', parent_category: '' });
   const [editingItem, setEditingItem] = useState(null);
 
   useEffect(() => {
@@ -26,9 +27,18 @@ export default function MasterData() {
       setLoading(true);
       const res = await api.get(`/master-data/${activeTab}`);
       
-      if (activeTab === 'categories') setCategories(res.data || []);
-      else if (activeTab === 'brands') setBrands(res.data || []);
-      else if (activeTab === 'divisions') setDivisions(res.data || []);
+      if (activeTab === 'categories') {
+        setCategories(res.data || []);
+      } else if (activeTab === 'subcategories') {
+        setSubcategories(res.data || []);
+        // Also fetch categories for parent selection
+        const catRes = await api.get('/master-data/categories');
+        setCategories(catRes.data || []);
+      } else if (activeTab === 'brands') {
+        setBrands(res.data || []);
+      } else if (activeTab === 'divisions') {
+        setDivisions(res.data || []);
+      }
     } catch (error) {
       console.error('Failed to fetch data:', error);
     } finally {
@@ -55,7 +65,11 @@ export default function MasterData() {
 
   const handleEdit = (item) => {
     setEditingItem(item);
-    setFormData({ name: item.name, description: item.description || '' });
+    setFormData({
+      name: item.name,
+      description: item.description || '',
+      parent_category: item.parent_category || ''
+    });
     setShowForm(true);
   };
 
@@ -71,11 +85,12 @@ export default function MasterData() {
 
   const getCurrentData = () => {
     if (activeTab === 'categories') return categories;
+    if (activeTab === 'subcategories') return subcategories;
     if (activeTab === 'brands') return brands;
     return divisions;
   };
 
-  const tabLabel = activeTab.charAt(0).toUpperCase() + activeTab.slice(1, -1);
+  const tabLabel = activeTab === 'subcategories' ? 'Sub-Category' : activeTab.charAt(0).toUpperCase() + activeTab.slice(1, -1);
 
   return (
     <div className="p-4 max-w-7xl mx-auto">
@@ -103,17 +118,18 @@ export default function MasterData() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 mb-6">
-        {['categories', 'brands', 'divisions'].map(tab => (
+      <div className="flex gap-2 mb-6 flex-wrap">
+        {['categories', 'subcategories', 'brands', 'divisions'].map(tab => (
           <Button
             key={tab}
             onClick={() => {
               setActiveTab(tab);
               setShowForm(false);
+              setFormData({ name: '', description: '', parent_category: '' });
             }}
             className={activeTab === tab ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border border-gray-300'}
           >
-            {tab.charAt(0).toUpperCase() + tab.slice(1)}
+            {tab === 'subcategories' ? 'Sub-Categories' : tab.charAt(0).toUpperCase() + tab.slice(1)}
           </Button>
         ))}
       </div>
@@ -126,6 +142,22 @@ export default function MasterData() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
+              {activeTab === 'subcategories' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Parent Category *</label>
+                  <select
+                    value={formData.parent_category}
+                    onChange={(e) => setFormData(prev => ({ ...prev, parent_category: e.target.value }))}
+                    className="w-full p-2 border border-gray-300 rounded"
+                    required
+                  >
+                    <option value="">Select Parent Category</option>
+                    {categories.map(cat => (
+                      <option key={cat.name} value={cat.name}>{cat.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Name *</label>
                 <input
@@ -188,6 +220,9 @@ export default function MasterData() {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                    {activeTab === 'subcategories' && (
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Parent Category</th>
+                    )}
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                   </tr>
@@ -196,6 +231,9 @@ export default function MasterData() {
                   {getCurrentData().map((item) => (
                     <tr key={item.name} className="hover:bg-gray-50">
                       <td className="px-4 py-3 text-sm font-medium text-gray-900">{item.name}</td>
+                      {activeTab === 'subcategories' && (
+                        <td className="px-4 py-3 text-sm text-blue-600">{item.parent_category}</td>
+                      )}
                       <td className="px-4 py-3 text-sm text-gray-600">{item.description || '-'}</td>
                       <td className="px-4 py-3 text-sm">
                         <div className="flex gap-2">
