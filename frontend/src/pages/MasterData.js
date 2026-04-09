@@ -15,22 +15,11 @@ export default function MasterData() {
   const [formData, setFormData] = useState({ name: '', description: '' });
   const [editingItem, setEditingItem] = useState(null);
 
-  // Only admins can access
-  if (user?.role !== 'admin') {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-center p-8 bg-white rounded-lg shadow-lg">
-          <div className="text-6xl mb-4">🔒</div>
-          <h1 className="text-2xl font-bold">Access Denied</h1>
-          <p className="text-gray-600 mt-2">Admin access required</p>
-        </div>
-      </div>
-    );
-  }
-
   useEffect(() => {
-    fetchData();
-  }, [activeTab]);
+    if (user?.role === 'admin') {
+      fetchData();
+    }
+  }, [activeTab, user]);
 
   const fetchData = async () => {
     try {
