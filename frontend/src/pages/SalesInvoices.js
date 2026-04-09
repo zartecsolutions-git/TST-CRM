@@ -229,20 +229,26 @@ export default function SalesInvoices() {
       let successCount = 0;
       let errorCount = 0;
       const errors = [];
+      
+      // Create a local copy of customers array that we'll update during import
+      const localCustomers = [...customers];
 
       console.log(`Starting import of ${importedInvoices.length} invoices...`);
 
-      for (const invoice of importedInvoices) {
+      for (let index = 0; index < importedInvoices.length; index++) {
+        const invoice = importedInvoices[index];
         try {
-          console.log(`Processing invoice: ${invoice.invoice_number}`);
+          console.log(`Processing invoice ${index + 1}/${importedInvoices.length}: ${invoice.invoice_number}`);
           
-          // Find or create customer
-          let customer = customers.find(c => c.name.toLowerCase() === invoice.customer_name.toLowerCase());
+          // Find or create customer (search in localCustomers which gets updated during import)
+          let customer = localCustomers.find(c => c.name.toLowerCase() === invoice.customer_name.toLowerCase());
           
           if (!customer) {
             console.log(`Creating new customer: ${invoice.customer_name}`);
-            // Create new customer with generated email
-            const generatedEmail = `${invoice.customer_name.toLowerCase().replace(/\s+/g, '_')}@imported.local`;
+            // Create new customer with unique generated email (timestamp + index for uniqueness)
+            const timestamp = Date.now();
+            const sanitizedName = invoice.customer_name.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+            const generatedEmail = `${sanitizedName}_${timestamp}_${index}@imported.example.com`;
             
             try {
               const customerRes = await api.post('/customers', {
@@ -253,7 +259,9 @@ export default function SalesInvoices() {
                 address: ''
               });
               customer = customerRes.data;
-              console.log(`Customer created: ${customer.id}`);
+              // Add newly created customer to local array so subsequent invoices can find it
+              localCustomers.push(customer);
+              console.log(`Customer created: ${customer.id} with email: ${generatedEmail}`);
             } catch (custErr) {
               console.error('Customer creation failed:', custErr);
               console.error('Customer creation error response:', custErr.response?.data);

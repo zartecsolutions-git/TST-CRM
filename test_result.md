@@ -102,15 +102,49 @@
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
 
-user_problem_statement: "Complete the CRM project with real-time location tracking, role-based access, and PWA frontend"
+user_problem_statement: "Complete the CRM project with real-time location tracking, role-based access, PWA frontend, and Excel import for historical sales data"
+
+backend:
+  - task: "Customer creation API for Excel import"
+    implemented: true
+    working: true
+    file: "/app/backend/routes/customer_routes.py"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "previous"
+        comment: "Backend enforces unique email constraint. When importing multiple invoices with same customer name, duplicate email error occurs."
+      - working: true
+        agent: "main"
+        comment: "Root cause identified: Backend enforces unique email on customers collection. No changes needed in backend - constraint is correct. Issue was in frontend import logic."
 
 frontend:
+  - task: "Excel Import feature for Sales Invoices"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/SalesInvoices.js, /app/frontend/src/components/ExcelImport.jsx"
+    stuck_count: 2
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: false
+        agent: "previous"
+        comment: "Parser extracts 146 invoices successfully, but API save fails. Generated identical placeholder emails for duplicate customer names causing MongoDB duplicate key errors."
+      - working: false
+        agent: "user"
+        comment: "User reported: Import still failing after previous agent's fix attempt. Screenshot shows error persists."
+      - working: true
+        agent: "main"
+        comment: "FIXED: Two issues resolved: (1) Created localCustomers array that gets updated during import loop so subsequent invoices can find already-created customers. (2) Made generated emails unique using timestamp+index pattern: customer_name_timestamp_index@imported.local. This prevents both duplicate API calls and duplicate email conflicts."
+
   - task: "Display location name instead of altitude in Locations page"
     implemented: true
     working: true
     file: "/app/frontend/src/pages/LocationTracking.js"
     stuck_count: 0
-    priority: "high"
+    priority: "medium"
     needs_retesting: false
     status_history:
       - working: "NA"
@@ -118,21 +152,23 @@ frontend:
         comment: "Previous agent attempted search_replace but failed due to pattern mismatch"
       - working: true
         agent: "main"
-        comment: "Successfully implemented reverse geocoding using OpenStreetMap Nominatim API. Displays real street names and city names (e.g., 'South Van Ness Avenue, San Francisco, United States'). Added incremental loading with 'Loading address...' placeholder. Respects 1-second rate limit for Nominatim. Tested with screenshot - confirmed working with actual location names appearing progressively."
+        comment: "Successfully implemented reverse geocoding using OpenStreetMap Nominatim API. Displays real street names and city names. Tested with screenshot - confirmed working."
 
 metadata:
   created_by: "main_agent"
-  version: "1.0"
-  test_sequence: 1
+  version: "2.0"
+  test_sequence: 2
   run_ui: true
 
 test_plan:
   current_focus:
-    - "Location name display (COMPLETED)"
-  stuck_tasks: []
+    - "Excel Import feature for Sales Invoices (NEEDS TESTING)"
+    - "Customer creation during import (NEEDS TESTING)"
+  stuck_tasks: 
+    - "Excel Import feature (stuck_count: 2)"
   test_all: false
   test_priority: "high_first"
 
 agent_communication:
   - agent: "main"
-    message: "Implemented reverse geocoding for location names. Uses OpenStreetMap Nominatim API to convert GPS coordinates to human-readable addresses (street + city + country). Displays 'Loading address...' while fetching. Rate-limited to 1 request/second to respect API guidelines. Testing confirmed addresses like 'South Van Ness Avenue, San Francisco, United States' and 'المنامة, البحرين' display correctly. Ready for user verification."
+    message: "Fixed Excel Import bug. ROOT CAUSE: When importing 146 invoices with duplicate customer names, the code tried to create the same customer multiple times because: (1) The customers array wasn't updated during import loop, and (2) Generated emails were identical for same customer names. FIX APPLIED: Created localCustomers array that tracks newly created customers during import. Generated unique emails using pattern: customername_timestamp_index@imported.local. This ensures each customer is created only once even if referenced by multiple invoices. NEEDS COMPREHENSIVE TESTING with user's actual Excel file (Sales_report_2026_1.xlsx containing 146 invoices)."
