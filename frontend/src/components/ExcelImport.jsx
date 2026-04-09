@@ -1,0 +1,410 @@
+import React, { useState } from 'react';
+import * as XLSX from 'xlsx';
+import { Button } from './ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+
+const ExcelImport = ({ onImport, onClose }) => {
+  const [file, setFile] = useState(null);
+  const [previewData, setPreviewData] = useState(null);
+  const [error, setError] = useState('');
+  const [editableData, setEditableData] = useState([]);
+
+  // Download Excel Template
+  const downloadTemplate = () => {
+    const template = [
+      {
+        'Invoice Number': 'INV-2026-001',
+        'Invoice Date': '2026-04-09',
+        'Customer Name': 'Customer ABC',
+        'Product Name': 'Product XYZ',
+        'Division': 'Industrial',
+        'Category': 'CIJ',
+        'Brand': 'Leadtech',
+        'Model': 'LT800',
+        'Quantity': 5,
+        'Unit Price': 100
+      },
+      {
+        'Invoice Number': 'INV-2026-001',
+        'Invoice Date': '2026-04-09',
+        'Customer Name': 'Customer ABC',
+        'Product Name': 'Another Product',
+        'Division': 'Retail',
+        'Category': 'POS',
+        'Brand': 'Brand X',
+        'Model': '',
+        'Quantity': 10,
+        'Unit Price': 50
+      }
+    ];
+
+    const ws = XLSX.utils.json_to_sheet(template);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Invoices');
+    
+    // Set column widths
+    ws['!cols'] = [
+      { wch: 15 }, { wch: 12 }, { wch: 20 }, { wch: 25 },
+      { wch: 15 }, { wch: 15 }, { wch: 15 }, { wch: 15 },
+      { wch: 10 }, { wch: 12 }
+    ];
+    
+    XLSX.writeFile(wb, 'Sales_Invoice_Template.xlsx');
+  };
+
+  // Handle file upload
+  const handleFileUpload = (e) => {
+    const uploadedFile = e.target.files[0];
+    if (!uploadedFile) return;
+
+    setFile(uploadedFile);
+    setError('');
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const data = new Uint8Array(event.target.result);
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+        if (jsonData.length === 0) {
+          setError('Excel file is empty');
+          return;
+        }
+
+        // Parse and group by invoice number
+        const groupedInvoices = parseExcelData(jsonData);
+        setPreviewData(groupedInvoices);
+        setEditableData(JSON.parse(JSON.stringify(groupedInvoices))); // Deep copy
+      } catch (err) {
+        setError('Error parsing Excel file: ' + err.message);
+      }
+    };
+
+    reader.readAsArrayBuffer(uploadedFile);
+  };
+
+  // Parse Excel data and group by invoice
+  const parseExcelData = (data) => {
+    const invoiceMap = new Map();
+
+    data.forEach((row, index) => {
+      const invoiceNum = row['Invoice Number'] || row['invoice_number'] || '';
+      const date = row['Invoice Date'] || row['invoice_date'] || '';
+      const customer = row['Customer Name'] || row['customer_name'] || '';
+      const product = row['Product Name'] || row['product_name'] || '';
+      const division = row['Division'] || row['division'] || '';
+      const category = row['Category'] || row['category'] || '';
+      const brand = row['Brand'] || row['brand'] || '';
+      const model = row['Model'] || row['model'] || '';
+      const quantity = parseFloat(row['Quantity'] || row['quantity'] || 0);
+      const unitPrice = parseFloat(row['Unit Price'] || row['unit_price'] || 0);
+
+      if (!invoiceNum) {
+        console.warn(`Row ${index + 1}: Missing invoice number`);
+        return;
+      }
+
+      if (!invoiceMap.has(invoiceNum)) {
+        invoiceMap.set(invoiceNum, {
+          invoice_number: invoiceNum,
+          invoice_date: date,
+          customer_name: customer,
+          items: [],
+          validation: { isValid: true, errors: [] }
+        });
+      }
+
+      const invoice = invoiceMap.get(invoiceNum);
+      
+      // Validate item
+      const itemErrors = [];
+      if (!product) itemErrors.push('Product name required');
+      if (quantity <= 0) itemErrors.push('Quantity must be > 0');
+      if (unitPrice < 0) itemErrors.push('Unit price cannot be negative');
+
+      invoice.items.push({
+        product_name: product,
+        division,
+        category,
+        brand,
+        model,
+        quantity,
+        unit_price: unitPrice,
+        total: quantity * unitPrice,
+        validation: { isValid: itemErrors.length === 0, errors: itemErrors }
+      });
+
+      // Validate invoice header
+      if (!customer) {
+        invoice.validation.errors.push('Customer name required');
+        invoice.validation.isValid = false;
+      }
+      if (!date) {
+        invoice.validation.errors.push('Invoice date required');
+        invoice.validation.isValid = false;
+      }
+      if (invoice.items.some(item => !item.validation.isValid)) {
+        invoice.validation.isValid = false;
+      }
+    });
+
+    return Array.from(invoiceMap.values());
+  };
+
+  // Handle cell edit
+  const handleCellEdit = (invoiceIndex, field, value, itemIndex = null) => {
+    const updated = [...editableData];
+    
+    if (itemIndex !== null) {
+      // Editing item field
+      updated[invoiceIndex].items[itemIndex][field] = value;
+      
+      // Recalculate total if quantity or price changed
+      if (field === 'quantity' || field === 'unit_price') {
+        const item = updated[invoiceIndex].items[itemIndex];
+        item.total = parseFloat(item.quantity || 0) * parseFloat(item.unit_price || 0);
+      }
+    } else {
+      // Editing invoice header field
+      updated[invoiceIndex][field] = value;
+    }
+    
+    setEditableData(updated);
+  };
+
+  // Handle import
+  const handleImport = () => {
+    // Validate all data
+    const hasErrors = editableData.some(inv => 
+      !inv.validation.isValid || inv.items.some(item => !item.validation.isValid)
+    );
+
+    if (hasErrors) {
+      setError('Please fix validation errors before importing');
+      return;
+    }
+
+    onImport(editableData);
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+      <Card className="w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col">
+        <CardHeader className="flex-shrink-0">
+          <div className="flex items-center justify-between">
+            <CardTitle>Import Invoices from Excel</CardTitle>
+            <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </CardHeader>
+
+        <CardContent className="flex-1 overflow-y-auto">
+          {!previewData ? (
+            <div className="space-y-4">
+              <div className="bg-blue-50 border border-blue-200 rounded p-4">
+                <h3 className="font-medium text-blue-900 mb-2">📋 Instructions:</h3>
+                <ol className="list-decimal list-inside space-y-1 text-sm text-blue-800">
+                  <li>Download the Excel template</li>
+                  <li>Fill in your invoice data (multiple rows per invoice supported)</li>
+                  <li>Upload the completed file</li>
+                  <li>Review and edit data before importing</li>
+                </ol>
+              </div>
+
+              <Button onClick={downloadTemplate} className="bg-green-600 hover:bg-green-700">
+                📥 Download Excel Template
+              </Button>
+
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                <input
+                  type="file"
+                  accept=".xlsx, .xls"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                  id="excel-upload"
+                />
+                <label htmlFor="excel-upload" className="cursor-pointer">
+                  <div className="text-4xl mb-4">📊</div>
+                  <p className="text-lg font-medium mb-2">Click to upload Excel file</p>
+                  <p className="text-sm text-gray-500">Supports .xlsx and .xls formats</p>
+                </label>
+              </div>
+
+              {error && (
+                <div className="bg-red-50 border border-red-200 rounded p-4 text-red-800">
+                  {error}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between bg-gray-50 p-4 rounded">
+                <div>
+                  <h3 className="font-medium">Preview: {editableData.length} Invoice(s) Found</h3>
+                  <p className="text-sm text-gray-600">
+                    Review and edit before importing. Click cells to edit.
+                  </p>
+                </div>
+                <div className="space-x-2">
+                  <Button onClick={() => setPreviewData(null)} variant="outline">
+                    Cancel
+                  </Button>
+                  <Button onClick={handleImport} className="bg-blue-600 hover:bg-blue-700">
+                    Import {editableData.length} Invoice(s)
+                  </Button>
+                </div>
+              </div>
+
+              {error && (
+                <div className="bg-red-50 border border-red-200 rounded p-4 text-red-800">
+                  {error}
+                </div>
+              )}
+
+              <div className="space-y-6">
+                {editableData.map((invoice, invIndex) => (
+                  <div key={invIndex} className="border rounded-lg overflow-hidden">
+                    <div className={`p-4 ${invoice.validation.isValid ? 'bg-green-50' : 'bg-red-50'}`}>
+                      <div className="grid grid-cols-3 gap-4 mb-2">
+                        <div>
+                          <label className="text-xs font-medium text-gray-600">Invoice Number</label>
+                          <input
+                            type="text"
+                            value={invoice.invoice_number}
+                            onChange={(e) => handleCellEdit(invIndex, 'invoice_number', e.target.value)}
+                            className="w-full p-2 border rounded text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium text-gray-600">Date</label>
+                          <input
+                            type="date"
+                            value={invoice.invoice_date}
+                            onChange={(e) => handleCellEdit(invIndex, 'invoice_date', e.target.value)}
+                            className="w-full p-2 border rounded text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium text-gray-600">Customer</label>
+                          <input
+                            type="text"
+                            value={invoice.customer_name}
+                            onChange={(e) => handleCellEdit(invIndex, 'customer_name', e.target.value)}
+                            className="w-full p-2 border rounded text-sm"
+                          />
+                        </div>
+                      </div>
+                      {!invoice.validation.isValid && (
+                        <div className="text-xs text-red-600">
+                          {invoice.validation.errors.join(', ')}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead className="bg-gray-100">
+                          <tr>
+                            <th className="p-2 text-left">Product</th>
+                            <th className="p-2 text-left">Division</th>
+                            <th className="p-2 text-left">Category</th>
+                            <th className="p-2 text-left">Brand</th>
+                            <th className="p-2 text-left">Model</th>
+                            <th className="p-2 text-right">Qty</th>
+                            <th className="p-2 text-right">Price</th>
+                            <th className="p-2 text-right">Total</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {invoice.items.map((item, itemIndex) => (
+                            <tr key={itemIndex} className={!item.validation.isValid ? 'bg-red-50' : ''}>
+                              <td className="p-2">
+                                <input
+                                  type="text"
+                                  value={item.product_name}
+                                  onChange={(e) => handleCellEdit(invIndex, 'product_name', e.target.value, itemIndex)}
+                                  className="w-full p-1 border rounded text-xs"
+                                />
+                              </td>
+                              <td className="p-2">
+                                <input
+                                  type="text"
+                                  value={item.division}
+                                  onChange={(e) => handleCellEdit(invIndex, 'division', e.target.value, itemIndex)}
+                                  className="w-full p-1 border rounded text-xs"
+                                />
+                              </td>
+                              <td className="p-2">
+                                <input
+                                  type="text"
+                                  value={item.category}
+                                  onChange={(e) => handleCellEdit(invIndex, 'category', e.target.value, itemIndex)}
+                                  className="w-full p-1 border rounded text-xs"
+                                />
+                              </td>
+                              <td className="p-2">
+                                <input
+                                  type="text"
+                                  value={item.brand}
+                                  onChange={(e) => handleCellEdit(invIndex, 'brand', e.target.value, itemIndex)}
+                                  className="w-full p-1 border rounded text-xs"
+                                />
+                              </td>
+                              <td className="p-2">
+                                <input
+                                  type="text"
+                                  value={item.model}
+                                  onChange={(e) => handleCellEdit(invIndex, 'model', e.target.value, itemIndex)}
+                                  className="w-full p-1 border rounded text-xs"
+                                />
+                              </td>
+                              <td className="p-2">
+                                <input
+                                  type="number"
+                                  value={item.quantity}
+                                  onChange={(e) => handleCellEdit(invIndex, 'quantity', parseFloat(e.target.value) || 0, itemIndex)}
+                                  className="w-full p-1 border rounded text-xs text-right"
+                                />
+                              </td>
+                              <td className="p-2">
+                                <input
+                                  type="number"
+                                  value={item.unit_price}
+                                  onChange={(e) => handleCellEdit(invIndex, 'unit_price', parseFloat(e.target.value) || 0, itemIndex)}
+                                  className="w-full p-1 border rounded text-xs text-right"
+                                />
+                              </td>
+                              <td className="p-2 text-right font-medium">
+                                {item.total.toFixed(2)}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                        <tfoot className="bg-gray-50 font-medium">
+                          <tr>
+                            <td colSpan="7" className="p-2 text-right">Invoice Total:</td>
+                            <td className="p-2 text-right">
+                              {invoice.items.reduce((sum, item) => sum + item.total, 0).toFixed(2)}
+                            </td>
+                          </tr>
+                        </tfoot>
+                      </table>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default ExcelImport;

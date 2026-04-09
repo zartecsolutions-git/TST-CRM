@@ -3,6 +3,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../utils/api';
+import ExcelImport from '../components/ExcelImport';
 
 export default function SalesInvoices() {
   const { user } = useAuth();
@@ -19,6 +20,7 @@ export default function SalesInvoices() {
   const [editingInvoice, setEditingInvoice] = useState(null);
   const [productSearchTerm, setProductSearchTerm] = useState({});
   const [showProductDropdown, setShowProductDropdown] = useState({});
+  const [showExcelImport, setShowExcelImport] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -220,6 +222,65 @@ export default function SalesInvoices() {
     });
   };
 
+  // Handle Excel Import
+  const handleExcelImport = async (importedInvoices) => {
+    try {
+      setLoading(true);
+      let successCount = 0;
+      let errorCount = 0;
+
+      for (const invoice of importedInvoices) {
+        try {
+          // Find or create customer
+          let customer = customers.find(c => c.name.toLowerCase() === invoice.customer_name.toLowerCase());
+          
+          if (!customer) {
+            // Create new customer
+            const customerRes = await api.post('/customers', {
+              name: invoice.customer_name,
+              contact_person: invoice.customer_name,
+              email: '',
+              phone: '',
+              address: ''
+            });
+            customer = customerRes.data;
+          }
+
+          // Create invoice
+          await api.post('/sales/invoices', {
+            invoice_number: invoice.invoice_number,
+            invoice_date: invoice.invoice_date,
+            customer_id: customer.id,
+            customer_name: customer.name,
+            sales_rep_id: user?.id || '',
+            sales_rep_name: user?.name || '',
+            items: invoice.items,
+            subtotal: invoice.items.reduce((sum, item) => sum + item.total, 0),
+            vat_percentage: 10,
+            vat_amount: invoice.items.reduce((sum, item) => sum + item.total, 0) * 0.1,
+            total_amount: invoice.items.reduce((sum, item) => sum + item.total, 0) * 1.1,
+            payment_status: 'Pending',
+            notes: 'Imported from Excel'
+          });
+
+          successCount++;
+        } catch (err) {
+          console.error('Error importing invoice:', invoice.invoice_number, err);
+          errorCount++;
+        }
+      }
+
+      alert(`Import complete!\nSuccessful: ${successCount}\nFailed: ${errorCount}`);
+      setShowExcelImport(false);
+      fetchData(); // Refresh the list
+    } catch (error) {
+      console.error('Import error:', error);
+      alert('Error during import: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleEdit = (invoice) => {
     setEditingInvoice(invoice);
     setFormData(invoice);
@@ -263,17 +324,33 @@ export default function SalesInvoices() {
           </Button>
           <h1 className="text-2xl font-bold text-gray-900">💰 Sales Invoices</h1>
         </div>
-        <Button
-          onClick={() => {
-            resetForm();
-            setEditingInvoice(null);
-            setShowForm(true);
-          }}
-          className="bg-blue-600 hover:bg-blue-700"
-        >
-          + New Invoice
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={() => setShowExcelImport(true)}
+            className="bg-green-600 hover:bg-green-700"
+          >
+            📥 Import from Excel
+          </Button>
+          <Button
+            onClick={() => {
+              resetForm();
+              setEditingInvoice(null);
+              setShowForm(true);
+            }}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            + New Invoice
+          </Button>
+        </div>
       </div>
+
+      {/* Excel Import Modal */}
+      {showExcelImport && (
+        <ExcelImport
+          onImport={handleExcelImport}
+          onClose={() => setShowExcelImport(false)}
+        />
+      )}
 
       {/* Invoice Form */}
       {showForm && (
