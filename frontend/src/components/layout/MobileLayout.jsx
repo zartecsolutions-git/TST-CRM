@@ -28,8 +28,9 @@ const MobileLayout = ({ children }) => {
     { path: '/users', label: 'Users', icon: '👤' },
     { path: '/teams', label: 'Teams', icon: '👥' },
     { path: '/location-tracking', label: 'Locations', icon: '📍' },
+    { path: '/master-data', label: 'Master Data', icon: '⚙️' },
     { path: '/reports', label: 'Reports', icon: '📊' },
-    { path: '/settings', label: 'Settings', icon: '⚙️' },
+    { path: '/settings', label: 'Settings', icon: '🔧' },
   ];
 
   const filteredNavItems = navItems.filter(item => 

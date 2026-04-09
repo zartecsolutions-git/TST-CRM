@@ -19,6 +19,7 @@ import CompanySettings from './pages/CompanySettings';
 import Reports from './pages/Reports';
 import SalesInvoices from './pages/SalesInvoices';
 import SalesReports from './pages/SalesReports';
+import MasterData from './pages/MasterData';
 import '@/App.css';
 import './mobile.css';
 import './mobile-responsive.css';
@@ -235,6 +236,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <SalesReports />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/master-data"
+              element={
+                <ProtectedRoute>
+                  <MasterData />
                 </ProtectedRoute>
               }
             />

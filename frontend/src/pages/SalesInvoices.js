@@ -9,6 +9,9 @@ export default function SalesInvoices() {
   const [invoices, setInvoices] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [salesReps, setSalesReps] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [brands, setBrands] = useState([]);
+  const [divisions, setDivisions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingInvoice, setEditingInvoice] = useState(null);
@@ -37,15 +40,21 @@ export default function SalesInvoices() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [invoicesRes, customersRes, usersRes] = await Promise.all([
+      const [invoicesRes, customersRes, usersRes, categoriesRes, brandsRes, divisionsRes] = await Promise.all([
         api.get('/sales/invoices'),
         api.get('/customers'),
-        api.get('/users')
+        api.get('/users'),
+        api.get('/master-data/categories'),
+        api.get('/master-data/brands'),
+        api.get('/master-data/divisions')
       ]);
       
       setInvoices(invoicesRes.data || []);
       setCustomers(customersRes.data || []);
       setSalesReps(usersRes.data.filter(u => u.role === 'sales' || u.role === 'admin') || []);
+      setCategories(categoriesRes.data || []);
+      setBrands(brandsRes.data || []);
+      setDivisions(divisionsRes.data || []);
     } catch (error) {
       console.error('Failed to fetch data:', error);
     } finally {
@@ -322,31 +331,40 @@ export default function SalesInvoices() {
                           />
                         </div>
                         <div>
-                          <input
-                            type="text"
-                            placeholder="Category"
+                          <select
                             value={item.category}
                             onChange={(e) => handleItemChange(index, 'category', e.target.value)}
                             className="w-full p-2 border border-gray-300 rounded text-sm"
-                          />
+                          >
+                            <option value="">Select Category</option>
+                            {categories.map(cat => (
+                              <option key={cat.name} value={cat.name}>{cat.name}</option>
+                            ))}
+                          </select>
                         </div>
                         <div>
-                          <input
-                            type="text"
-                            placeholder="Brand"
+                          <select
                             value={item.brand}
                             onChange={(e) => handleItemChange(index, 'brand', e.target.value)}
                             className="w-full p-2 border border-gray-300 rounded text-sm"
-                          />
+                          >
+                            <option value="">Select Brand</option>
+                            {brands.map(brand => (
+                              <option key={brand.name} value={brand.name}>{brand.name}</option>
+                            ))}
+                          </select>
                         </div>
                         <div>
-                          <input
-                            type="text"
-                            placeholder="Division"
+                          <select
                             value={item.division}
                             onChange={(e) => handleItemChange(index, 'division', e.target.value)}
                             className="w-full p-2 border border-gray-300 rounded text-sm"
-                          />
+                          >
+                            <option value="">Select Division</option>
+                            {divisions.map(div => (
+                              <option key={div.name} value={div.name}>{div.name}</option>
+                            ))}
+                          </select>
                         </div>
                         <div>
                           <input
