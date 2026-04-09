@@ -17,6 +17,8 @@ import Products from './pages/ProductsEnhanced';
 import Leads from './pages/Leads';
 import CompanySettings from './pages/CompanySettings';
 import Reports from './pages/Reports';
+import SalesInvoices from './pages/SalesInvoices';
+import SalesReports from './pages/SalesReports';
 import '@/App.css';
 import './mobile.css';
 import './mobile-responsive.css';
@@ -217,6 +219,22 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Reports />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/sales-invoices"
+              element={
+                <ProtectedRoute>
+                  <SalesInvoices />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/sales-reports"
+              element={
+                <ProtectedRoute>
+                  <SalesReports />
                 </ProtectedRoute>
               }
             />
