@@ -91,19 +91,48 @@ const ExcelImport = ({ onImport, onClose }) => {
     const invoiceMap = new Map();
 
     data.forEach((row, index) => {
-      const invoiceNum = row['Invoice Number'] || row['invoice_number'] || '';
-      const date = row['Invoice Date'] || row['invoice_date'] || '';
-      const customer = row['Customer Name'] || row['customer_name'] || '';
-      const product = row['Product Name'] || row['product_name'] || '';
-      const division = row['Division'] || row['division'] || '';
-      const category = row['Category'] || row['category'] || '';
-      const brand = row['Brand'] || row['brand'] || '';
-      const model = row['Model'] || row['model'] || '';
-      const quantity = parseFloat(row['Quantity'] || row['quantity'] || 0);
-      const unitPrice = parseFloat(row['Unit Price'] || row['unit_price'] || 0);
+      // Flexible column name matching (case-insensitive)
+      const getColumnValue = (possibleNames) => {
+        for (const name of possibleNames) {
+          const key = Object.keys(row).find(k => 
+            k.toLowerCase().replace(/\s+/g, '').includes(name.toLowerCase().replace(/\s+/g, ''))
+          );
+          if (key && row[key]) return row[key];
+        }
+        return '';
+      };
+
+      // Map user's columns to our fields
+      const invoiceNum = getColumnValue(['INV NUMBER', 'INVNUMBER', 'Invoice Number', 'invoice_number']) || `INV-${Date.now()}-${index}`;
+      const dateValue = getColumnValue(['DATE', 'Invoice Date', 'invoice_date']);
+      const date = dateValue || new Date().toISOString().split('T')[0]; // Use today if empty
+      const customer = getColumnValue(['CUSTOMER NAME', 'Customer Name', 'customer_name', 'Customer']);
+      const product = getColumnValue(['ITEM DETAILS', 'Product Name', 'product_name', 'Item', 'Product']);
+      const division = getColumnValue(['Division', 'division']);
+      const categoryValue = getColumnValue(['Category', 'Prodcut Category', 'Product Category', 'category']);
+      const brand = getColumnValue(['Brand', 'brand']);
+      const model = getColumnValue(['Model', 'model']);
+      
+      // Handle quantity and price
+      const quantity = parseFloat(getColumnValue(['Qty', 'Quantity', 'quantity', 'QTY']) || 0);
+      
+      // Calculate unit price from invoice amount or use direct unit price
+      let unitPrice = parseFloat(getColumnValue(['Unit Price', 'unit_price', 'Price', 'price']) || 0);
+      const invoiceAmount = parseFloat(getColumnValue(['INVOICE AMOUNT', 'Invoice Amount', 'Amount', 'Total Amount']) || 0);
+      
+      // If we have invoice amount but no unit price, calculate it
+      if (invoiceAmount > 0 && unitPrice === 0 && quantity > 0) {
+        unitPrice = invoiceAmount / quantity;
+      }
 
       if (!invoiceNum) {
-        console.warn(`Row ${index + 1}: Missing invoice number`);
+        console.warn(`Row ${index + 2}: Missing invoice number, skipping`);
+        return;
+      }
+
+      // Skip rows with no product or quantity
+      if (!product || quantity <= 0) {
+        console.warn(`Row ${index + 2}: Missing product or invalid quantity, skipping`);
         return;
       }
 
@@ -111,7 +140,7 @@ const ExcelImport = ({ onImport, onClose }) => {
         invoiceMap.set(invoiceNum, {
           invoice_number: invoiceNum,
           invoice_date: date,
-          customer_name: customer,
+          customer_name: customer || 'Unknown Customer',
           items: [],
           validation: { isValid: true, errors: [] }
         });
@@ -127,24 +156,22 @@ const ExcelImport = ({ onImport, onClose }) => {
 
       invoice.items.push({
         product_name: product,
-        division,
-        category,
-        brand,
-        model,
-        quantity,
-        unit_price: unitPrice,
-        total: quantity * unitPrice,
+        division: division || '',
+        category: categoryValue || '',
+        brand: brand || '',
+        model: model || '',
+        quantity: quantity,
+        unit_price: parseFloat(unitPrice.toFixed(2)),
+        total: parseFloat((quantity * unitPrice).toFixed(2)),
         validation: { isValid: itemErrors.length === 0, errors: itemErrors }
       });
 
       // Validate invoice header
       if (!customer) {
-        invoice.validation.errors.push('Customer name required');
-        invoice.validation.isValid = false;
+        invoice.validation.errors.push('Customer name missing, using "Unknown Customer"');
       }
-      if (!date) {
-        invoice.validation.errors.push('Invoice date required');
-        invoice.validation.isValid = false;
+      if (!dateValue) {
+        invoice.validation.errors.push(`Date missing, using today's date`);
       }
       if (invoice.items.some(item => !item.validation.isValid)) {
         invoice.validation.isValid = false;
@@ -210,11 +237,18 @@ const ExcelImport = ({ onImport, onClose }) => {
               <div className="bg-blue-50 border border-blue-200 rounded p-4">
                 <h3 className="font-medium text-blue-900 mb-2">📋 Instructions:</h3>
                 <ol className="list-decimal list-inside space-y-1 text-sm text-blue-800">
-                  <li>Download the Excel template</li>
+                  <li>Download the Excel template (optional - you can use your own format too)</li>
                   <li>Fill in your invoice data (multiple rows per invoice supported)</li>
                   <li>Upload the completed file</li>
                   <li>Review and edit data before importing</li>
                 </ol>
+                <div className="mt-3 p-3 bg-white rounded border border-blue-100">
+                  <p className="text-xs font-medium text-blue-900 mb-1">✨ Smart Column Detection:</p>
+                  <p className="text-xs text-blue-700">
+                    Automatically recognizes columns like: INV NUMBER, INVOICE AMOUNT, ITEM DETAILS, 
+                    Qty, CUSTOMER NAME, etc. Unit price calculated from invoice amount if needed.
+                  </p>
+                </div>
               </div>
 
               <Button onClick={downloadTemplate} className="bg-green-600 hover:bg-green-700">
