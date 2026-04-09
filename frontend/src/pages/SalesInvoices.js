@@ -95,6 +95,18 @@ export default function SalesInvoices() {
     const updatedItems = [...formData.items];
     updatedItems[index] = { ...updatedItems[index], [field]: value };
     
+    // Cascading logic: clear dependent fields when parent changes
+    if (field === 'division') {
+      updatedItems[index].category = '';
+      updatedItems[index].brand = '';
+      updatedItems[index].model = '';
+    } else if (field === 'category') {
+      updatedItems[index].brand = '';
+      updatedItems[index].model = '';
+    } else if (field === 'brand') {
+      updatedItems[index].model = '';
+    }
+    
     // Calculate line total
     if (field === 'quantity' || field === 'unit_price') {
       const qty = field === 'quantity' ? parseFloat(value) || 0 : updatedItems[index].quantity;
@@ -396,30 +408,6 @@ export default function SalesInvoices() {
                         </div>
                         <div>
                           <select
-                            value={item.category}
-                            onChange={(e) => handleItemChange(index, 'category', e.target.value)}
-                            className="w-full p-2 border border-gray-300 rounded text-sm"
-                          >
-                            <option value="">Category</option>
-                            {categories.map(cat => (
-                              <option key={cat.name} value={cat.name}>{cat.name}</option>
-                            ))}
-                          </select>
-                        </div>
-                        <div>
-                          <select
-                            value={item.brand}
-                            onChange={(e) => handleItemChange(index, 'brand', e.target.value)}
-                            className="w-full p-2 border border-gray-300 rounded text-sm"
-                          >
-                            <option value="">Brand</option>
-                            {brands.map(brand => (
-                              <option key={brand.name} value={brand.name}>{brand.name}</option>
-                            ))}
-                          </select>
-                        </div>
-                        <div>
-                          <select
                             value={item.division}
                             onChange={(e) => handleItemChange(index, 'division', e.target.value)}
                             className="w-full p-2 border border-gray-300 rounded text-sm"
@@ -432,14 +420,47 @@ export default function SalesInvoices() {
                         </div>
                         <div>
                           <select
+                            value={item.category}
+                            onChange={(e) => handleItemChange(index, 'category', e.target.value)}
+                            className="w-full p-2 border border-gray-300 rounded text-sm"
+                            disabled={!item.division}
+                          >
+                            <option value="">Category</option>
+                            {categories
+                              .filter(cat => !item.division || cat.parent_division === item.division)
+                              .map(cat => (
+                                <option key={cat.name} value={cat.name}>{cat.name}</option>
+                              ))}
+                          </select>
+                        </div>
+                        <div>
+                          <select
+                            value={item.brand}
+                            onChange={(e) => handleItemChange(index, 'brand', e.target.value)}
+                            className="w-full p-2 border border-gray-300 rounded text-sm"
+                            disabled={!item.category}
+                          >
+                            <option value="">Brand</option>
+                            {brands
+                              .filter(brand => !item.category || brand.parent_category === item.category)
+                              .map(brand => (
+                                <option key={brand.name} value={brand.name}>{brand.name}</option>
+                              ))}
+                          </select>
+                        </div>
+                        <div>
+                          <select
                             value={item.model}
                             onChange={(e) => handleItemChange(index, 'model', e.target.value)}
                             className="w-full p-2 border border-gray-300 rounded text-sm"
+                            disabled={!item.brand}
                           >
                             <option value="">Model</option>
-                            {models.map(model => (
-                              <option key={model.name} value={model.name}>{model.name}</option>
-                            ))}
+                            {models
+                              .filter(model => !item.brand || model.parent_brand === item.brand)
+                              .map(model => (
+                                <option key={model.name} value={model.name}>{model.name}</option>
+                              ))}
                           </select>
                         </div>
                         <div>
