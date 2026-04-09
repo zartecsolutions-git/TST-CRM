@@ -126,13 +126,13 @@ export default function MasterData() {
 
       {/* Tabs */}
       <div className="flex gap-2 mb-6 flex-wrap">
-        {['categories', 'subcategories', 'brands', 'divisions'].map(tab => (
+        {['categories', 'subcategories', 'brands', 'divisions', 'models'].map(tab => (
           <Button
             key={tab}
             onClick={() => {
               setActiveTab(tab);
               setShowForm(false);
-              setFormData({ name: '', description: '', parent_category: '' });
+              setFormData({ name: '', description: '', parent_category: '', parent_division: '' });
             }}
             className={activeTab === tab ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border border-gray-300'}
           >

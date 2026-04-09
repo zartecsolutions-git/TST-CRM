@@ -42,7 +42,7 @@ class SubCategoryUpdate(BaseModel):
 @router.get("/master-data/categories")
 async def get_categories():
     try:
-        categories = await db.categories.find({"_id": 0}).to_list(1000)
+        categories = await db.categories.find({}, {"_id": 0}).to_list(1000)
         return categories
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -102,7 +102,7 @@ async def delete_category(name: str):
 @router.get("/master-data/brands")
 async def get_brands():
     try:
-        brands = await db.brands.find({"_id": 0}).to_list(1000)
+        brands = await db.brands.find({}, {"_id": 0}).to_list(1000)
         return brands
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -161,7 +161,7 @@ async def delete_brand(name: str):
 @router.get("/master-data/divisions")
 async def get_divisions():
     try:
-        divisions = await db.divisions.find({"_id": 0}).to_list(1000)
+        divisions = await db.divisions.find({}, {"_id": 0}).to_list(1000)
         return divisions
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -220,7 +220,7 @@ async def delete_division(name: str):
 @router.get("/master-data/subcategories")
 async def get_subcategories():
     try:
-        subcategories = await db.subcategories.find({"_id": 0}).to_list(1000)
+        subcategories = await db.subcategories.find({}, {"_id": 0}).to_list(1000)
         return subcategories
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -299,7 +299,7 @@ async def delete_subcategory(name: str):
 @router.get("/master-data/models")
 async def get_models():
     try:
-        models = await db.models.find({"_id": 0}).to_list(1000)
+        models = await db.models.find({}, {"_id": 0}).to_list(1000)
         return models
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
