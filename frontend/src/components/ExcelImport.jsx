@@ -169,11 +169,20 @@ const ExcelImport = ({ onImport, onClose }) => {
         unitPrice = invoiceAmount / quantity;
       }
 
-      // Skip completely empty rows
-      if (!invoiceNum && !product && !customer && quantity === 0) {
+      // Skip completely empty rows (but be lenient - check for ANY data)
+      const allValues = Object.values(row);
+      const hasAnyData = allValues.some(v => {
+        if (v === null || v === undefined) return false;
+        const str = String(v).trim();
+        return str !== '' && str !== ' ' && str !== 'null' && str !== 'undefined';
+      });
+      
+      if (!hasAnyData) {
         if (index < 10) console.log(`Row ${index + 2}: Completely empty, skipping`);
         return;
       }
+      
+      console.log(`Row ${index + 2}: Has data, processing...`);
 
       // Generate invoice number if missing but has data
       if (!invoiceNum && product) {
