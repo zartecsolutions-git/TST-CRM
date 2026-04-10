@@ -235,8 +235,7 @@ export default function Customers() {
                   </tr>
                 ))}
               </tbody>
-              </table>
-            </div>
+            </table>
           )}
         </div>
       </div>
