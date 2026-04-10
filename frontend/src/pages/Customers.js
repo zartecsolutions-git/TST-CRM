@@ -242,15 +242,5 @@ export default function Customers() {
     </div>
   );
 }
->
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
+
+export default Customers;
