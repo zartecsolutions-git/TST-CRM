@@ -199,7 +199,7 @@ export default function Customers() {
           </div>
         )}
 
-        <div className="bg-white rounded-lg shadow">
+        <div className="bg-white rounded-lg shadow overflow-x-auto">
           {filteredCustomers.length === 0 ? (
             <div className="p-8 text-center text-gray-500">
               {searchQuery ? 'No customers found matching your search' : 'No customers yet'}
