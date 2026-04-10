@@ -205,29 +205,29 @@ export default function Customers() {
               {searchQuery ? 'No customers found matching your search' : 'No customers yet'}
             </div>
           ) : (
-            <table className="w-full">
+            <table className="w-full min-w-max">
               <thead className="bg-gradient-to-r from-blue-700 to-green-700 text-white">
                 <tr>
-                  <th className="px-4 py-3 text-left">Name</th>
-                  <th className="px-4 py-3 text-left">Email</th>
-                  <th className="px-4 py-3 text-left">Phone</th>
-                  <th className="px-4 py-3 text-left">Region</th>
-                  <th className="px-4 py-3 text-left">Business Vertical</th>
-                  <th className="px-4 py-3 text-left bg-yellow-300 text-black">Actions (Admin: {user?.role})</th>
+                  <th className="px-2 py-2 text-left text-sm">Name</th>
+                  <th className="px-2 py-2 text-left text-sm w-32">Email</th>
+                  <th className="px-2 py-2 text-left text-sm">Phone</th>
+                  <th className="px-2 py-2 text-left text-sm">Region</th>
+                  <th className="px-2 py-2 text-left text-sm">Business</th>
+                  <th className="px-2 py-2 text-left bg-yellow-300 text-black text-sm">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredCustomers.map((c) => (
                   <tr key={c.id} className="border-b hover:bg-gray-50">
-                    <td className="px-4 py-3 font-medium">{c.name}</td>
-                    <td className="px-4 py-3">{c.email}</td>
-                    <td className="px-4 py-3">{c.phone || '-'}</td>
-                    <td className="px-4 py-3">{c.region || '-'}</td>
-                    <td className="px-4 py-3">{c.business_vertical || '-'}</td>
-                    <td className="px-4 py-3 bg-yellow-100">
+                    <td className="px-2 py-2 font-medium text-sm">{c.name}</td>
+                    <td className="px-2 py-2 text-sm w-32 truncate" title={c.email}>{c.email}</td>
+                    <td className="px-2 py-2 text-sm whitespace-nowrap">{c.phone || '-'}</td>
+                    <td className="px-2 py-2 text-sm">{c.region || '-'}</td>
+                    <td className="px-2 py-2 text-sm">{c.business_vertical || '-'}</td>
+                    <td className="px-2 py-2 bg-yellow-100">
                       <button 
                         onClick={() => handleEditClick(c)}
-                        className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                        className="bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 text-sm whitespace-nowrap"
                       >
                         ✏️ Edit
                       </button>
