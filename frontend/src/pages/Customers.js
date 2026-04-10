@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import PageHeader from '../components/PageHeader';
+import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
 export default function Customers() {
+  const { user } = useAuth(); // Use AuthContext instead of localStorage
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -19,9 +21,12 @@ export default function Customers() {
   });
 
   const token = localStorage.getItem('token');
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
 
-  useEffect(() => { fetchCustomers(); }, []);
+  useEffect(() => { 
+    console.log('Current user in Customers page:', user);
+    console.log('User role:', user?.role);
+    fetchCustomers(); 
+  }, [user]);
 
   const fetchCustomers = async () => {
     try {
