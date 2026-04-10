@@ -213,7 +213,7 @@ export default function Customers() {
                   <th className="px-4 py-3 text-left">Phone</th>
                   <th className="px-4 py-3 text-left">Region</th>
                   <th className="px-4 py-3 text-left">Business Vertical</th>
-                  {user?.role?.toLowerCase() === 'admin' && <th className="px-4 py-3 text-left">Actions</th>}
+                  <th className="px-4 py-3 text-left bg-yellow-300 text-black">Actions (Admin: {user?.role})</th>
                 </tr>
               </thead>
               <tbody>
@@ -224,16 +224,14 @@ export default function Customers() {
                     <td className="px-4 py-3">{c.phone || '-'}</td>
                     <td className="px-4 py-3">{c.region || '-'}</td>
                     <td className="px-4 py-3">{c.business_vertical || '-'}</td>
-                    {user.role === 'admin' && (
-                      <td className="px-4 py-3">
-                        <button 
-                          onClick={() => handleEditClick(c)}
-                          className="text-blue-600 hover:text-blue-800 font-medium"
-                        >
-                          ✏️ Edit
-                        </button>
-                      </td>
-                    )}
+                    <td className="px-4 py-3 bg-yellow-100">
+                      <button 
+                        onClick={() => handleEditClick(c)}
+                        className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                      >
+                        ✏️ Edit
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
