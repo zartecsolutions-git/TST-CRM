@@ -11,15 +11,15 @@ from datetime import datetime, timedelta
 
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://dept-action-crm-1.preview.emergentagent.com').rstrip('/')
 
-# Test credentials from test_credentials.md
-ADMIN_EMAIL = "admin@test.com"
-ADMIN_PASSWORD = "admin123"
-SALES_EMAIL = "agent@test.com"
-SALES_PASSWORD = "agent123"
-SUPPORT_EMAIL = "client@test.com"
-SUPPORT_PASSWORD = "client123"
-SUPPORT2_EMAIL = "santhosh@test.com"
-SUPPORT2_PASSWORD = "santhosh123"
+# Test credentials - loaded from environment
+ADMIN_EMAIL = os.environ.get('ADMIN_TEST_EMAIL', 'admin@test.com')
+ADMIN_PASSWORD = os.environ.get('ADMIN_TEST_PASSWORD', 'admin123')
+SALES_EMAIL = os.environ.get('SALES_TEST_EMAIL', 'agent@test.com')
+SALES_PASSWORD = os.environ.get('SALES_TEST_PASSWORD', 'agent123')
+SUPPORT_EMAIL = os.environ.get('SUPPORT_TEST_EMAIL', 'client@test.com')
+SUPPORT_PASSWORD = os.environ.get('SUPPORT_TEST_PASSWORD', 'client123')
+SUPPORT2_EMAIL = os.environ.get('SUPPORT2_TEST_EMAIL', 'santhosh@test.com')
+SUPPORT2_PASSWORD = os.environ.get('SUPPORT2_TEST_PASSWORD', 'santhosh123')
 
 
 @pytest.fixture(scope="module")

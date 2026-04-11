@@ -32,6 +32,7 @@ export default function Leads() {
     fetchLeads();
     fetchCustomers();
     fetchUsers();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchLeads = async () => {

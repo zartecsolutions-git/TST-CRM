@@ -183,6 +183,7 @@ const CompanySettings = () => {
       alert('Access denied. Admin only.');
       window.location.href = '/dashboard';
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const fetchCompanies = async () => {

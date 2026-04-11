@@ -32,6 +32,7 @@ export default function Products() {
     fetchProducts();
     fetchCustomers();
     fetchAlerts();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchProducts = async () => {

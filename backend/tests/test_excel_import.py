@@ -15,9 +15,9 @@ import string
 
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', '').rstrip('/')
 
-# Test credentials
-ADMIN_EMAIL = "admin@test.com"
-ADMIN_PASSWORD = "admin123"
+# Test credentials - loaded from environment
+ADMIN_EMAIL = os.environ.get('ADMIN_TEST_EMAIL', 'admin@test.com')
+ADMIN_PASSWORD = os.environ.get('ADMIN_TEST_PASSWORD', 'admin123')
 
 @pytest.fixture(scope="module")
 def auth_token():
@@ -104,7 +104,7 @@ class TestCustomerCreationWithUniqueEmails:
         
         assert response2.status_code == 400, f"Expected 400 for duplicate email, got {response2.status_code}"
         assert "already exists" in response2.text.lower(), f"Expected 'already exists' error, got: {response2.text}"
-        print(f"✓ Duplicate email correctly rejected")
+        print("✓ Duplicate email correctly rejected")
         
         # Cleanup
         requests.delete(f"{BASE_URL}/api/customers/{customer1['id']}", headers=auth_headers)
@@ -223,7 +223,7 @@ class TestInvoiceCreation:
         # Try to create duplicate
         response2 = requests.post(f"{BASE_URL}/api/sales/invoices", headers=auth_headers, json=invoice_data)
         assert response2.status_code == 400, f"Expected 400 for duplicate invoice, got {response2.status_code}"
-        print(f"✓ Duplicate invoice number correctly rejected")
+        print("✓ Duplicate invoice number correctly rejected")
         
         # Cleanup
         requests.delete(f"{BASE_URL}/api/sales/invoices/{invoice_number}", headers=auth_headers)
@@ -364,14 +364,14 @@ class TestBulkImportSimulation:
                 errors.append(f"Invoice {invoice['invoice_number']}: {str(e)}")
                 error_count += 1
         
-        print(f"\n=== Import Results ===")
+        print("\n=== Import Results ===")
         print(f"Total invoices: {len(invoices_to_create)}")
         print(f"Successful: {success_count}")
         print(f"Failed: {error_count}")
         print(f"Unique customers created: {len(created_customer_ids)}")
         
         if errors:
-            print(f"\nFirst 5 errors:")
+            print("\nFirst 5 errors:")
             for err in errors[:5]:
                 print(f"  - {err}")
         
@@ -379,17 +379,17 @@ class TestBulkImportSimulation:
         assert success_count == len(invoices_to_create), f"Expected {len(invoices_to_create)} successful imports, got {success_count}"
         assert len(created_customer_ids) == len(customer_names), f"Expected {len(customer_names)} unique customers, got {len(created_customer_ids)}"
         
-        print(f"\n✓ Bulk import simulation PASSED!")
+        print("\n✓ Bulk import simulation PASSED!")
         print(f"  - All {success_count} invoices created successfully")
         print(f"  - Only {len(created_customer_ids)} customers created (no duplicates)")
         
         # Cleanup
-        print(f"\nCleaning up test data...")
+        print("\nCleaning up test data...")
         for inv_num in created_invoice_numbers:
             requests.delete(f"{BASE_URL}/api/sales/invoices/{inv_num}", headers=auth_headers)
         for cust_id in created_customer_ids:
             requests.delete(f"{BASE_URL}/api/customers/{cust_id}", headers=auth_headers)
-        print(f"✓ Cleanup complete")
+        print("✓ Cleanup complete")
 
 
 class TestEmailPatternUniqueness:
