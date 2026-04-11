@@ -199,44 +199,53 @@ export default function Customers() {
           </div>
         )}
 
-        <div className="bg-white rounded-lg shadow overflow-x-auto">
+        {/* Table with scroll indicator */}
+        <div className="bg-white rounded-lg shadow">
+          {/* Scroll hint */}
+          <div className="bg-blue-50 border-b border-blue-200 px-4 py-2 text-sm text-blue-700 flex items-center gap-2">
+            <span>👉</span>
+            <span className="font-medium">Scroll right to see all columns including Actions</span>
+          </div>
+          
           {filteredCustomers.length === 0 ? (
             <div className="p-8 text-center text-gray-500">
               {searchQuery ? 'No customers found matching your search' : 'No customers yet'}
             </div>
           ) : (
-            <table className="w-full min-w-max">
-              <thead className="bg-gradient-to-r from-blue-700 to-green-700 text-white">
-                <tr>
-                  <th className="px-2 py-2 text-left text-sm">Name</th>
-                  <th className="px-2 py-2 text-left text-sm w-32">Email</th>
-                  <th className="px-2 py-2 text-left text-sm">Phone</th>
-                  <th className="px-2 py-2 text-left text-sm">Region</th>
-                  <th className="px-2 py-2 text-left text-sm">Business</th>
-                  <th className="px-2 py-2 text-left bg-yellow-300 text-black text-sm">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredCustomers.map((c, index) => (
-                  <tr key={c.id} className="border-b hover:bg-gray-50" data-testid={`customer-row-${index}`}>
-                    <td className="px-2 py-2 font-medium text-sm">{c.name}</td>
-                    <td className="px-2 py-2 text-sm w-32 truncate" title={c.email}>{c.email}</td>
-                    <td className="px-2 py-2 text-sm whitespace-nowrap">{c.phone || '-'}</td>
-                    <td className="px-2 py-2 text-sm">{c.region || '-'}</td>
-                    <td className="px-2 py-2 text-sm">{c.business_vertical || '-'}</td>
-                    <td className="px-2 py-2 bg-yellow-100">
-                      <button 
-                        onClick={() => handleEditClick(c)}
-                        className="bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 text-sm whitespace-nowrap"
-                        data-testid={`edit-customer-btn-${index}`}
-                      >
-                        ✏️ Edit
-                      </button>
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="w-full" style={{ minWidth: '900px' }} data-testid="customers-table">
+                <thead className="bg-gradient-to-r from-blue-700 to-green-700 text-white">
+                  <tr>
+                    <th className="px-2 py-2 text-left text-sm whitespace-nowrap">Name</th>
+                    <th className="px-2 py-2 text-left text-sm whitespace-nowrap">Email</th>
+                    <th className="px-2 py-2 text-left text-sm whitespace-nowrap">Phone</th>
+                    <th className="px-2 py-2 text-left text-sm whitespace-nowrap">Region</th>
+                    <th className="px-2 py-2 text-left text-sm whitespace-nowrap">Business</th>
+                    <th className="px-2 py-2 text-center bg-yellow-300 text-black text-sm font-bold whitespace-nowrap sticky right-0">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {filteredCustomers.map((c, index) => (
+                    <tr key={c.id} className="border-b hover:bg-gray-50" data-testid={`customer-row-${index}`}>
+                      <td className="px-2 py-2 font-medium text-sm whitespace-nowrap">{c.name}</td>
+                      <td className="px-2 py-2 text-sm truncate" title={c.email} style={{ maxWidth: '200px' }}>{c.email}</td>
+                      <td className="px-2 py-2 text-sm whitespace-nowrap">{c.phone || '-'}</td>
+                      <td className="px-2 py-2 text-sm whitespace-nowrap">{c.region || '-'}</td>
+                      <td className="px-2 py-2 text-sm whitespace-nowrap">{c.business_vertical || '-'}</td>
+                      <td className="px-2 py-2 bg-yellow-100 text-center sticky right-0">
+                        <button 
+                          onClick={() => handleEditClick(c)}
+                          className="bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700 text-sm whitespace-nowrap font-medium"
+                          data-testid={`edit-customer-btn-${index}`}
+                        >
+                          ✏️ Edit
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       </div>
