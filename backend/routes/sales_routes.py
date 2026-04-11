@@ -168,16 +168,42 @@ async def delete_invoice(invoice_number: str):
 
 # Monthly Sales Report
 @router.get("/sales/reports/monthly")
-async def get_monthly_sales_report(year: Optional[int] = None):
+async def get_monthly_sales_report(year: Optional[int] = None, sales_rep_id: Optional[str] = None):
     try:
         if not year:
             year = datetime.now().year
         
+        # Build match stage for sales_rep filter
+        match_stage = {}
+        if sales_rep_id:
+            match_stage["sales_rep_id"] = sales_rep_id
+        
         pipeline = [
+            {"$match": match_stage} if match_stage else {"$match": {}},
             {
                 "$addFields": {
-                    "year": {"$year": {"$dateFromString": {"dateString": "$invoice_date"}}},
-                    "month": {"$month": {"$dateFromString": {"dateString": "$invoice_date"}}}
+                    # Handle both string dates and Excel serial numbers
+                    "parsed_date": {
+                        "$cond": {
+                            "if": {"$regexMatch": {"input": "$invoice_date", "regex": "^[0-9]{5}$"}},
+                            # Excel serial date: convert from Excel epoch (1900-01-01)
+                            "then": {
+                                "$dateAdd": {
+                                    "startDate": {"$dateFromString": {"dateString": "1900-01-01"}},
+                                    "unit": "day",
+                                    "amount": {"$subtract": [{"$toInt": "$invoice_date"}, 2]}
+                                }
+                            },
+                            # Regular date string
+                            "else": {"$dateFromString": {"dateString": "$invoice_date"}}
+                        }
+                    }
+                }
+            },
+            {
+                "$addFields": {
+                    "year": {"$year": "$parsed_date"},
+                    "month": {"$month": "$parsed_date"}
                 }
             },
             {"$match": {"year": year}},
