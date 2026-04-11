@@ -635,10 +635,12 @@ export default function Leads() {
                     <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                       {lead.status === 'closed_won' ? (
                         <span className="text-gray-400 text-sm font-medium cursor-not-allowed">🔒 Locked</span>
-                      ) : (
+                      ) : user?.role === 'admin' ? (
                         <button onClick={() => openUpdateModal(lead)} className="text-blue-600 hover:text-blue-800 text-sm font-medium">
                           ✏️ Update
                         </button>
+                      ) : (
+                        <span className="text-gray-500 text-sm">View Only</span>
                       )}
                     </td>
                   </tr>

@@ -233,13 +233,17 @@ export default function Customers() {
                       <td className="px-2 py-2 text-sm whitespace-nowrap">{c.region || '-'}</td>
                       <td className="px-2 py-2 text-sm whitespace-nowrap">{c.business_vertical || '-'}</td>
                       <td className="px-2 py-2 bg-yellow-100 text-center sticky right-0">
-                        <button 
-                          onClick={() => handleEditClick(c)}
-                          className="bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700 text-sm whitespace-nowrap font-medium"
-                          data-testid={`edit-customer-btn-${index}`}
-                        >
-                          ✏️ Edit
-                        </button>
+                        {user?.role === 'admin' ? (
+                          <button 
+                            onClick={() => handleEditClick(c)}
+                            className="bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700 text-sm whitespace-nowrap font-medium"
+                            data-testid={`edit-customer-btn-${index}`}
+                          >
+                            ✏️ Edit
+                          </button>
+                        ) : (
+                          <span className="text-gray-500 text-sm">View Only</span>
+                        )}
                       </td>
                     </tr>
                   ))}

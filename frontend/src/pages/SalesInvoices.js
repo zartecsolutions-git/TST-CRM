@@ -1029,7 +1029,7 @@ export default function SalesInvoices() {
                                 </Button>
                               </>
                             )}
-                            {user?.role === 'sales' && (
+                            {(user?.role === 'sales' || user?.role === 'support') && (
                               <span className="text-xs text-gray-500 italic px-2 py-1">View Only</span>
                             )}
                           </div>
