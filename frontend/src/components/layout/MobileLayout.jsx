@@ -71,10 +71,11 @@ const MobileLayout = ({ children }) => {
           
           {/* User Name and Profile - Right Side */}
           <div className="flex items-center space-x-3">
-            <h2 className="text-base sm:text-lg md:text-xl font-bold text-gray-800">{user?.name}</h2>
+            <h2 className="text-base sm:text-lg md:text-xl font-bold text-gray-800" data-testid="user-name-header">{user?.name}</h2>
             <button
               onClick={() => setShowProfileMenu(!showProfileMenu)}
               className="p-1.5 rounded-lg hover:bg-gray-100 flex items-center gap-1"
+              data-testid="profile-menu-btn"
             >
               <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-green-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
                 {user?.name?.charAt(0)?.toUpperCase() || 'U'}
@@ -86,7 +87,7 @@ const MobileLayout = ({ children }) => {
             
             {/* Profile Dropdown */}
             {showProfileMenu && (
-              <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border z-50">
+              <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border z-50" data-testid="profile-dropdown">
                 <div className="p-3 border-b bg-gradient-to-r from-blue-50 to-green-50">
                   <p className="font-semibold text-gray-900 text-sm">{user?.name}</p>
                   <p className="text-xs text-gray-600 mt-0.5">{user?.email}</p>
@@ -163,6 +164,7 @@ const MobileLayout = ({ children }) => {
                     ? 'bg-gradient-to-r from-blue-50 to-green-50 border-l-4 border-blue-600 text-blue-700 font-semibold'
                     : 'hover:bg-gray-50 text-gray-700'
                 }`}
+                data-testid={`nav-${item.path.replace('/', '')}`}
               >
                 <span className="text-xl">{item.icon}</span>
                 <span>{item.label}</span>
@@ -183,6 +185,7 @@ const MobileLayout = ({ children }) => {
                         ? 'bg-gradient-to-r from-blue-50 to-green-50 border-l-4 border-blue-600 text-blue-700 font-semibold'
                         : 'hover:bg-gray-50 text-gray-600'
                     }`}
+                    data-testid={`nav-${item.path.replace('/', '')}`}
                   >
                     <span className="text-xl">{item.icon}</span>
                     <span>{item.label}</span>
@@ -196,6 +199,7 @@ const MobileLayout = ({ children }) => {
             <button
               onClick={handleLogout}
               className="w-full px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg flex items-center justify-center space-x-2 transition-colors"
+              data-testid="desktop-logout-btn"
             >
               <span>🚪</span>
               <span>Logout</span>
