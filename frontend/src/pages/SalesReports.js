@@ -545,7 +545,7 @@ export default function SalesReports() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="h-64">
+                <div className="h-96">
                   <Pie data={categoryPieData} options={{ responsive: true, maintainAspectRatio: true }} />
                 </div>
                 <div className="overflow-x-auto">
@@ -593,7 +593,7 @@ export default function SalesReports() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="h-64">
+                <div className="h-96">
                   <Pie data={brandPieData} options={{ responsive: true, maintainAspectRatio: true }} />
                 </div>
                 <div className="overflow-x-auto">
