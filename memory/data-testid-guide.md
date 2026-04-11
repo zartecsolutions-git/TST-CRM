@@ -81,6 +81,32 @@ This document tracks all `data-testid` attributes added to the CRM application f
 - `edit-customer-btn-{index}` - Edit buttons for each customer
 - `no-customers-message` - Empty state message
 
+### ✅ Activities Page (`/app/frontend/src/pages/Activities.js`) - PARTIAL
+
+**Key Actions:**
+- `back-to-dashboard-btn` - Back to dashboard button
+- `view-activity-details-btn` - View activity details button
+
+**Note**: Activities page is 1396 lines - added critical buttons only. Full coverage pending.
+
+### ✅ Sales Invoices Page (`/app/frontend/src/pages/SalesInvoices.js`) - PARTIAL
+
+**Main Actions:**
+- `import-excel-btn` - Import from Excel button (Admin only)
+- `new-invoice-btn` - Create new invoice button (Admin only)
+
+**Search & Filters:**
+- `invoice-search-input` - Search invoices by number, customer, or sales rep
+- `invoice-status-filter` - Payment status dropdown filter
+- `clear-filters-btn` - Clear all filters button
+
+**Forms:**
+- `excel-import-modal` - Excel import modal
+- `invoice-form-card` - Invoice form card container
+- `invoice-form` - Invoice creation/edit form
+
+**Note**: Sales Invoices page is 1139 lines - added critical elements. Full form inputs pending.
+
 ---
 
 ## Pending Test IDs (To Be Added)

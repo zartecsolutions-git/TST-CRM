@@ -439,6 +439,7 @@ export default function SalesInvoices() {
             <Button
               onClick={() => setShowExcelImport(true)}
               className="bg-green-600 hover:bg-green-700"
+              data-testid="import-excel-btn"
             >
               📥 Import from Excel
             </Button>
@@ -449,6 +450,7 @@ export default function SalesInvoices() {
                 setShowForm(true);
               }}
               className="bg-blue-600 hover:bg-blue-700"
+              data-testid="new-invoice-btn"
             >
               + New Invoice
             </Button>
@@ -551,17 +553,18 @@ export default function SalesInvoices() {
         <ExcelImport
           onImport={handleExcelImport}
           onClose={() => setShowExcelImport(false)}
+          data-testid="excel-import-modal"
         />
       )}
 
       {/* Invoice Form */}
       {showForm && (
-        <Card className="mb-6">
+        <Card className="mb-6" data-testid="invoice-form-card">
           <CardHeader>
             <CardTitle>{editingInvoice ? 'Edit Invoice' : 'Create New Invoice'}</CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4" data-testid="invoice-form">
               {/* Invoice Header */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
@@ -875,6 +878,7 @@ export default function SalesInvoices() {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  data-testid="invoice-search-input"
                 />
               </div>
               
@@ -887,6 +891,7 @@ export default function SalesInvoices() {
                   value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
                   className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                  data-testid="invoice-status-filter"
                 >
                   <option value="all">All Status</option>
                   <option value="Pending">Pending</option>
@@ -901,6 +906,7 @@ export default function SalesInvoices() {
                   onClick={clearFilters}
                   variant="outline"
                   className="w-full"
+                  data-testid="clear-filters-btn"
                 >
                   Clear Filters
                 </Button>

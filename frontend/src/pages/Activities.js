@@ -555,6 +555,7 @@ const Activities = () => {
                         setShowDetailModal(true);
                       }}
                       className="bg-gradient-to-r from-blue-700 to-green-700 hover:from-orange-600 hover:to-sky-600"
+                      data-testid="view-activity-details-btn"
                     >
                       👁️ View Details
                     </Button>
