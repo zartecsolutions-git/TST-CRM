@@ -46,6 +46,14 @@ export default function SalesReports() {
   const [salesRepData, setSalesRepData] = useState([]);
   const [analysisData, setAnalysisData] = useState({ by_category: [], by_brand: [], by_division: [] });
 
+  // Search states for each tab
+  const [searchCustomer, setSearchCustomer] = useState('');
+  const [searchProduct, setSearchProduct] = useState('');
+  const [searchSalesRep, setSearchSalesRep] = useState('');
+  const [searchCategory, setSearchCategory] = useState('');
+  const [searchBrand, setSearchBrand] = useState('');
+  const [searchDivision, setSearchDivision] = useState('');
+
   // Remove redirect for sales users - they can now access reports
   useEffect(() => {
     if (user && user.role !== 'admin' && user.role !== 'sales') {
@@ -91,6 +99,34 @@ export default function SalesReports() {
   const applyDateFilter = () => {
     fetchReports();
   };
+
+  // Filter functions for each report
+  const filteredCustomerData = customerData.filter(customer =>
+    customer.customer_name?.toLowerCase().includes(searchCustomer.toLowerCase())
+  );
+
+  const filteredProductData = productData.filter(product =>
+    product.product_name?.toLowerCase().includes(searchProduct.toLowerCase())
+  );
+
+  const filteredSalesRepData = salesRepData.filter(rep =>
+    rep.sales_rep_name?.toLowerCase().includes(searchSalesRep.toLowerCase())
+  );
+
+  const filteredCategoryData = (analysisData.by_category || []).filter(cat =>
+    cat.category?.toLowerCase().includes(searchCategory.toLowerCase()) ||
+    cat.name?.toLowerCase().includes(searchCategory.toLowerCase())
+  );
+
+  const filteredBrandData = (analysisData.by_brand || []).filter(brand =>
+    brand.brand?.toLowerCase().includes(searchBrand.toLowerCase()) ||
+    brand.name?.toLowerCase().includes(searchBrand.toLowerCase())
+  );
+
+  const filteredDivisionData = (analysisData.by_division || []).filter(div =>
+    div.division?.toLowerCase().includes(searchDivision.toLowerCase()) ||
+    div.name?.toLowerCase().includes(searchDivision.toLowerCase())
+  );
 
   const exportToExcel = (data, filename) => {
     // Simple CSV export
@@ -321,11 +357,28 @@ export default function SalesReports() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Customer Sales Report</CardTitle>
-            <Button onClick={() => exportToExcel(customerData, 'customer_sales_report')} size="sm" variant="outline">
+            <Button onClick={() => exportToExcel(filteredCustomerData, 'customer_sales_report')} size="sm" variant="outline">
               📊 Export Excel
             </Button>
           </CardHeader>
           <CardContent>
+            {/* Search Bar */}
+            <div className="mb-4">
+              <input
+                type="text"
+                placeholder="🔍 Search customers..."
+                value={searchCustomer}
+                onChange={(e) => setSearchCustomer(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                data-testid="customer-report-search"
+              />
+              {searchCustomer && (
+                <p className="text-sm text-gray-600 mt-2">
+                  Showing {filteredCustomerData.length} of {customerData.length} customers
+                </p>
+              )}
+            </div>
+
             <div className="mb-6">
               <Bar data={customerChartData} options={{ responsive: true, maintainAspectRatio: true }} />
             </div>
@@ -339,7 +392,7 @@ export default function SalesReports() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {customerData.map((row, idx) => (
+                  {filteredCustomerData.map((row, idx) => (
                     <tr key={idx}>
                       <td className="px-4 py-3 text-sm font-medium text-gray-900">{row.customer_name}</td>
                       <td className="px-4 py-3 text-sm font-semibold text-gray-900">BHD {row.total_sales.toFixed(2)}</td>
@@ -358,11 +411,28 @@ export default function SalesReports() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Product/Item Sales Report</CardTitle>
-            <Button onClick={() => exportToExcel(productData, 'product_sales_report')} size="sm" variant="outline">
+            <Button onClick={() => exportToExcel(filteredProductData, 'product_sales_report')} size="sm" variant="outline">
               📊 Export Excel
             </Button>
           </CardHeader>
           <CardContent>
+            {/* Search Bar */}
+            <div className="mb-4">
+              <input
+                type="text"
+                placeholder="🔍 Search products..."
+                value={searchProduct}
+                onChange={(e) => setSearchProduct(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                data-testid="product-report-search"
+              />
+              {searchProduct && (
+                <p className="text-sm text-gray-600 mt-2">
+                  Showing {filteredProductData.length} of {productData.length} products
+                </p>
+              )}
+            </div>
+
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
@@ -376,7 +446,7 @@ export default function SalesReports() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {productData.map((row, idx) => (
+                  {filteredProductData.map((row, idx) => (
                     <tr key={idx}>
                       <td className="px-4 py-3 text-sm font-medium text-gray-900">{row.product_name}</td>
                       <td className="px-4 py-3 text-sm text-gray-600">{row.category || '-'}</td>
@@ -398,11 +468,28 @@ export default function SalesReports() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Salesperson Performance Report</CardTitle>
-            <Button onClick={() => exportToExcel(salesRepData, 'salesrep_performance_report')} size="sm" variant="outline">
+            <Button onClick={() => exportToExcel(filteredSalesRepData, 'salesrep_performance_report')} size="sm" variant="outline">
               📊 Export Excel
             </Button>
           </CardHeader>
           <CardContent>
+            {/* Search Bar */}
+            <div className="mb-4">
+              <input
+                type="text"
+                placeholder="🔍 Search sales reps..."
+                value={searchSalesRep}
+                onChange={(e) => setSearchSalesRep(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                data-testid="salesrep-report-search"
+              />
+              {searchSalesRep && (
+                <p className="text-sm text-gray-600 mt-2">
+                  Showing {filteredSalesRepData.length} of {salesRepData.length} sales reps
+                </p>
+              )}
+            </div>
+
             <div className="mb-6">
               <Bar data={salesRepChartData} options={{ responsive: true, maintainAspectRatio: true }} />
             </div>
@@ -417,7 +504,7 @@ export default function SalesReports() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {salesRepData.map((row, idx) => (
+                  {filteredSalesRepData.map((row, idx) => (
                     <tr key={idx}>
                       <td className="px-4 py-3 text-sm font-medium text-gray-900">{row.sales_rep_name}</td>
                       <td className="px-4 py-3 text-sm font-semibold text-gray-900">BHD {row.total_sales.toFixed(2)}</td>
@@ -440,6 +527,23 @@ export default function SalesReports() {
               <CardTitle>Sales by Category</CardTitle>
             </CardHeader>
             <CardContent>
+              {/* Search Bar */}
+              <div className="mb-4">
+                <input
+                  type="text"
+                  placeholder="🔍 Search categories..."
+                  value={searchCategory}
+                  onChange={(e) => setSearchCategory(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  data-testid="category-analysis-search"
+                />
+                {searchCategory && (
+                  <p className="text-sm text-gray-600 mt-2">
+                    Showing {filteredCategoryData.length} of {analysisData.by_category.length} categories
+                  </p>
+                )}
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="h-64">
                   <Pie data={categoryPieData} options={{ responsive: true, maintainAspectRatio: true }} />
@@ -453,7 +557,7 @@ export default function SalesReports() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                      {analysisData.by_category.map((row, idx) => (
+                      {filteredCategoryData.map((row, idx) => (
                         <tr key={idx}>
                           <td className="px-4 py-2 text-sm">{row.name}</td>
                           <td className="px-4 py-2 text-sm font-semibold">BHD {row.total_sales.toFixed(2)}</td>
@@ -471,6 +575,23 @@ export default function SalesReports() {
               <CardTitle>Sales by Brand</CardTitle>
             </CardHeader>
             <CardContent>
+              {/* Search Bar */}
+              <div className="mb-4">
+                <input
+                  type="text"
+                  placeholder="🔍 Search brands..."
+                  value={searchBrand}
+                  onChange={(e) => setSearchBrand(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  data-testid="brand-analysis-search"
+                />
+                {searchBrand && (
+                  <p className="text-sm text-gray-600 mt-2">
+                    Showing {filteredBrandData.length} of {analysisData.by_brand.length} brands
+                  </p>
+                )}
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="h-64">
                   <Pie data={brandPieData} options={{ responsive: true, maintainAspectRatio: true }} />
@@ -484,7 +605,7 @@ export default function SalesReports() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                      {analysisData.by_brand.map((row, idx) => (
+                      {filteredBrandData.map((row, idx) => (
                         <tr key={idx}>
                           <td className="px-4 py-2 text-sm">{row.name}</td>
                           <td className="px-4 py-2 text-sm font-semibold">BHD {row.total_sales.toFixed(2)}</td>
@@ -502,6 +623,23 @@ export default function SalesReports() {
               <CardTitle>Sales by Division</CardTitle>
             </CardHeader>
             <CardContent>
+              {/* Search Bar */}
+              <div className="mb-4">
+                <input
+                  type="text"
+                  placeholder="🔍 Search divisions..."
+                  value={searchDivision}
+                  onChange={(e) => setSearchDivision(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  data-testid="division-analysis-search"
+                />
+                {searchDivision && (
+                  <p className="text-sm text-gray-600 mt-2">
+                    Showing {filteredDivisionData.length} of {analysisData.by_division.length} divisions
+                  </p>
+                )}
+              </div>
+
               <div className="overflow-x-auto">
                 <table className="min-w-full">
                   <thead className="bg-gray-50">
@@ -511,7 +649,7 @@ export default function SalesReports() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
-                    {analysisData.by_division.map((row, idx) => (
+                    {filteredDivisionData.map((row, idx) => (
                       <tr key={idx}>
                         <td className="px-4 py-2 text-sm">{row.name}</td>
                         <td className="px-4 py-2 text-sm font-semibold">BHD {row.total_sales.toFixed(2)}</td>
