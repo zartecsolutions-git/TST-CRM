@@ -262,6 +262,7 @@ export default function ProductsEnhanced() {
       // Clean up formData - convert empty strings to null for optional fields
       const cleanedData = {
         name: formData.name,
+        part_number: formData.part_number || null,
         category: formData.category || '',
         sub_category: formData.sub_category || null,
         brand: formData.brand || null,
@@ -328,6 +329,8 @@ export default function ProductsEnhanced() {
       part_number: product.part_number || '',
       category: product.category || 'others',
       sub_category: product.sub_category || '',
+      brand: product.brand || '',
+      division: product.division || '',
       description: product.description || '',
       price: product.price || '',
       model: product.model || '',
