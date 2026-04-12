@@ -46,6 +46,14 @@ export default function SalesReports() {
   const [salesRepData, setSalesRepData] = useState([]);
   const [analysisData, setAnalysisData] = useState({ by_category: [], by_brand: [], by_division: [] });
   const [customerProductData, setCustomerProductData] = useState([]);  // NEW: Customer-Product Purchase Report
+  const [invoices, setInvoices] = useState([]);  // NEW: Store all invoices for filtering
+  const [customerProductFilters, setCustomerProductFilters] = useState({
+    start_date: '',
+    end_date: '',
+    customer_id: '',
+    product_name: ''
+  });
+  const [filteredTransactions, setFilteredTransactions] = useState([]);
 
   // Search states for each tab
   const [searchCustomer, setSearchCustomer] = useState('');
@@ -78,7 +86,7 @@ export default function SalesReports() {
       // Add sales_rep_id filter for sales users
       const salesRepFilter = user?.role === 'sales' ? { sales_rep_id: user.id } : {};
       
-      const [monthly, customers, products, salesreps, analysis, invoices] = await Promise.all([
+      const [monthly, customers, products, salesreps, analysis, invoicesData] = await Promise.all([
         api.get(`/sales/reports/monthly?year=${year}`, { params: salesRepFilter }),
         api.get('/sales/reports/customers', { params: { ...dateRange, ...salesRepFilter } }),
         api.get('/sales/reports/products', { params: { ...dateRange, ...salesRepFilter } }),
@@ -93,8 +101,8 @@ export default function SalesReports() {
       setSalesRepData(salesreps.data || []);
       setAnalysisData(analysis.data || { by_category: [], by_brand: [], by_division: [] });
       
-      // NEW: Process customer-product data
-      processCustomerProductData(invoices.data || []);
+      // NEW: Store invoices for filtering
+      setInvoices(invoicesData.data || []);
     } catch (error) {
       console.error('Failed to fetch reports:', error);
     } finally {
@@ -102,63 +110,47 @@ export default function SalesReports() {
     }
   };
 
-  // NEW: Process customer-product purchase data
-  const processCustomerProductData = (invoices) => {
-    // Filter by date range if specified
-    let filteredInvoices = invoices;
-    if (dateRange.start_date || dateRange.end_date) {
-      filteredInvoices = invoices.filter(inv => {
-        const invDate = inv.invoice_date;
-        if (dateRange.start_date && invDate < dateRange.start_date) return false;
-        if (dateRange.end_date && invDate > dateRange.end_date) return false;
-        return true;
-      });
-    }
-
-    // Group by customer, then by product
-    const customerProductMap = {};
+  // NEW: Apply customer-product filters
+  const applyCustomerProductFilter = () => {
+    const allTransactions = [];
     
-    filteredInvoices.forEach(invoice => {
-      const customerId = invoice.customer_id || 'unknown';
-      const customerName = invoice.customer_name || 'Unknown Customer';
+    invoices.forEach(invoice => {
+      const invoiceDate = invoice.invoice_date;
       
-      if (!customerProductMap[customerId]) {
-        customerProductMap[customerId] = {
-          customer_id: customerId,
-          customer_name: customerName,
-          products: {},
-          total_value: 0
-        };
-      }
+      // Filter by date range
+      if (customerProductFilters.start_date && invoiceDate < customerProductFilters.start_date) return;
+      if (customerProductFilters.end_date && invoiceDate > customerProductFilters.end_date) return;
       
-      // Process each item in the invoice
+      // Filter by customer
+      if (customerProductFilters.customer_id && invoice.customer_id !== customerProductFilters.customer_id) return;
+      
+      // Process items
       (invoice.items || []).forEach(item => {
-        const productKey = item.part_number || item.product_name || 'Unknown Product';
+        // Filter by product
+        const productMatch = !customerProductFilters.product_name ||
+          item.product_name?.toLowerCase().includes(customerProductFilters.product_name.toLowerCase()) ||
+          item.part_number?.toLowerCase().includes(customerProductFilters.product_name.toLowerCase());
         
-        if (!customerProductMap[customerId].products[productKey]) {
-          customerProductMap[customerId].products[productKey] = {
-            product_name: item.product_name || 'Unknown',
-            part_number: item.part_number || '',
-            category: item.category || '',
-            brand: item.brand || '',
-            quantity: 0,
-            total_value: 0
-          };
+        if (productMatch) {
+          allTransactions.push({
+            invoice_number: invoice.invoice_number,
+            invoice_date: invoice.invoice_date,
+            customer_id: invoice.customer_id,
+            customer_name: invoice.customer_name,
+            product_name: item.product_name,
+            part_number: item.part_number,
+            category: item.category,
+            brand: item.brand,
+            division: item.division,
+            quantity: item.quantity,
+            unit_price: item.unit_price,
+            total: item.total
+          });
         }
-        
-        customerProductMap[customerId].products[productKey].quantity += item.quantity || 0;
-        customerProductMap[customerId].products[productKey].total_value += item.total || 0;
-        customerProductMap[customerId].total_value += item.total || 0;
       });
     });
     
-    // Convert to array format
-    const customerProductArray = Object.values(customerProductMap).map(customer => ({
-      ...customer,
-      products: Object.values(customer.products).sort((a, b) => b.total_value - a.total_value)
-    })).sort((a, b) => b.total_value - a.total_value);
-    
-    setCustomerProductData(customerProductArray);
+    setFilteredTransactions(allTransactions);
   };
 
   const applyDateFilter = () => {
@@ -192,15 +184,6 @@ export default function SalesReports() {
   const filteredDivisionData = (analysisData.by_division || []).filter(div =>
     div.division?.toLowerCase().includes(searchDivision.toLowerCase()) ||
     div.name?.toLowerCase().includes(searchDivision.toLowerCase())
-  );
-
-  // NEW: Filter function for customer-product report
-  const filteredCustomerProductData = customerProductData.filter(customer =>
-    customer.customer_name?.toLowerCase().includes(searchCustomerProduct.toLowerCase()) ||
-    customer.products.some(p => 
-      p.product_name?.toLowerCase().includes(searchCustomerProduct.toLowerCase()) ||
-      p.part_number?.toLowerCase().includes(searchCustomerProduct.toLowerCase())
-    )
   );
 
   const exportToExcel = (data, filename) => {
@@ -548,20 +531,22 @@ export default function SalesReports() {
             <CardTitle>Customer Product Purchase Report</CardTitle>
             <Button 
               onClick={() => {
-                const exportData = [];
-                filteredCustomerProductData.forEach(customer => {
-                  customer.products.forEach(product => {
-                    exportData.push({
-                      'Customer': customer.customer_name,
-                      'Part Number': product.part_number,
-                      'Product Name': product.product_name,
-                      'Category': product.category,
-                      'Brand': product.brand,
-                      'Quantity': product.quantity,
-                      'Total Value': product.total_value.toFixed(2)
-                    });
-                  });
-                });
+                if (filteredTransactions.length === 0) {
+                  alert('Please apply filters first to see results');
+                  return;
+                }
+                const exportData = filteredTransactions.map(t => ({
+                  'Invoice Date': t.invoice_date,
+                  'Invoice Number': t.invoice_number,
+                  'Customer': t.customer_name,
+                  'Part Number': t.part_number || '-',
+                  'Product Name': t.product_name,
+                  'Category': t.category || '-',
+                  'Brand': t.brand || '-',
+                  'Quantity': t.quantity,
+                  'Unit Price': t.unit_price.toFixed(2),
+                  'Total': t.total.toFixed(2)
+                }));
                 exportToExcel(exportData, 'customer_product_purchase_report');
               }} 
               size="sm" 
@@ -571,108 +556,156 @@ export default function SalesReports() {
             </Button>
           </CardHeader>
           <CardContent>
-            {/* Search Bar */}
-            <div className="mb-4">
-              <input
-                type="text"
-                placeholder="🔍 Search customers or products..."
-                value={searchCustomerProduct}
-                onChange={(e) => setSearchCustomerProduct(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-              {searchCustomerProduct && (
-                <p className="text-sm text-gray-600 mt-2">
-                  Showing {filteredCustomerProductData.length} of {customerProductData.length} customers
-                </p>
-              )}
+            {/* Filter Panel */}
+            <div className="bg-gradient-to-r from-blue-50 to-green-50 p-6 rounded-lg mb-6 border border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">🔍 Filter Criteria</h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Date Range */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">From Date</label>
+                  <input
+                    type="date"
+                    value={customerProductFilters.start_date}
+                    onChange={(e) => setCustomerProductFilters(prev => ({ ...prev, start_date: e.target.value }))}
+                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">To Date</label>
+                  <input
+                    type="date"
+                    value={customerProductFilters.end_date}
+                    onChange={(e) => setCustomerProductFilters(prev => ({ ...prev, end_date: e.target.value }))}
+                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                
+                {/* Customer Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Customer</label>
+                  <select
+                    value={customerProductFilters.customer_id}
+                    onChange={(e) => setCustomerProductFilters(prev => ({ ...prev, customer_id: e.target.value }))}
+                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">All Customers</option>
+                    {customerData.map((customer, idx) => (
+                      <option key={idx} value={customer.customer_id}>
+                        {customer.customer_name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
+                {/* Product Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Product (Search)</label>
+                  <input
+                    type="text"
+                    placeholder="Search by name or part number..."
+                    value={customerProductFilters.product_name}
+                    onChange={(e) => setCustomerProductFilters(prev => ({ ...prev, product_name: e.target.value }))}
+                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+              
+              {/* Filter Buttons */}
+              <div className="flex gap-3 mt-4">
+                <Button 
+                  onClick={applyCustomerProductFilter} 
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  🔍 Apply Filter
+                </Button>
+                <Button 
+                  onClick={() => {
+                    setCustomerProductFilters({
+                      start_date: '',
+                      end_date: '',
+                      customer_id: '',
+                      product_name: ''
+                    });
+                    setFilteredTransactions([]);
+                  }}
+                  variant="outline"
+                  className="border-gray-300"
+                >
+                  🔄 Clear Filters
+                </Button>
+              </div>
             </div>
 
             {/* Summary Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <p className="text-sm text-gray-600">Total Customers</p>
-                <p className="text-2xl font-bold text-blue-600">{filteredCustomerProductData.length}</p>
-              </div>
-              <div className="bg-green-50 p-4 rounded-lg">
-                <p className="text-sm text-gray-600">Total Products Sold</p>
-                <p className="text-2xl font-bold text-green-600">
-                  {filteredCustomerProductData.reduce((sum, c) => sum + c.products.length, 0)}
-                </p>
-              </div>
-              <div className="bg-purple-50 p-4 rounded-lg">
-                <p className="text-sm text-gray-600">Total Revenue</p>
-                <p className="text-2xl font-bold text-purple-600">
-                  BHD {filteredCustomerProductData.reduce((sum, c) => sum + c.total_value, 0).toFixed(2)}
-                </p>
-              </div>
-            </div>
-
-            {/* Customer-Product Table */}
-            <div className="space-y-6">
-              {filteredCustomerProductData.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  No data available for the selected period
+            {filteredTransactions.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                  <p className="text-sm text-gray-600">Total Transactions</p>
+                  <p className="text-2xl font-bold text-blue-600">{filteredTransactions.length}</p>
                 </div>
-              ) : (
-                filteredCustomerProductData.map((customer, idx) => (
-                  <div key={idx} className="border border-gray-200 rounded-lg overflow-hidden">
-                    {/* Customer Header */}
-                    <div className="bg-gradient-to-r from-blue-500 to-green-500 text-white px-4 py-3">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h3 className="text-lg font-bold">{customer.customer_name}</h3>
-                          <p className="text-sm opacity-90">{customer.products.length} unique products purchased</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm opacity-90">Total Spent</p>
-                          <p className="text-xl font-bold">BHD {customer.total_value.toFixed(2)}</p>
-                        </div>
-                      </div>
-                    </div>
+                <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                  <p className="text-sm text-gray-600">Total Quantity</p>
+                  <p className="text-2xl font-bold text-green-600">
+                    {filteredTransactions.reduce((sum, t) => sum + t.quantity, 0).toFixed(2)}
+                  </p>
+                </div>
+                <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                  <p className="text-sm text-gray-600">Total Value</p>
+                  <p className="text-2xl font-bold text-purple-600">
+                    BHD {filteredTransactions.reduce((sum, t) => sum + t.total, 0).toFixed(2)}
+                  </p>
+                </div>
+                <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                  <p className="text-sm text-gray-600">Unique Products</p>
+                  <p className="text-2xl font-bold text-orange-600">
+                    {new Set(filteredTransactions.map(t => t.product_name)).size}
+                  </p>
+                </div>
+              </div>
+            )}
 
-                    {/* Product Details Table */}
-                    <div className="overflow-x-auto">
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                          <tr>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Part Number</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product Name</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Brand</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quantity</th>
-                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Value</th>
-                          </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                          {customer.products.map((product, pIdx) => (
-                            <tr key={pIdx} className="hover:bg-gray-50">
-                              <td className="px-4 py-3 text-sm font-medium text-blue-600">
-                                {product.part_number || '-'}
-                              </td>
-                              <td className="px-4 py-3 text-sm font-medium text-gray-900">
-                                {product.product_name}
-                              </td>
-                              <td className="px-4 py-3 text-sm text-gray-600">
-                                {product.category || '-'}
-                              </td>
-                              <td className="px-4 py-3 text-sm text-gray-600">
-                                {product.brand || '-'}
-                              </td>
-                              <td className="px-4 py-3 text-sm font-semibold text-gray-900">
-                                {product.quantity}
-                              </td>
-                              <td className="px-4 py-3 text-sm font-semibold text-green-600">
-                                BHD {product.total_value.toFixed(2)}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
+            {/* Results Table */}
+            {filteredTransactions.length === 0 ? (
+              <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                <p className="text-gray-500 text-lg mb-2">📋 No results to display</p>
+                <p className="text-gray-400 text-sm">Please select filters above and click "Apply Filter" to view data</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto border border-gray-200 rounded-lg">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Invoice Date</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Part Number</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product Name</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Brand</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quantity</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Unit Price</th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {filteredTransactions.map((transaction, idx) => (
+                      <tr key={idx} className="hover:bg-blue-50 transition-colors">
+                        <td className="px-4 py-3 text-sm text-gray-600">{transaction.invoice_date}</td>
+                        <td className="px-4 py-3 text-sm font-medium text-gray-900">{transaction.customer_name}</td>
+                        <td className="px-4 py-3 text-sm font-medium text-blue-600">{transaction.part_number || '-'}</td>
+                        <td className="px-4 py-3 text-sm text-gray-900">{transaction.product_name}</td>
+                        <td className="px-4 py-3 text-sm text-gray-600">{transaction.category || '-'}</td>
+                        <td className="px-4 py-3 text-sm text-gray-600">{transaction.brand || '-'}</td>
+                        <td className="px-4 py-3 text-sm font-semibold text-gray-900">{transaction.quantity}</td>
+                        <td className="px-4 py-3 text-sm text-gray-600">BHD {transaction.unit_price.toFixed(2)}</td>
+                        <td className="px-4 py-3 text-sm font-bold text-green-600">BHD {transaction.total.toFixed(2)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </CardContent>
         </Card>
       )}
