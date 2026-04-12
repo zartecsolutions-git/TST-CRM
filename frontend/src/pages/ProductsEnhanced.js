@@ -33,7 +33,7 @@ export default function ProductsEnhanced() {
   const [formData, setFormData] = useState({
     name: '',
     part_number: '',
-    category: '',
+    category: 'others',  // Default to valid enum value
     sub_category: '',
     brand: '',
     division: '',
@@ -319,7 +319,7 @@ export default function ProductsEnhanced() {
     setFormData({
       name: '',
       part_number: '',
-      category: '',
+      category: 'others',  // Reset to valid default
       sub_category: '',
       brand: '',
       division: '',
@@ -516,7 +516,7 @@ export default function ProductsEnhanced() {
                       onChange={(val) => setFormData({
                         ...formData, 
                         division: val,
-                        category: '',
+                        category: 'others',  // Reset to valid default instead of empty string
                         sub_category: '',
                         brand: '',
                         model: ''
@@ -532,7 +532,7 @@ export default function ProductsEnhanced() {
                       value={formData.category}
                       onChange={(val) => setFormData({
                         ...formData, 
-                        category: val, 
+                        category: val || 'others',  // Ensure never empty
                         sub_category: '',
                         brand: '',
                         model: ''
