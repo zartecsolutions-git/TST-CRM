@@ -378,26 +378,52 @@ async def get_salesrep_performance_report(
         
         results = await db.sales_invoices.aggregate(pipeline).to_list(1000)
         
-        # Get user commission percentages
+        # Get user data (commission slabs, targets, etc.)
         user_ids = [r["_id"] for r in results]
         users = await db.users.find(
             {"id": {"$in": user_ids}}, 
-            {"_id": 0, "id": 1, "commission_percentage": 1}
+            {"_id": 0, "id": 1, "name": 1, "commission_slabs": 1, "commission_percentage": 1, "monthly_sales_target": 1}
         ).to_list(1000)
         
-        # Create a map of user_id to commission_percentage
-        commission_map = {u["id"]: u.get("commission_percentage", 5.0) for u in users}
+        # Create a map of user_id to user data
+        user_map = {u["id"]: u for u in users}
         
         formatted_results = []
         for r in results:
-            commission_pct = commission_map.get(r["_id"], 5.0)
+            user_data = user_map.get(r["_id"], {})
+            total_sales = r["total_sales"]
+            
+            # Calculate commission using slabs if available
+            commission_slabs = user_data.get("commission_slabs")
+            fallback_pct = user_data.get("commission_percentage", 5.0)
+            
+            # Simple slab calculation
+            if commission_slabs and len(commission_slabs) > 0:
+                commission = 0.0
+                for slab in sorted(commission_slabs, key=lambda x: x.get('from_value', 0)):
+                    from_val = slab.get('from_value', 0)
+                    to_val = slab.get('to_value', float('inf'))
+                    comm_pct = slab.get('commission_percentage', 0)
+                    if total_sales > from_val:
+                        sales_in_slab = min(total_sales, to_val) - from_val
+                        if sales_in_slab > 0:
+                            commission += sales_in_slab * (comm_pct / 100)
+                commission = round(commission, 2)
+            else:
+                commission = round(total_sales * (fallback_pct / 100), 2)
+            
+            # Get monthly target
+            monthly_target = user_data.get("monthly_sales_target", 0)
+            achievement_pct = round((total_sales / monthly_target * 100), 2) if monthly_target and monthly_target > 0 else None
+            
             formatted_results.append({
                 "sales_rep_id": r["_id"],
                 "sales_rep_name": r["sales_rep_name"],
-                "total_sales": round(r["total_sales"], 2),
+                "total_sales": round(total_sales, 2),
                 "invoice_count": r["invoice_count"],
-                "commission_percentage": commission_pct,
-                "commission": round(r["total_sales"] * (commission_pct / 100), 2)
+                "monthly_target": monthly_target,
+                "achievement_percentage": achievement_pct,
+                "commission": commission
             })
         
         return formatted_results

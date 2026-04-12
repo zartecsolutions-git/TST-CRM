@@ -36,13 +36,21 @@ class AlertType(str, Enum):
     enter = "enter"
     exit = "exit"
 
+# Commission Slab Model
+class CommissionSlab(BaseModel):
+    from_value: float = 0.0
+    to_value: float
+    commission_percentage: float
+
 # User Models
 class UserBase(BaseModel):
     email: EmailStr
     name: str
     phone: Optional[str] = None
     role: UserRole = UserRole.sales
-    commission_percentage: Optional[float] = 5.0  # Default 5% commission
+    monthly_sales_target: Optional[float] = None  # Monthly sales target
+    commission_slabs: Optional[List[CommissionSlab]] = None  # Tiered commission structure
+    commission_percentage: Optional[float] = 5.0  # Fallback for legacy/simple commission
 
 class UserCreate(UserBase):
     password: str
@@ -68,6 +76,8 @@ class UserUpdate(BaseModel):
     role: Optional[UserRole] = None
     team_id: Optional[str] = None
     company_id: Optional[str] = None
+    monthly_sales_target: Optional[float] = None
+    commission_slabs: Optional[List[CommissionSlab]] = None
     commission_percentage: Optional[float] = None
 
 # Location Models
