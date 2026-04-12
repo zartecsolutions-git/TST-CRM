@@ -11,6 +11,7 @@ export default function SalesInvoices() {
   const [customers, setCustomers] = useState([]);
   const [salesReps, setSalesReps] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [subcategories, setSubcategories] = useState([]);  // NEW: For sub-category dropdown
   const [brands, setBrands] = useState([]);
   const [divisions, setDivisions] = useState([]);
   const [models, setModels] = useState([]);
@@ -78,11 +79,12 @@ export default function SalesInvoices() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [invoicesRes, customersRes, usersRes, categoriesRes, brandsRes, divisionsRes, modelsRes, productsRes] = await Promise.all([
+      const [invoicesRes, customersRes, usersRes, categoriesRes, subcategoriesRes, brandsRes, divisionsRes, modelsRes, productsRes] = await Promise.all([
         api.get('/sales/invoices'),
         api.get('/customers'),
         api.get('/users'),
         api.get('/master-data/categories'),
+        api.get('/master-data/subcategories'),  // NEW
         api.get('/master-data/brands'),
         api.get('/master-data/divisions'),
         api.get('/master-data/models'),
@@ -93,6 +95,7 @@ export default function SalesInvoices() {
       setCustomers(customersRes.data || []);
       setSalesReps(usersRes.data.filter(u => u.role === 'sales' || u.role === 'admin') || []);
       setCategories(categoriesRes.data || []);
+      setSubcategories(subcategoriesRes.data || []);  // NEW
       setBrands(brandsRes.data || []);
       setDivisions(divisionsRes.data || []);
       setModels(modelsRes.data || []);
@@ -192,7 +195,8 @@ export default function SalesInvoices() {
     const searchTerm = productSearchTerm[index] || '';
     if (!searchTerm) return products;
     return products.filter(product =>
-      product.name.toLowerCase().includes(searchTerm.toLowerCase())
+      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (product.part_number && product.part_number.toLowerCase().includes(searchTerm.toLowerCase()))  // NEW: Search by part number
     );
   };
 
@@ -705,11 +709,11 @@ export default function SalesInvoices() {
                                   className="px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm border-b border-gray-100"
                                 >
                                   <div className="font-medium">{product.name}</div>
-                                  {product.category && (
-                                    <div className="text-xs text-gray-500">
-                                      {product.category} {product.brand && `• ${product.brand}`}
-                                    </div>
-                                  )}
+                                  <div className="text-xs text-gray-500">
+                                    {product.part_number && `Part #: ${product.part_number}`}
+                                    {product.category && ` • ${product.category}`}
+                                    {product.brand && ` • ${product.brand}`}
+                                  </div>
                                 </div>
                               ))}
                             </div>
