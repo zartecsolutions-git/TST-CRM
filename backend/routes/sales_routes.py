@@ -54,6 +54,45 @@ class SalesInvoiceUpdate(BaseModel):
     notes: Optional[str] = None
 
 
+# Helper function to auto-create products from invoice items
+async def auto_sync_products_from_invoice(invoice_items: List[InvoiceItem], sales_rep_id: str):
+    """Automatically create products in Products Management if they don't exist"""
+    from uuid import uuid4
+    
+    for item in invoice_items:
+        # Check if product with this name already exists
+        existing_product = await db.products.find_one(
+            {"name": item.product_name},
+            {"_id": 0}
+        )
+        
+        if not existing_product:
+            # Create new product with info from invoice
+            new_product = {
+                "id": str(uuid4()),
+                "name": item.product_name,
+                "category": "others",  # Default category
+                "sub_category": item.category if item.category else None,
+                "description": "Auto-imported from sales invoice",
+                "price": item.unit_price,
+                "model": None,
+                "specifications": None,
+                "supplier_warranty_period": None,
+                "purchase_date": None,
+                "installation_date": None,
+                "license_code": None,
+                "serial_numbers": [],
+                "company_id": None,
+                "created_by": sales_rep_id,
+                "created_at": datetime.utcnow().isoformat(),
+                "updated_at": datetime.utcnow().isoformat(),
+                "warranty_finished_date": None
+            }
+            
+            await db.products.insert_one(new_product)
+            print(f"Auto-created product: {item.product_name}")
+
+
 # Create Invoice
 @router.post("/sales/invoices")
 async def create_invoice(invoice: SalesInvoice):
@@ -62,6 +101,9 @@ async def create_invoice(invoice: SalesInvoice):
         existing = await db.sales_invoices.find_one({"invoice_number": invoice.invoice_number}, {"_id": 0})
         if existing:
             raise HTTPException(status_code=400, detail="Invoice number already exists")
+        
+        # Auto-sync products to Products Management
+        await auto_sync_products_from_invoice(invoice.items, invoice.sales_rep_id)
         
         invoice_dict = invoice.dict()
         invoice_dict["created_at"] = datetime.utcnow().isoformat()
@@ -133,6 +175,11 @@ async def update_invoice(invoice_number: str, invoice_update: SalesInvoiceUpdate
         existing = await db.sales_invoices.find_one({"invoice_number": invoice_number}, {"_id": 0})
         if not existing:
             raise HTTPException(status_code=404, detail="Invoice not found")
+        
+        # If items are being updated, auto-sync new products
+        if invoice_update.items:
+            sales_rep_id = invoice_update.sales_rep_id or existing.get('sales_rep_id')
+            await auto_sync_products_from_invoice(invoice_update.items, sales_rep_id)
         
         update_data = {k: v for k, v in invoice_update.dict().items() if v is not None}
         update_data["updated_at"] = datetime.utcnow().isoformat()
