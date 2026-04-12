@@ -263,6 +263,8 @@ class ProductCreate(BaseModel):
     part_number: Optional[str] = None  # Part Number for product identification
     category: ProductCategory = ProductCategory.others
     sub_category: Optional[str] = None
+    brand: Optional[str] = None
+    division: Optional[str] = None
     description: Optional[str] = None
     price: Optional[float] = None
     model: Optional[str] = None
@@ -288,6 +290,8 @@ class ProductUpdate(BaseModel):
     part_number: Optional[str] = None
     category: Optional[ProductCategory] = None
     sub_category: Optional[str] = None
+    brand: Optional[str] = None
+    division: Optional[str] = None
     description: Optional[str] = None
     price: Optional[float] = None
     model: Optional[str] = None
