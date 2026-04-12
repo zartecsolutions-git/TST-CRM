@@ -263,7 +263,7 @@ export default function ProductsEnhanced() {
       const cleanedData = {
         name: formData.name,
         part_number: formData.part_number || null,
-        category: formData.category || '',
+        category: formData.category || 'others',  // Default to 'others' if empty
         sub_category: formData.sub_category || null,
         brand: formData.brand || null,
         division: formData.division || null,
@@ -277,6 +277,8 @@ export default function ProductsEnhanced() {
         installation_date: formData.installation_date || null,
         serial_numbers: formData.serial_numbers,
       };
+      
+      console.log('Submitting product data:', cleanedData);
       
       if (isEditMode && selectedProduct) {
         // Update existing product
@@ -293,7 +295,19 @@ export default function ProductsEnhanced() {
     } catch (error) {
       console.error('Full error:', error);
       console.error('Error response:', error.response);
-      const errorMsg = error.response?.data?.detail || error.message || 'Unknown error';
+      console.error('Error response data:', error.response?.data);
+      const errorDetail = error.response?.data?.detail;
+      let errorMsg = 'Unknown error';
+      
+      if (Array.isArray(errorDetail)) {
+        // Pydantic validation errors
+        errorMsg = errorDetail.map(err => `${err.loc.join('.')}: ${err.msg}`).join(', ');
+      } else if (typeof errorDetail === 'string') {
+        errorMsg = errorDetail;
+      } else if (error.message) {
+        errorMsg = error.message;
+      }
+      
       alert(isEditMode ? `Failed to update product: ${errorMsg}` : `Failed to create product: ${errorMsg}`);
     }
   };
