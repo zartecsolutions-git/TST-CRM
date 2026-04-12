@@ -45,6 +45,7 @@ export default function SalesReports() {
   const [productData, setProductData] = useState([]);
   const [salesRepData, setSalesRepData] = useState([]);
   const [analysisData, setAnalysisData] = useState({ by_category: [], by_brand: [], by_division: [] });
+  const [customerProductData, setCustomerProductData] = useState([]);  // NEW: Customer-Product Purchase Report
 
   // Search states for each tab
   const [searchCustomer, setSearchCustomer] = useState('');
@@ -53,6 +54,7 @@ export default function SalesReports() {
   const [searchCategory, setSearchCategory] = useState('');
   const [searchBrand, setSearchBrand] = useState('');
   const [searchDivision, setSearchDivision] = useState('');
+  const [searchCustomerProduct, setSearchCustomerProduct] = useState('');  // NEW: Search for customer-product report
 
   // Remove redirect for sales users - they can now access reports
   useEffect(() => {
@@ -76,12 +78,13 @@ export default function SalesReports() {
       // Add sales_rep_id filter for sales users
       const salesRepFilter = user?.role === 'sales' ? { sales_rep_id: user.id } : {};
       
-      const [monthly, customers, products, salesreps, analysis] = await Promise.all([
+      const [monthly, customers, products, salesreps, analysis, invoices] = await Promise.all([
         api.get(`/sales/reports/monthly?year=${year}`, { params: salesRepFilter }),
         api.get('/sales/reports/customers', { params: { ...dateRange, ...salesRepFilter } }),
         api.get('/sales/reports/products', { params: { ...dateRange, ...salesRepFilter } }),
         api.get('/sales/reports/salesreps', { params: { ...dateRange, ...salesRepFilter } }),
-        api.get('/sales/reports/analysis', { params: { ...dateRange, ...salesRepFilter } })
+        api.get('/sales/reports/analysis', { params: { ...dateRange, ...salesRepFilter } }),
+        api.get('/sales/invoices', { params: { ...dateRange, ...salesRepFilter } })  // NEW: Fetch invoices for customer-product report
       ]);
 
       setMonthlyData(monthly.data || []);
@@ -89,11 +92,73 @@ export default function SalesReports() {
       setProductData(products.data || []);
       setSalesRepData(salesreps.data || []);
       setAnalysisData(analysis.data || { by_category: [], by_brand: [], by_division: [] });
+      
+      // NEW: Process customer-product data
+      processCustomerProductData(invoices.data || []);
     } catch (error) {
       console.error('Failed to fetch reports:', error);
     } finally {
       setLoading(false);
     }
+  };
+
+  // NEW: Process customer-product purchase data
+  const processCustomerProductData = (invoices) => {
+    // Filter by date range if specified
+    let filteredInvoices = invoices;
+    if (dateRange.start_date || dateRange.end_date) {
+      filteredInvoices = invoices.filter(inv => {
+        const invDate = inv.invoice_date;
+        if (dateRange.start_date && invDate < dateRange.start_date) return false;
+        if (dateRange.end_date && invDate > dateRange.end_date) return false;
+        return true;
+      });
+    }
+
+    // Group by customer, then by product
+    const customerProductMap = {};
+    
+    filteredInvoices.forEach(invoice => {
+      const customerId = invoice.customer_id || 'unknown';
+      const customerName = invoice.customer_name || 'Unknown Customer';
+      
+      if (!customerProductMap[customerId]) {
+        customerProductMap[customerId] = {
+          customer_id: customerId,
+          customer_name: customerName,
+          products: {},
+          total_value: 0
+        };
+      }
+      
+      // Process each item in the invoice
+      (invoice.items || []).forEach(item => {
+        const productKey = item.part_number || item.product_name || 'Unknown Product';
+        
+        if (!customerProductMap[customerId].products[productKey]) {
+          customerProductMap[customerId].products[productKey] = {
+            product_name: item.product_name || 'Unknown',
+            part_number: item.part_number || '',
+            category: item.category || '',
+            brand: item.brand || '',
+            quantity: 0,
+            total_value: 0
+          };
+        }
+        
+        customerProductMap[customerId].products[productKey].quantity += item.quantity || 0;
+        customerProductMap[customerId].products[productKey].total_value += item.total || 0;
+        customerProductMap[customerId].total_value += item.total || 0;
+      });
+    });
+    
+    // Convert to array format
+    const customerProductArray = Object.values(customerProductMap).map(customer => ({
+      ...customer,
+      products: Object.values(customer.products).sort((a, b) => b.total_value - a.total_value)
+    })).sort((a, b) => b.total_value - a.total_value);
+    
+    setCustomerProductData(customerProductArray);
   };
 
   const applyDateFilter = () => {
@@ -127,6 +192,15 @@ export default function SalesReports() {
   const filteredDivisionData = (analysisData.by_division || []).filter(div =>
     div.division?.toLowerCase().includes(searchDivision.toLowerCase()) ||
     div.name?.toLowerCase().includes(searchDivision.toLowerCase())
+  );
+
+  // NEW: Filter function for customer-product report
+  const filteredCustomerProductData = customerProductData.filter(customer =>
+    customer.customer_name?.toLowerCase().includes(searchCustomerProduct.toLowerCase()) ||
+    customer.products.some(p => 
+      p.product_name?.toLowerCase().includes(searchCustomerProduct.toLowerCase()) ||
+      p.part_number?.toLowerCase().includes(searchCustomerProduct.toLowerCase())
+    )
   );
 
   const exportToExcel = (data, filename) => {
@@ -293,6 +367,7 @@ export default function SalesReports() {
           { id: 'monthly', label: '📅 Monthly Sales', icon: '📅' },
           { id: 'customers', label: '👥 Customers', icon: '👥' },
           { id: 'products', label: '📦 Products', icon: '📦' },
+          { id: 'customer-products', label: '🛒 Customer Products', icon: '🛒' },  // NEW TAB
           { id: 'salesreps', label: '👤 Sales Reps', icon: '👤' },
           { id: 'analysis', label: '🏷️ Analysis', icon: '🏷️' }
         ].map(tab => (
@@ -461,6 +536,142 @@ export default function SalesReports() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* NEW: Customer Product Purchase Report */}
+      {activeTab === 'customer-products' && (
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Customer Product Purchase Report</CardTitle>
+            <Button 
+              onClick={() => {
+                const exportData = [];
+                filteredCustomerProductData.forEach(customer => {
+                  customer.products.forEach(product => {
+                    exportData.push({
+                      'Customer': customer.customer_name,
+                      'Part Number': product.part_number,
+                      'Product Name': product.product_name,
+                      'Category': product.category,
+                      'Brand': product.brand,
+                      'Quantity': product.quantity,
+                      'Total Value': product.total_value.toFixed(2)
+                    });
+                  });
+                });
+                exportToExcel(exportData, 'customer_product_purchase_report');
+              }} 
+              size="sm" 
+              variant="outline"
+            >
+              📊 Export Excel
+            </Button>
+          </CardHeader>
+          <CardContent>
+            {/* Search Bar */}
+            <div className="mb-4">
+              <input
+                type="text"
+                placeholder="🔍 Search customers or products..."
+                value={searchCustomerProduct}
+                onChange={(e) => setSearchCustomerProduct(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+              {searchCustomerProduct && (
+                <p className="text-sm text-gray-600 mt-2">
+                  Showing {filteredCustomerProductData.length} of {customerProductData.length} customers
+                </p>
+              )}
+            </div>
+
+            {/* Summary Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <p className="text-sm text-gray-600">Total Customers</p>
+                <p className="text-2xl font-bold text-blue-600">{filteredCustomerProductData.length}</p>
+              </div>
+              <div className="bg-green-50 p-4 rounded-lg">
+                <p className="text-sm text-gray-600">Total Products Sold</p>
+                <p className="text-2xl font-bold text-green-600">
+                  {filteredCustomerProductData.reduce((sum, c) => sum + c.products.length, 0)}
+                </p>
+              </div>
+              <div className="bg-purple-50 p-4 rounded-lg">
+                <p className="text-sm text-gray-600">Total Revenue</p>
+                <p className="text-2xl font-bold text-purple-600">
+                  BHD {filteredCustomerProductData.reduce((sum, c) => sum + c.total_value, 0).toFixed(2)}
+                </p>
+              </div>
+            </div>
+
+            {/* Customer-Product Table */}
+            <div className="space-y-6">
+              {filteredCustomerProductData.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  No data available for the selected period
+                </div>
+              ) : (
+                filteredCustomerProductData.map((customer, idx) => (
+                  <div key={idx} className="border border-gray-200 rounded-lg overflow-hidden">
+                    {/* Customer Header */}
+                    <div className="bg-gradient-to-r from-blue-500 to-green-500 text-white px-4 py-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="text-lg font-bold">{customer.customer_name}</h3>
+                          <p className="text-sm opacity-90">{customer.products.length} unique products purchased</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm opacity-90">Total Spent</p>
+                          <p className="text-xl font-bold">BHD {customer.total_value.toFixed(2)}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Product Details Table */}
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Part Number</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product Name</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Brand</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quantity</th>
+                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Value</th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {customer.products.map((product, pIdx) => (
+                            <tr key={pIdx} className="hover:bg-gray-50">
+                              <td className="px-4 py-3 text-sm font-medium text-blue-600">
+                                {product.part_number || '-'}
+                              </td>
+                              <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                                {product.product_name}
+                              </td>
+                              <td className="px-4 py-3 text-sm text-gray-600">
+                                {product.category || '-'}
+                              </td>
+                              <td className="px-4 py-3 text-sm text-gray-600">
+                                {product.brand || '-'}
+                              </td>
+                              <td className="px-4 py-3 text-sm font-semibold text-gray-900">
+                                {product.quantity}
+                              </td>
+                              <td className="px-4 py-3 text-sm font-semibold text-green-600">
+                                BHD {product.total_value.toFixed(2)}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </CardContent>
         </Card>
