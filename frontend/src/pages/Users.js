@@ -336,7 +336,7 @@ const Users = () => {
                   {/* Commission Percentage - Only show for sales role */}
                   {newUser.role === 'sales' && (
                     <>
-                      <div>
+                      <div className="md:col-span-2">
                         <Label>Monthly Sales Target (BHD)</Label>
                         <Input
                           type="number"
@@ -347,19 +347,6 @@ const Users = () => {
                           onChange={(e) => setNewUser({...newUser, monthly_sales_target: parseFloat(e.target.value) || 0})}
                         />
                         <p className="text-xs text-gray-500 mt-1">Monthly target for tracking</p>
-                      </div>
-
-                      <div>
-                        <Label>Fallback Commission %</Label>
-                        <Input
-                          type="number"
-                          step="0.1"
-                          min="0"
-                          max="100"
-                          value={newUser.commission_percentage}
-                          onChange={(e) => setNewUser({ ...newUser, commission_percentage: parseFloat(e.target.value) || 0 })}
-                          placeholder="5.0"
-                        />
                       </div>
 
                       <div className="md:col-span-2">
@@ -455,10 +442,10 @@ const Users = () => {
                     </select>
                   </div>
                   
-                  {/* Commission Percentage - Only show for sales role */}
+                  {/* Commission Slabs - Only show for sales role */}
                   {editingUser.role === 'sales' && (
                     <>
-                      <div>
+                      <div className="md:col-span-2">
                         <Label>Monthly Sales Target (BHD)</Label>
                         <Input
                           type="number"
@@ -468,18 +455,7 @@ const Users = () => {
                           value={editingUser.monthly_sales_target || ''}
                           onChange={(e) => setEditingUser({...editingUser, monthly_sales_target: parseFloat(e.target.value) || 0})}
                         />
-                      </div>
-
-                      <div>
-                        <Label>Fallback Commission %</Label>
-                        <Input
-                          type="number"
-                          step="0.1"
-                          min="0"
-                          max="100"
-                          value={editingUser.commission_percentage}
-                          onChange={(e) => setEditingUser({ ...editingUser, commission_percentage: parseFloat(e.target.value) || 0 })}
-                        />
+                        <p className="text-xs text-gray-500 mt-1">Monthly sales target for performance tracking</p>
                       </div>
 
                       <div className="md:col-span-2">
@@ -542,8 +518,8 @@ const Users = () => {
                       <div>
                         <h3 className="font-bold text-gray-900">{user.name}</h3>
                         <p className="text-sm text-gray-600">{user.email}</p>
-                        {user.role === 'sales' && user.commission_percentage && (
-                          <p className="text-xs text-green-600 font-medium mt-1">💰 Commission: {user.commission_percentage}%</p>
+                        {user.role === 'sales' && user.commission_slabs && user.commission_slabs.length > 0 && (
+                          <p className="text-xs text-green-600 font-medium mt-1">💰 {user.commission_slabs.length} Commission Slab(s)</p>
                         )}
                       </div>
                     </div>

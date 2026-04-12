@@ -202,6 +202,24 @@ frontend:
         agent: "fork_main"
         comment: "FIXED: Added eslint-disable-next-line comments to useEffect hooks that intentionally omit function dependencies to avoid infinite loops. This follows React best practices for effects that should only run on mount or when specific primitives change. Files updated: SalesInvoices.js, Products.js, Leads.js, CompanySettings.js. All linting passes."
 
+  - task: "Commission Slabs Feature - UI cleanup and MongoDB persistence"
+    implemented: true
+    working: true
+    file: "/app/frontend/src/pages/Users.js, /app/backend/models.py, /app/backend/routes/sales_routes.py"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "user"
+        comment: "User reported: 'slab settings not saving, remove fall back commision field, calculate commsion in sales invoice perfromance report as per slab'"
+      - working: false
+        agent: "previous_fork_main"
+        comment: "Previous agent updated frontend payload to include slabs but failed to remove the fallback commission_percentage UI field due to search_replace errors on large Users.js file. Did not verify MongoDB persistence."
+      - working: true
+        agent: "fork_main_v2"
+        comment: "COMPLETED: (1) Removed fallback commission % input from Add User and Edit User modals. (2) Updated user cards to show slab count. (3) VERIFIED MongoDB saves commission_slabs array via direct DB query. (4) VERIFIED sales performance API calculates commission using slabs with test invoice ($82,500 → $2,400 commission = correct). Backend falls back to commission_percentage if slabs empty (backward compatible)."
+
 metadata:
   created_by: "fork_main_agent"
   version: "3.0"
@@ -238,3 +256,30 @@ agent_communication:
     2. Frontend compiles and runs without errors
     3. Backend tests pass with environment variables
     4. User-facing features (Excel import, Sales reports, etc.) remain functional"
+  
+  - agent: "fork_main_v2"
+    message: "COMMISSION SLABS FEATURE COMPLETED:
+    
+    ✅ Frontend UI Updates:
+    • Removed fallback 'Commission Percentage' input field from Add User modal
+    • Removed fallback 'Commission Percentage' input field from Edit User modal
+    • Updated user card display to show '# Commission Slab(s)' instead of flat percentage
+    • Monthly Sales Target and Commission Slabs UI fully functional
+    
+    ✅ Backend Verification (MongoDB Persistence):
+    • TESTED: User creation with commission_slabs array → SUCCESSFULLY SAVED to MongoDB
+    • TESTED: User update with modified slabs → SUCCESSFULLY PERSISTED to MongoDB
+    • Backend models correctly handle commission_slabs (array of objects) and monthly_sales_target
+    
+    ✅ Sales Performance Commission Calculation:
+    • VERIFIED: /api/sales/reports/salesreps endpoint uses tiered slab calculation
+    • VERIFIED: Falls back to commission_percentage if slabs not configured (backward compatible)
+    • Test case: $82,500 sales with 3 slabs → Commission: $2,400 (100% accurate)
+      - Slab 1: $60,000 @ 2.5% = $1,500
+      - Slab 2: $22,500 @ 4.0% = $900
+      - Total: $2,400 ✅
+    
+    USER REQUEST FULLY COMPLETED:
+    1. ✅ Slab settings now saving to MongoDB
+    2. ✅ Fallback commission field removed from UI
+    3. ✅ Commission calculation in sales reports uses slabs"
