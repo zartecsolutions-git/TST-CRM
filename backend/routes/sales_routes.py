@@ -633,14 +633,40 @@ async def get_sales_analysis(
             {"$sort": {"total_sales": -1}}
         ]
         
+        # Sales by Model
+        model_pipeline = base_pipeline + [
+            {
+                "$group": {
+                    "_id": "$items.model",
+                    "total_sales": {"$sum": "$items.total"}
+                }
+            },
+            {"$sort": {"total_sales": -1}}
+        ]
+        
+        # Sales by Sub-Category
+        subcategory_pipeline = base_pipeline + [
+            {
+                "$group": {
+                    "_id": "$items.sub_category",
+                    "total_sales": {"$sum": "$items.total"}
+                }
+            },
+            {"$sort": {"total_sales": -1}}
+        ]
+        
         categories = await db.sales_invoices.aggregate(category_pipeline).to_list(100)
         brands = await db.sales_invoices.aggregate(brand_pipeline).to_list(100)
         divisions = await db.sales_invoices.aggregate(division_pipeline).to_list(100)
+        models = await db.sales_invoices.aggregate(model_pipeline).to_list(100)
+        subcategories = await db.sales_invoices.aggregate(subcategory_pipeline).to_list(100)
         
         return {
             "by_category": [{"name": c["_id"] or "Other", "total_sales": round(c["total_sales"], 2)} for c in categories],
             "by_brand": [{"name": b["_id"] or "Other", "total_sales": round(b["total_sales"], 2)} for b in brands],
-            "by_division": [{"name": d["_id"] or "Other", "total_sales": round(d["total_sales"], 2)} for d in divisions]
+            "by_division": [{"name": d["_id"] or "Other", "total_sales": round(d["total_sales"], 2)} for d in divisions],
+            "by_model": [{"name": m["_id"] or "Other", "total_sales": round(m["total_sales"], 2)} for m in models],
+            "by_subcategory": [{"name": s["_id"] or "Other", "total_sales": round(s["total_sales"], 2)} for s in subcategories]
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

@@ -44,7 +44,7 @@ export default function SalesReports() {
   const [customerData, setCustomerData] = useState([]);
   const [productData, setProductData] = useState([]);
   const [salesRepData, setSalesRepData] = useState([]);
-  const [analysisData, setAnalysisData] = useState({ by_category: [], by_brand: [], by_division: [] });
+  const [analysisData, setAnalysisData] = useState({ by_category: [], by_brand: [], by_division: [], by_model: [], by_subcategory: [] });
   const [customerProductData, setCustomerProductData] = useState([]);  // NEW: Customer-Product Purchase Report
   const [invoices, setInvoices] = useState([]);  // NEW: Store all invoices for filtering
   const [products, setProducts] = useState([]);  // NEW: Store products for dropdowns
@@ -68,6 +68,8 @@ export default function SalesReports() {
   const [searchCategory, setSearchCategory] = useState('');
   const [searchBrand, setSearchBrand] = useState('');
   const [searchDivision, setSearchDivision] = useState('');
+  const [searchModel, setSearchModel] = useState('');
+  const [searchSubCategory, setSearchSubCategory] = useState('');
   const [searchCustomerProduct, setSearchCustomerProduct] = useState('');  // NEW: Search for customer-product report
 
   // Remove redirect for sales users - they can now access reports
@@ -119,7 +121,7 @@ export default function SalesReports() {
       setCustomerData(customers.data || []);
       setProductData(productsReport.data || []);
       setSalesRepData(salesreps.data || []);
-      setAnalysisData(analysis.data || { by_category: [], by_brand: [], by_division: [] });
+      setAnalysisData(analysis.data || { by_category: [], by_brand: [], by_division: [], by_model: [], by_subcategory: [] });
       
       // NEW: Store invoices and products for filtering
       setInvoices(invoicesData.data || []);
@@ -264,6 +266,14 @@ export default function SalesReports() {
     div.name?.toLowerCase().includes(searchDivision.toLowerCase())
   );
 
+  const filteredModelData = (analysisData.by_model || []).filter(model =>
+    model.name?.toLowerCase().includes(searchModel.toLowerCase())
+  );
+
+  const filteredSubCategoryData = (analysisData.by_subcategory || []).filter(subcat =>
+    subcat.name?.toLowerCase().includes(searchSubCategory.toLowerCase())
+  );
+
   const exportToExcel = (data, filename) => {
     // Simple CSV export
     const headers = Object.keys(data[0] || {}).join(',');
@@ -346,6 +356,55 @@ export default function SalesReports() {
         'rgba(251, 191, 36, 0.8)',
         'rgba(239, 68, 68, 0.8)',
         'rgba(139, 92, 246, 0.8)'
+      ]
+    }]
+  };
+
+  const divisionPieData = {
+    labels: analysisData.by_division.map(d => d.name),
+    datasets: [{
+      data: analysisData.by_division.map(d => d.total_sales),
+      backgroundColor: [
+        'rgba(59, 130, 246, 0.8)',   // Blue
+        'rgba(16, 185, 129, 0.8)',   // Green
+        'rgba(251, 191, 36, 0.8)',   // Yellow
+        'rgba(239, 68, 68, 0.8)',    // Red
+        'rgba(139, 92, 246, 0.8)',   // Purple
+        'rgba(236, 72, 153, 0.8)'    // Pink
+      ]
+    }]
+  };
+
+  const modelPieData = {
+    labels: analysisData.by_model.map(d => d.name),
+    datasets: [{
+      data: analysisData.by_model.map(d => d.total_sales),
+      backgroundColor: [
+        'rgba(59, 130, 246, 0.8)',
+        'rgba(16, 185, 129, 0.8)',
+        'rgba(251, 191, 36, 0.8)',
+        'rgba(239, 68, 68, 0.8)',
+        'rgba(139, 92, 246, 0.8)',
+        'rgba(236, 72, 153, 0.8)',
+        'rgba(6, 182, 212, 0.8)',
+        'rgba(245, 158, 11, 0.8)'
+      ]
+    }]
+  };
+
+  const subCategoryPieData = {
+    labels: analysisData.by_subcategory.map(d => d.name),
+    datasets: [{
+      data: analysisData.by_subcategory.map(d => d.total_sales),
+      backgroundColor: [
+        'rgba(59, 130, 246, 0.8)',
+        'rgba(16, 185, 129, 0.8)',
+        'rgba(251, 191, 36, 0.8)',
+        'rgba(239, 68, 68, 0.8)',
+        'rgba(139, 92, 246, 0.8)',
+        'rgba(236, 72, 153, 0.8)',
+        'rgba(6, 182, 212, 0.8)',
+        'rgba(245, 158, 11, 0.8)'
       ]
     }]
   };
@@ -1041,23 +1100,124 @@ export default function SalesReports() {
                 )}
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="min-w-full">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Division</th>
-                      <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Total Sales</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {filteredDivisionData.map((row, idx) => (
-                      <tr key={idx}>
-                        <td className="px-4 py-2 text-sm">{row.name}</td>
-                        <td className="px-4 py-2 text-sm font-semibold">BHD {row.total_sales.toFixed(2)}</td>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div style={{ height: '600px' }}>
+                  <Pie data={divisionPieData} options={{ responsive: true, maintainAspectRatio: true }} />
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Division</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Total Sales</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {filteredDivisionData.map((row, idx) => (
+                        <tr key={idx}>
+                          <td className="px-4 py-2 text-sm">{row.name}</td>
+                          <td className="px-4 py-2 text-sm font-semibold">BHD {row.total_sales.toFixed(2)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Sales by Model</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {/* Search Bar */}
+              <div className="mb-4">
+                <input
+                  type="text"
+                  placeholder="🔍 Search models..."
+                  value={searchModel}
+                  onChange={(e) => setSearchModel(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  data-testid="model-analysis-search"
+                />
+                {searchModel && (
+                  <p className="text-sm text-gray-600 mt-2">
+                    Showing {filteredModelData.length} of {analysisData.by_model.length} models
+                  </p>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div style={{ height: '600px' }}>
+                  <Pie data={modelPieData} options={{ responsive: true, maintainAspectRatio: true }} />
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Model</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Total Sales</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {filteredModelData.map((row, idx) => (
+                        <tr key={idx}>
+                          <td className="px-4 py-2 text-sm">{row.name}</td>
+                          <td className="px-4 py-2 text-sm font-semibold">BHD {row.total_sales.toFixed(2)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Sales by Sub-Category</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {/* Search Bar */}
+              <div className="mb-4">
+                <input
+                  type="text"
+                  placeholder="🔍 Search sub-categories..."
+                  value={searchSubCategory}
+                  onChange={(e) => setSearchSubCategory(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  data-testid="subcategory-analysis-search"
+                />
+                {searchSubCategory && (
+                  <p className="text-sm text-gray-600 mt-2">
+                    Showing {filteredSubCategoryData.length} of {analysisData.by_subcategory.length} sub-categories
+                  </p>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div style={{ height: '600px' }}>
+                  <Pie data={subCategoryPieData} options={{ responsive: true, maintainAspectRatio: true }} />
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Sub-Category</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500">Total Sales</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {filteredSubCategoryData.map((row, idx) => (
+                        <tr key={idx}>
+                          <td className="px-4 py-2 text-sm">{row.name}</td>
+                          <td className="px-4 py-2 text-sm font-semibold">BHD {row.total_sales.toFixed(2)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </CardContent>
           </Card>
