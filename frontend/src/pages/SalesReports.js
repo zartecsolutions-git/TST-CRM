@@ -499,8 +499,10 @@ export default function SalesReports() {
                   <tr>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sales Rep</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Sales</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Target</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Achievement</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Invoices</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Commission (5%)</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Commission</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -508,6 +510,32 @@ export default function SalesReports() {
                     <tr key={idx}>
                       <td className="px-4 py-3 text-sm font-medium text-gray-900">{row.sales_rep_name}</td>
                       <td className="px-4 py-3 text-sm font-semibold text-gray-900">BHD {row.total_sales.toFixed(2)}</td>
+                      <td className="px-4 py-3 text-sm text-gray-600">
+                        {row.monthly_target ? `BHD ${row.monthly_target.toFixed(2)}` : 'Not Set'}
+                      </td>
+                      <td className="px-4 py-3">
+                        {row.achievement_percentage ? (
+                          <div>
+                            <div className={`text-sm font-semibold ${
+                              row.achievement_percentage >= 100 ? 'text-green-600' :
+                              row.achievement_percentage >= 75 ? 'text-blue-600' :
+                              row.achievement_percentage >= 50 ? 'text-yellow-600' : 'text-red-600'
+                            }`}>
+                              {row.achievement_percentage.toFixed(1)}%
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
+                              <div
+                                className={`h-2 rounded-full ${
+                                  row.achievement_percentage >= 100 ? 'bg-green-500' :
+                                  row.achievement_percentage >= 75 ? 'bg-blue-500' :
+                                  row.achievement_percentage >= 50 ? 'bg-yellow-500' : 'bg-red-500'
+                                }`}
+                                style={{ width: `${Math.min(row.achievement_percentage, 100)}%` }}
+                              />
+                            </div>
+                          </div>
+                        ) : <span className="text-gray-400 text-sm">N/A</span>}
+                      </td>
                       <td className="px-4 py-3 text-sm text-gray-600">{row.invoice_count}</td>
                       <td className="px-4 py-3 text-sm font-semibold text-green-600">BHD {row.commission.toFixed(2)}</td>
                     </tr>

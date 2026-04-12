@@ -440,19 +440,50 @@ const Users = () => {
                   
                   {/* Commission Percentage - Only show for sales role */}
                   {editingUser.role === 'sales' && (
-                    <div>
-                      <Label>Commission % *</Label>
-                      <Input
-                        type="number"
-                        step="0.1"
-                        min="0"
-                        max="100"
-                        value={editingUser.commission_percentage}
-                        onChange={(e) => setEditingUser({ ...editingUser, commission_percentage: parseFloat(e.target.value) || 0 })}
-                        required
-                      />
-                      <p className="text-xs text-gray-500 mt-1">This commission rate will be used for all sales performance calculations</p>
-                    </div>
+                    <>
+                      <div>
+                        <Label>Monthly Sales Target (BHD)</Label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          placeholder="e.g., 50000"
+                          value={editingUser.monthly_sales_target || ''}
+                          onChange={(e) => setEditingUser({...editingUser, monthly_sales_target: parseFloat(e.target.value) || 0})}
+                        />
+                      </div>
+
+                      <div>
+                        <Label>Fallback Commission %</Label>
+                        <Input
+                          type="number"
+                          step="0.1"
+                          min="0"
+                          max="100"
+                          value={editingUser.commission_percentage}
+                          onChange={(e) => setEditingUser({ ...editingUser, commission_percentage: parseFloat(e.target.value) || 0 })}
+                        />
+                      </div>
+
+                      <div className="md:col-span-2">
+                        <div className="flex justify-between mb-2">
+                          <Label>Commission Slabs</Label>
+                          <button type="button" onClick={addSlabToEditUser} className="text-sm bg-blue-600 text-white px-3 py-1 rounded">+ Add Slab</button>
+                        </div>
+                        {editingUser.commission_slabs?.length > 0 ? (
+                          <div className="space-y-2">
+                            {editingUser.commission_slabs.map((slab, i) => (
+                              <div key={i} className="grid grid-cols-4 gap-2 bg-gray-50 p-2 rounded">
+                                <Input type="number" value={slab.from_value} onChange={(e) => updateSlabInEditUser(i, 'from_value', e.target.value)} placeholder="From" />
+                                <Input type="number" value={slab.to_value} onChange={(e) => updateSlabInEditUser(i, 'to_value', e.target.value)} placeholder="To" />
+                                <Input type="number" step="0.1" value={slab.commission_percentage} onChange={(e) => updateSlabInEditUser(i, 'commission_percentage', e.target.value)} placeholder="%" />
+                                <button type="button" onClick={() => removeSlabFromEditUser(i)} className="bg-red-500 text-white px-2 rounded text-xs">Remove</button>
+                              </div>
+                            ))}
+                          </div>
+                        ) : <p className="text-sm text-gray-500">No slabs configured</p>}
+                      </div>
+                    </>
                   )}
                 </div>
                 <div className="flex space-x-2 pt-4 border-t mt-4">
