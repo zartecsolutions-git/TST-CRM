@@ -211,6 +211,90 @@ async def delete_invoice(invoice_number: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# Bulk Sync Products from All Existing Invoices (One-time migration)
+@router.post("/sales/sync-products-from-invoices")
+async def bulk_sync_products_from_invoices():
+    """
+    One-time bulk sync: Extract all products from existing sales invoices 
+    and create them in Products Management (without duplicates)
+    """
+    try:
+        from uuid import uuid4
+        
+        # Get all sales invoices
+        all_invoices = await db.sales_invoices.find({}, {"_id": 0}).to_list(10000)
+        
+        # Track unique products and stats
+        unique_products = {}
+        products_created = 0
+        products_skipped = 0
+        
+        print(f"Processing {len(all_invoices)} invoices...")
+        
+        # Extract all unique products from invoices
+        for invoice in all_invoices:
+            items = invoice.get('items', [])
+            for item in items:
+                product_name = item.get('product_name', '').strip()
+                
+                if product_name and product_name not in unique_products:
+                    # Store first occurrence of this product
+                    unique_products[product_name] = {
+                        'name': product_name,
+                        'category': item.get('category', ''),
+                        'brand': item.get('brand', ''),
+                        'division': item.get('division', ''),
+                        'unit_price': item.get('unit_price', 0),
+                        'sales_rep_id': invoice.get('sales_rep_id', 'system')
+                    }
+        
+        print(f"Found {len(unique_products)} unique products")
+        
+        # Create products that don't exist
+        for product_name, product_data in unique_products.items():
+            # Check if product already exists
+            existing = await db.products.find_one({"name": product_name}, {"_id": 0})
+            
+            if not existing:
+                # Create new product
+                new_product = {
+                    "id": str(uuid4()),
+                    "name": product_data['name'],
+                    "category": "others",
+                    "sub_category": product_data['category'] if product_data['category'] else None,
+                    "description": "Synced from existing sales invoices",
+                    "price": product_data['unit_price'],
+                    "model": None,
+                    "specifications": None,
+                    "supplier_warranty_period": None,
+                    "purchase_date": None,
+                    "installation_date": None,
+                    "license_code": None,
+                    "serial_numbers": [],
+                    "company_id": None,
+                    "created_by": product_data['sales_rep_id'],
+                    "created_at": datetime.utcnow().isoformat(),
+                    "updated_at": datetime.utcnow().isoformat(),
+                    "warranty_finished_date": None
+                }
+                
+                await db.products.insert_one(new_product)
+                products_created += 1
+                print(f"Created product: {product_name}")
+            else:
+                products_skipped += 1
+        
+        return {
+            "message": "Bulk product sync completed",
+            "total_invoices_processed": len(all_invoices),
+            "unique_products_found": len(unique_products),
+            "products_created": products_created,
+            "products_already_existed": products_skipped
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 # REPORTS ENDPOINTS
 
 # Monthly Sales Report
