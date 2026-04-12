@@ -146,9 +146,11 @@ export default function SalesInvoices() {
     // Cascading logic: clear dependent fields when parent changes
     if (field === 'division') {
       updatedItems[index].category = '';
+      updatedItems[index].sub_category = '';  // Clear sub-category when division changes
       updatedItems[index].brand = '';
       updatedItems[index].model = '';
     } else if (field === 'category') {
+      updatedItems[index].sub_category = '';  // Clear sub-category when category changes
       updatedItems[index].brand = '';
       updatedItems[index].model = '';
     } else if (field === 'brand') {
@@ -203,7 +205,18 @@ export default function SalesInvoices() {
   const addItem = () => {
     setFormData(prev => ({
       ...prev,
-      items: [...prev.items, { product_name: '', category: '', brand: '', division: '', model: '', quantity: 1, unit_price: 0, total: 0 }]
+      items: [...prev.items, { 
+        product_name: '', 
+        part_number: '',
+        category: '', 
+        sub_category: '',
+        brand: '', 
+        division: '', 
+        model: '', 
+        quantity: 1, 
+        unit_price: 0, 
+        total: 0 
+      }]
     }));
   };
 
@@ -689,7 +702,19 @@ export default function SalesInvoices() {
                 <div className="space-y-3">
                   {formData.items.map((item, index) => (
                     <div key={index} className="border border-gray-200 rounded p-3 bg-gray-50">
-                      <div className="grid grid-cols-1 md:grid-cols-7 gap-2">
+                      <div className="grid grid-cols-1 md:grid-cols-8 gap-2">
+                        {/* Part Number - NEW FIELD */}
+                        <div>
+                          <input
+                            type="text"
+                            placeholder="Part Number"
+                            value={item.part_number || ''}
+                            onChange={(e) => handleItemChange(index, 'part_number', e.target.value)}
+                            className="w-full p-2 border border-gray-300 rounded text-sm"
+                          />
+                        </div>
+
+                        {/* Product Name with Search */}
                         <div className="md:col-span-2 relative product-dropdown-container">
                           <input
                             type="text"
@@ -719,6 +744,8 @@ export default function SalesInvoices() {
                             </div>
                           )}
                         </div>
+
+                        {/* Division */}
                         <div>
                           <select
                             value={item.division}
@@ -731,6 +758,8 @@ export default function SalesInvoices() {
                             ))}
                           </select>
                         </div>
+
+                        {/* Category */}
                         <div>
                           <select
                             value={item.category}
@@ -745,6 +774,24 @@ export default function SalesInvoices() {
                               ))}
                           </select>
                         </div>
+
+                        {/* Sub-Category - NEW FIELD */}
+                        <div>
+                          <select
+                            value={item.sub_category || ''}
+                            onChange={(e) => handleItemChange(index, 'sub_category', e.target.value)}
+                            className="w-full p-2 border border-gray-300 rounded text-sm"
+                          >
+                            <option value="">Sub-Category</option>
+                            {subcategories
+                              .filter(subcat => !item.category || subcat.parent_category === item.category)
+                              .map(subcat => (
+                                <option key={subcat.name} value={subcat.name}>{subcat.name}</option>
+                              ))}
+                          </select>
+                        </div>
+
+                        {/* Brand */}
                         <div>
                           <select
                             value={item.brand}
@@ -760,6 +807,8 @@ export default function SalesInvoices() {
                               ))}
                           </select>
                         </div>
+
+                        {/* Model */}
                         <div>
                           <select
                             value={item.model || ''}
@@ -775,6 +824,8 @@ export default function SalesInvoices() {
                               ))}
                           </select>
                         </div>
+
+                        {/* Quantity */}
                         <div>
                           <input
                             type="number"
