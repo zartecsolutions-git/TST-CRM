@@ -49,9 +49,24 @@ const Users = () => {
   const handleAddUser = async (e) => {
     e.preventDefault();
     try {
-      await api.post('/auth/register', newUser);
+      // Include commission slabs and monthly target in the request
+      const userData = {
+        ...newUser,
+        commission_slabs: newUser.commission_slabs || [],
+        monthly_sales_target: newUser.monthly_sales_target || 0
+      };
+      await api.post('/auth/register', userData);
       alert('User added successfully!');
-      setNewUser({ name: '', email: '', password: '', role: 'agent' });
+      setNewUser({ 
+        name: '', 
+        email: '', 
+        password: '', 
+        phone: '',
+        role: 'sales',
+        monthly_sales_target: 0,
+        commission_slabs: [],
+        commission_percentage: 5.0
+      });
       setShowAddForm(false);
       fetchUsers();
     } catch (error) {
@@ -124,7 +139,9 @@ const Users = () => {
         phone: editingUser.phone,
         role: editingUser.role,
         status: editingUser.status,
-        commission_percentage: editingUser.commission_percentage
+        commission_slabs: editingUser.commission_slabs || [],
+        monthly_sales_target: editingUser.monthly_sales_target || 0,
+        commission_percentage: editingUser.commission_percentage || 5.0
       });
       alert('User updated successfully!');
       setShowEditForm(false);
