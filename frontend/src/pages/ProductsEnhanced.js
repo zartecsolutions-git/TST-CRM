@@ -258,12 +258,22 @@ export default function ProductsEnhanced() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // CRITICAL: Ensure category is ALWAYS a valid enum value
+    let validCategory = formData.category;
+    const validCategories = ['industrial', 'retails', 'others'];
+    
+    if (!validCategory || !validCategories.includes(validCategory)) {
+      console.warn(`Invalid category detected: "${validCategory}". Setting to "others"`);
+      validCategory = 'others';
+    }
+    
     try {
       // Clean up formData - convert empty strings to null for optional fields
       const cleanedData = {
         name: formData.name,
         part_number: formData.part_number || null,
-        category: formData.category || 'others',  // Default to 'others' if empty
+        category: validCategory,  // ALWAYS valid
         sub_category: formData.sub_category || null,
         brand: formData.brand || null,
         division: formData.division || null,
@@ -279,6 +289,11 @@ export default function ProductsEnhanced() {
       };
       
       console.log('Submitting product data:', cleanedData);
+      console.log('Category validation:', {
+        original: formData.category,
+        validated: validCategory,
+        isValid: validCategories.includes(validCategory)
+      });
       
       if (isEditMode && selectedProduct) {
         // Update existing product
@@ -296,6 +311,7 @@ export default function ProductsEnhanced() {
       console.error('Full error:', error);
       console.error('Error response:', error.response);
       console.error('Error response data:', error.response?.data);
+      console.error('Form data at error:', formData);
       const errorDetail = error.response?.data?.detail;
       let errorMsg = 'Unknown error';
       
