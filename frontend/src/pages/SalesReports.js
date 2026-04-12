@@ -149,14 +149,16 @@ export default function SalesReports() {
       (invoice.items || []).forEach(item => {
         let matches = true;
         
-        // Filter by product name
-        if (customerProductFilters.product_name) {
-          matches = matches && item.product_name?.toLowerCase().includes(customerProductFilters.product_name.toLowerCase());
-        }
-        
-        // Filter by part number
-        if (customerProductFilters.part_number) {
-          matches = matches && item.part_number?.toLowerCase().includes(customerProductFilters.part_number.toLowerCase());
+        // Filter by product name OR part number (if either is specified)
+        if (customerProductFilters.product_name || customerProductFilters.part_number) {
+          const productNameMatch = customerProductFilters.product_name && 
+            item.product_name?.toLowerCase().includes(customerProductFilters.product_name.toLowerCase());
+          
+          const partNumberMatch = customerProductFilters.part_number && 
+            item.part_number?.toLowerCase().includes(customerProductFilters.part_number.toLowerCase());
+          
+          // Match if EITHER product name OR part number matches (OR logic)
+          matches = productNameMatch || partNumberMatch;
         }
         
         if (matches) {
@@ -188,8 +190,13 @@ export default function SalesReports() {
   };
 
   const handleProductSelect = (product) => {
-    setCustomerProductFilters(prev => ({ ...prev, product_name: product.name }));
+    setCustomerProductFilters(prev => ({ 
+      ...prev, 
+      product_name: product.name,
+      part_number: product.part_number || ''  // Auto-fill part number
+    }));
     setProductSearchTerm(product.name);
+    setPartNumberSearchTerm(product.part_number || '');  // Auto-fill part number field
     setShowProductDropdown(false);
   };
 
@@ -207,8 +214,13 @@ export default function SalesReports() {
   };
 
   const handlePartNumberSelect = (product) => {
-    setCustomerProductFilters(prev => ({ ...prev, part_number: product.part_number }));
+    setCustomerProductFilters(prev => ({ 
+      ...prev, 
+      part_number: product.part_number,
+      product_name: product.name  // Auto-fill product name
+    }));
     setPartNumberSearchTerm(product.part_number);
+    setProductSearchTerm(product.name);  // Auto-fill product name field
     setShowPartNumberDropdown(false);
   };
 
