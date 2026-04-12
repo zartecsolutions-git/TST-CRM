@@ -299,14 +299,22 @@ export default function ProductsEnhanced() {
         // Update existing product
         await api.put(`/products/${selectedProduct.id}`, cleanedData);
         alert('Product updated successfully!');
+        
+        // Reset form first
+        resetForm();
+        
+        // Wait a bit then refresh data to ensure backend has processed
+        setTimeout(() => {
+          fetchData();
+        }, 500);
       } else {
         // Create new product
         await api.post('/products', cleanedData);
         alert('Product created successfully!');
+        
+        resetForm();
+        fetchData();
       }
-      
-      resetForm();
-      fetchData();
     } catch (error) {
       console.error('Full error:', error);
       console.error('Error response:', error.response);
