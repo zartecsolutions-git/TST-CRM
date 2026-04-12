@@ -561,21 +561,23 @@ export default function ProductsEnhanced() {
                   
                   <div>
                     <label className="block text-sm font-medium mb-1">Category *</label>
-                    <SearchableSelect
+                    <select
                       value={formData.category}
-                      onChange={(val) => setFormData({
+                      onChange={(e) => setFormData({
                         ...formData, 
-                        category: val || 'others',  // Ensure never empty
+                        category: e.target.value || 'others',
                         sub_category: '',
                         brand: '',
                         model: ''
                       })}
-                      options={categories
-                        .filter(cat => !formData.division || cat.parent_division === formData.division)
-                        .map(cat => ({ value: cat.name, label: cat.name }))}
-                      placeholder="Select Category"
+                      className="w-full border rounded px-3 py-2"
                       required
-                    />
+                    >
+                      <option value="">Select Category</option>
+                      <option value="industrial">Industrial</option>
+                      <option value="retails">Retails</option>
+                      <option value="others">Others</option>
+                    </select>
                   </div>
                   
                   <div>
@@ -583,9 +585,15 @@ export default function ProductsEnhanced() {
                     <SearchableSelect
                       value={formData.sub_category}
                       onChange={(val) => setFormData({...formData, sub_category: val})}
-                      options={subcategories
-                        .filter(sub => sub.parent_category === formData.category)
-                        .map(sub => ({ value: sub.name, label: sub.name }))}
+                      options={[
+                        ...subcategories
+                          .filter(sub => sub.parent_category === formData.category)
+                          .map(sub => ({ value: sub.name, label: sub.name })),
+                        // Add current value if not in list
+                        ...(formData.sub_category && !subcategories.find(s => s.name === formData.sub_category) 
+                          ? [{ value: formData.sub_category, label: formData.sub_category }] 
+                          : [])
+                      ]}
                       placeholder="Select Sub-Category"
                       disabled={!formData.category}
                     />
@@ -596,9 +604,15 @@ export default function ProductsEnhanced() {
                     <SearchableSelect
                       value={formData.brand}
                       onChange={(val) => setFormData({...formData, brand: val, model: ''})}
-                      options={brands
-                        .filter(brand => !formData.category || brand.parent_category === formData.category)
-                        .map(brand => ({ value: brand.name, label: brand.name }))}
+                      options={[
+                        ...brands
+                          .filter(brand => !formData.category || brand.parent_category === formData.category)
+                          .map(brand => ({ value: brand.name, label: brand.name })),
+                        // Add current value if not in list
+                        ...(formData.brand && !brands.find(b => b.name === formData.brand) 
+                          ? [{ value: formData.brand, label: formData.brand }] 
+                          : [])
+                      ]}
                       placeholder="Select Brand"
                       disabled={!formData.category}
                     />
