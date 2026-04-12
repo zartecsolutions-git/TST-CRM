@@ -267,21 +267,12 @@ export default function ProductsEnhanced() {
     console.log('Brand:', formData.brand);
     console.log('Full formData:', formData);
     
-    // CRITICAL: Ensure category is ALWAYS a valid enum value
-    let validCategory = formData.category;
-    const validCategories = ['industrial', 'retails', 'others'];
-    
-    if (!validCategory || !validCategories.includes(validCategory)) {
-      console.warn(`Invalid category detected: "${validCategory}". Setting to "others"`);
-      validCategory = 'others';
-    }
-    
     try {
       // Clean up formData - convert empty strings to null for optional fields
       const cleanedData = {
         name: formData.name,
         part_number: formData.part_number || null,
-        category: validCategory,  // ALWAYS valid
+        category: formData.category || null,  // Master data category (can be null)
         sub_category: formData.sub_category || null,
         brand: formData.brand || null,
         division: formData.division || null,
@@ -297,11 +288,6 @@ export default function ProductsEnhanced() {
       };
       
       console.log('Submitting product data:', cleanedData);
-      console.log('Category validation:', {
-        original: formData.category,
-        validated: validCategory,
-        isValid: validCategories.includes(validCategory)
-      });
       
       if (isEditMode && selectedProduct) {
         // Update existing product
@@ -351,7 +337,7 @@ export default function ProductsEnhanced() {
     setFormData({
       name: '',
       part_number: '',
-      category: 'others',  // Reset to valid default
+      category: '',  // Master data - no default
       sub_category: '',
       brand: '',
       division: '',
@@ -373,7 +359,7 @@ export default function ProductsEnhanced() {
     setFormData({
       name: product.name || '',
       part_number: product.part_number || '',
-      category: product.category || 'others',
+      category: product.category || '',
       sub_category: product.sub_category || '',
       brand: product.brand || '',
       division: product.division || '',
@@ -549,7 +535,7 @@ export default function ProductsEnhanced() {
                       onChange={(val) => setFormData({
                         ...formData, 
                         division: val,
-                        category: 'others',  // Reset to valid default instead of empty string
+                        category: '',  // Clear category when division changes
                         sub_category: '',
                         brand: '',
                         model: ''
@@ -566,23 +552,26 @@ export default function ProductsEnhanced() {
                   
                   <div>
                     <label className="block text-sm font-medium mb-1">Category *</label>
-                    <select
+                    <SearchableSelect
                       value={formData.category}
-                      onChange={(e) => setFormData({
+                      onChange={(val) => setFormData({
                         ...formData, 
-                        category: e.target.value || 'others',
+                        category: val || '',
                         sub_category: '',
                         brand: '',
                         model: ''
                       })}
-                      className="w-full border rounded px-3 py-2"
+                      options={categories
+                        .filter(cat => !formData.division || cat.parent_division === formData.division)
+                        .map(cat => ({ value: cat.name, label: cat.name }))}
+                      placeholder={formData.category || "Select Category"}
                       required
-                    >
-                      <option value="">Select Category</option>
-                      <option value="industrial">Industrial</option>
-                      <option value="retails">Retails</option>
-                      <option value="others">Others</option>
-                    </select>
+                    />
+                    {formData.category && !categories.find(c => c.name === formData.category) && (
+                      <p className="text-xs text-orange-600 mt-1">
+                        ⚠️ Current: "{formData.category}" (not in master data) - Select a valid option
+                      </p>
+                    )}
                   </div>
                   
                   <div>

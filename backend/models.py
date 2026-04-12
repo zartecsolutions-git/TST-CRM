@@ -261,7 +261,7 @@ class SerialNumberAssignment(BaseModel):
 class ProductCreate(BaseModel):
     name: str
     part_number: Optional[str] = None  # Part Number for product identification
-    category: ProductCategory = ProductCategory.others
+    category: Optional[str] = None  # Changed from enum to string for master data
     sub_category: Optional[str] = None
     brand: Optional[str] = None
     division: Optional[str] = None
@@ -288,7 +288,7 @@ class Product(ProductCreate):
 class ProductUpdate(BaseModel):
     name: Optional[str] = None
     part_number: Optional[str] = None
-    category: Optional[ProductCategory] = None
+    category: Optional[str] = None  # Changed from enum to string for master data
     sub_category: Optional[str] = None
     brand: Optional[str] = None
     division: Optional[str] = None
