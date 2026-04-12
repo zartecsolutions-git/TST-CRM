@@ -25,6 +25,8 @@ const Users = () => {
     password: '',
     phone: '',
     role: 'sales',
+    monthly_sales_target: 0,
+    commission_slabs: [],
     commission_percentage: 5.0
   });
 
@@ -107,6 +109,8 @@ const Users = () => {
       phone: user.phone || '',
       role: user.role,
       status: user.status || 'active',
+      monthly_sales_target: user.monthly_sales_target || 0,
+      commission_slabs: user.commission_slabs || [],
       commission_percentage: user.commission_percentage || 5.0
     });
     setShowEditForm(true);
@@ -149,6 +153,53 @@ const Users = () => {
       case 'client': return 'bg-green-100 text-green-800';
       default: return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  // Commission Slab Management Functions
+  const addSlabToNewUser = () => {
+    setNewUser({
+      ...newUser,
+      commission_slabs: [
+        ...(newUser.commission_slabs || []),
+        { from_value: 0, to_value: 10000, commission_percentage: 2.0 }
+      ]
+    });
+  };
+
+  const removeSlabFromNewUser = (index) => {
+    setNewUser({
+      ...newUser,
+      commission_slabs: newUser.commission_slabs.filter((_, i) => i !== index)
+    });
+  };
+
+  const updateSlabInNewUser = (index, field, value) => {
+    const updatedSlabs = [...newUser.commission_slabs];
+    updatedSlabs[index][field] = parseFloat(value) || 0;
+    setNewUser({ ...newUser, commission_slabs: updatedSlabs });
+  };
+
+  const addSlabToEditUser = () => {
+    setEditingUser({
+      ...editingUser,
+      commission_slabs: [
+        ...(editingUser.commission_slabs || []),
+        { from_value: 0, to_value: 10000, commission_percentage: 2.0 }
+      ]
+    });
+  };
+
+  const removeSlabFromEditUser = (index) => {
+    setEditingUser({
+      ...editingUser,
+      commission_slabs: editingUser.commission_slabs.filter((_, i) => i !== index)
+    });
+  };
+
+  const updateSlabInEditUser = (index, field, value) => {
+    const updatedSlabs = [...editingUser.commission_slabs];
+    updatedSlabs[index][field] = parseFloat(value) || 0;
+    setEditingUser({ ...editingUser, commission_slabs: updatedSlabs });
   };
 
   return (
@@ -267,20 +318,52 @@ const Users = () => {
                   
                   {/* Commission Percentage - Only show for sales role */}
                   {newUser.role === 'sales' && (
-                    <div className="md:col-span-2">
-                      <Label>Commission % *</Label>
-                      <Input
-                        type="number"
-                        step="0.1"
-                        min="0"
-                        max="100"
-                        value={newUser.commission_percentage}
-                        onChange={(e) => setNewUser({ ...newUser, commission_percentage: parseFloat(e.target.value) || 0 })}
-                        placeholder="Enter commission percentage (e.g., 5 for 5%)"
-                        required
-                      />
-                      <p className="text-xs text-gray-500 mt-1">This commission rate will be used for all sales performance calculations</p>
-                    </div>
+                    <>
+                      <div>
+                        <Label>Monthly Sales Target (BHD)</Label>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          placeholder="e.g., 50000"
+                          value={newUser.monthly_sales_target || ''}
+                          onChange={(e) => setNewUser({...newUser, monthly_sales_target: parseFloat(e.target.value) || 0})}
+                        />
+                        <p className="text-xs text-gray-500 mt-1">Monthly target for tracking</p>
+                      </div>
+
+                      <div>
+                        <Label>Fallback Commission %</Label>
+                        <Input
+                          type="number"
+                          step="0.1"
+                          min="0"
+                          max="100"
+                          value={newUser.commission_percentage}
+                          onChange={(e) => setNewUser({ ...newUser, commission_percentage: parseFloat(e.target.value) || 0 })}
+                          placeholder="5.0"
+                        />
+                      </div>
+
+                      <div className="md:col-span-2">
+                        <div className="flex justify-between mb-2">
+                          <Label>Commission Slabs</Label>
+                          <button type="button" onClick={addSlabToNewUser} className="text-sm bg-blue-600 text-white px-3 py-1 rounded">+ Add Slab</button>
+                        </div>
+                        {newUser.commission_slabs?.length > 0 ? (
+                          <div className="space-y-2">
+                            {newUser.commission_slabs.map((slab, i) => (
+                              <div key={i} className="grid grid-cols-4 gap-2 bg-gray-50 p-2 rounded">
+                                <Input type="number" value={slab.from_value} onChange={(e) => updateSlabInNewUser(i, 'from_value', e.target.value)} placeholder="From" />
+                                <Input type="number" value={slab.to_value} onChange={(e) => updateSlabInNewUser(i, 'to_value', e.target.value)} placeholder="To" />
+                                <Input type="number" step="0.1" value={slab.commission_percentage} onChange={(e) => updateSlabInNewUser(i, 'commission_percentage', e.target.value)} placeholder="%" />
+                                <button type="button" onClick={() => removeSlabFromNewUser(i)} className="bg-red-500 text-white px-2 rounded text-xs">Remove</button>
+                              </div>
+                            ))}
+                          </div>
+                        ) : <p className="text-sm text-gray-500">No slabs configured</p>}
+                      </div>
+                    </>
                   )}
                 </div>
                 <div className="flex space-x-2 pt-4 border-t">
