@@ -518,9 +518,6 @@ export default function SalesInvoices() {
                         <div className="text-sm font-medium text-green-600">
                           BHD {rep.commission.toFixed(2)}
                         </div>
-                        <div className="text-xs text-gray-500">
-                          ({rep.commission_percentage || 5}%)
-                        </div>
                       </td>
                     </tr>
                   ))}
