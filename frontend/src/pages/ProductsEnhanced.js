@@ -259,6 +259,14 @@ export default function ProductsEnhanced() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
+    // DEBUG: Log complete form state
+    console.log('=== FORM DATA BEFORE SUBMIT ===');
+    console.log('Division:', formData.division);
+    console.log('Category:', formData.category);
+    console.log('Sub-Category:', formData.sub_category);
+    console.log('Brand:', formData.brand);
+    console.log('Full formData:', formData);
+    
     // CRITICAL: Ensure category is ALWAYS a valid enum value
     let validCategory = formData.category;
     const validCategories = ['industrial', 'retails', 'others'];
@@ -440,6 +448,7 @@ export default function ProductsEnhanced() {
     const query = searchQuery.toLowerCase();
     return (
       product.name?.toLowerCase().includes(query) ||
+      product.part_number?.toLowerCase().includes(query) ||
       product.model?.toLowerCase().includes(query) ||
       product.category?.toLowerCase().includes(query) ||
       product.sub_category?.toLowerCase().includes(query) ||
