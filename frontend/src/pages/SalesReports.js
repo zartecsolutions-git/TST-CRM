@@ -47,13 +47,19 @@ export default function SalesReports() {
   const [analysisData, setAnalysisData] = useState({ by_category: [], by_brand: [], by_division: [] });
   const [customerProductData, setCustomerProductData] = useState([]);  // NEW: Customer-Product Purchase Report
   const [invoices, setInvoices] = useState([]);  // NEW: Store all invoices for filtering
+  const [products, setProducts] = useState([]);  // NEW: Store products for dropdowns
   const [customerProductFilters, setCustomerProductFilters] = useState({
     start_date: '',
     end_date: '',
     customer_id: '',
-    product_name: ''
+    product_name: '',
+    part_number: ''
   });
   const [filteredTransactions, setFilteredTransactions] = useState([]);
+  const [productSearchTerm, setProductSearchTerm] = useState('');
+  const [partNumberSearchTerm, setPartNumberSearchTerm] = useState('');
+  const [showProductDropdown, setShowProductDropdown] = useState(false);
+  const [showPartNumberDropdown, setShowPartNumberDropdown] = useState(false);
 
   // Search states for each tab
   const [searchCustomer, setSearchCustomer] = useState('');
@@ -70,6 +76,19 @@ export default function SalesReports() {
       // Only support users are redirected
       window.location.href = '/dashboard';
     }
+    
+    // Close dropdowns when clicking outside
+    const handleClickOutside = (event) => {
+      if (!event.target.closest('.product-search-dropdown')) {
+        setShowProductDropdown(false);
+      }
+      if (!event.target.closest('.part-number-search-dropdown')) {
+        setShowPartNumberDropdown(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [user]);
 
   useEffect(() => {
@@ -86,23 +105,25 @@ export default function SalesReports() {
       // Add sales_rep_id filter for sales users
       const salesRepFilter = user?.role === 'sales' ? { sales_rep_id: user.id } : {};
       
-      const [monthly, customers, products, salesreps, analysis, invoicesData] = await Promise.all([
+      const [monthly, customers, productsReport, salesreps, analysis, invoicesData, productsList] = await Promise.all([
         api.get(`/sales/reports/monthly?year=${year}`, { params: salesRepFilter }),
         api.get('/sales/reports/customers', { params: { ...dateRange, ...salesRepFilter } }),
         api.get('/sales/reports/products', { params: { ...dateRange, ...salesRepFilter } }),
         api.get('/sales/reports/salesreps', { params: { ...dateRange, ...salesRepFilter } }),
         api.get('/sales/reports/analysis', { params: { ...dateRange, ...salesRepFilter } }),
-        api.get('/sales/invoices', { params: { ...dateRange, ...salesRepFilter } })  // NEW: Fetch invoices for customer-product report
+        api.get('/sales/invoices', { params: { ...dateRange, ...salesRepFilter } }),
+        api.get('/products')  // NEW: Fetch products master list for dropdowns
       ]);
 
       setMonthlyData(monthly.data || []);
       setCustomerData(customers.data || []);
-      setProductData(products.data || []);
+      setProductData(productsReport.data || []);
       setSalesRepData(salesreps.data || []);
       setAnalysisData(analysis.data || { by_category: [], by_brand: [], by_division: [] });
       
-      // NEW: Store invoices for filtering
+      // NEW: Store invoices and products for filtering
       setInvoices(invoicesData.data || []);
+      setProducts(productsList.data || []);
     } catch (error) {
       console.error('Failed to fetch reports:', error);
     } finally {
@@ -126,12 +147,19 @@ export default function SalesReports() {
       
       // Process items
       (invoice.items || []).forEach(item => {
-        // Filter by product
-        const productMatch = !customerProductFilters.product_name ||
-          item.product_name?.toLowerCase().includes(customerProductFilters.product_name.toLowerCase()) ||
-          item.part_number?.toLowerCase().includes(customerProductFilters.product_name.toLowerCase());
+        let matches = true;
         
-        if (productMatch) {
+        // Filter by product name
+        if (customerProductFilters.product_name) {
+          matches = matches && item.product_name?.toLowerCase().includes(customerProductFilters.product_name.toLowerCase());
+        }
+        
+        // Filter by part number
+        if (customerProductFilters.part_number) {
+          matches = matches && item.part_number?.toLowerCase().includes(customerProductFilters.part_number.toLowerCase());
+        }
+        
+        if (matches) {
           allTransactions.push({
             invoice_number: invoice.invoice_number,
             invoice_date: invoice.invoice_date,
@@ -151,6 +179,44 @@ export default function SalesReports() {
     });
     
     setFilteredTransactions(allTransactions);
+  };
+
+  // NEW: Product search handlers
+  const handleProductSearch = (value) => {
+    setProductSearchTerm(value);
+    setShowProductDropdown(true);
+  };
+
+  const handleProductSelect = (product) => {
+    setCustomerProductFilters(prev => ({ ...prev, product_name: product.name }));
+    setProductSearchTerm(product.name);
+    setShowProductDropdown(false);
+  };
+
+  const getFilteredProducts = () => {
+    if (!productSearchTerm) return products;
+    return products.filter(product =>
+      product.name?.toLowerCase().includes(productSearchTerm.toLowerCase())
+    );
+  };
+
+  // NEW: Part number search handlers
+  const handlePartNumberSearch = (value) => {
+    setPartNumberSearchTerm(value);
+    setShowPartNumberDropdown(true);
+  };
+
+  const handlePartNumberSelect = (product) => {
+    setCustomerProductFilters(prev => ({ ...prev, part_number: product.part_number }));
+    setPartNumberSearchTerm(product.part_number);
+    setShowPartNumberDropdown(false);
+  };
+
+  const getFilteredProductsByPartNumber = () => {
+    if (!partNumberSearchTerm) return products.filter(p => p.part_number);
+    return products.filter(product =>
+      product.part_number?.toLowerCase().includes(partNumberSearchTerm.toLowerCase())
+    );
   };
 
   const applyDateFilter = () => {
@@ -560,7 +626,7 @@ export default function SalesReports() {
             <div className="bg-gradient-to-r from-blue-50 to-green-50 p-6 rounded-lg mb-6 border border-gray-200">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">🔍 Filter Criteria</h3>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
                 {/* Date Range */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">From Date</label>
@@ -599,16 +665,61 @@ export default function SalesReports() {
                   </select>
                 </div>
                 
-                {/* Product Filter */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Product (Search)</label>
+                {/* Part Number Filter - NEW SEARCHABLE DROPDOWN */}
+                <div className="relative part-number-search-dropdown">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Part Number</label>
                   <input
                     type="text"
-                    placeholder="Search by name or part number..."
-                    value={customerProductFilters.product_name}
-                    onChange={(e) => setCustomerProductFilters(prev => ({ ...prev, product_name: e.target.value }))}
+                    placeholder="Search part number..."
+                    value={partNumberSearchTerm}
+                    onChange={(e) => handlePartNumberSearch(e.target.value)}
+                    onFocus={() => setShowPartNumberDropdown(true)}
                     className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
                   />
+                  {showPartNumberDropdown && getFilteredProductsByPartNumber().length > 0 && (
+                    <div className="absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                      {getFilteredProductsByPartNumber().map((product) => (
+                        <div
+                          key={product.id}
+                          onClick={() => handlePartNumberSelect(product)}
+                          className="px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm border-b border-gray-100"
+                        >
+                          <div className="font-medium text-blue-600">{product.part_number}</div>
+                          <div className="text-xs text-gray-500">{product.name}</div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                
+                {/* Product Name Filter - NEW SEARCHABLE DROPDOWN */}
+                <div className="relative product-search-dropdown">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
+                  <input
+                    type="text"
+                    placeholder="Search product name..."
+                    value={productSearchTerm}
+                    onChange={(e) => handleProductSearch(e.target.value)}
+                    onFocus={() => setShowProductDropdown(true)}
+                    className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                  />
+                  {showProductDropdown && getFilteredProducts().length > 0 && (
+                    <div className="absolute z-20 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                      {getFilteredProducts().map((product) => (
+                        <div
+                          key={product.id}
+                          onClick={() => handleProductSelect(product)}
+                          className="px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm border-b border-gray-100"
+                        >
+                          <div className="font-medium text-gray-900">{product.name}</div>
+                          <div className="text-xs text-gray-500">
+                            {product.part_number && `Part #: ${product.part_number}`}
+                            {product.category && ` • ${product.category}`}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
               
@@ -626,8 +737,11 @@ export default function SalesReports() {
                       start_date: '',
                       end_date: '',
                       customer_id: '',
-                      product_name: ''
+                      product_name: '',
+                      part_number: ''
                     });
+                    setProductSearchTerm('');
+                    setPartNumberSearchTerm('');
                     setFilteredTransactions([]);
                   }}
                   variant="outline"
