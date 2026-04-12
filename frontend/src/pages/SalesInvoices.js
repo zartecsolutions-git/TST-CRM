@@ -35,7 +35,18 @@ export default function SalesInvoices() {
     customer_name: '',
     sales_rep_id: user?.id || '',
     sales_rep_name: user?.name || '',
-    items: [{ product_name: '', category: '', brand: '', division: '', model: '', quantity: 1, unit_price: 0, total: 0 }],
+    items: [{ 
+      product_name: '', 
+      part_number: '',  // NEW
+      category: '', 
+      sub_category: '',  // NEW
+      brand: '', 
+      division: '', 
+      model: '', 
+      quantity: 1, 
+      unit_price: 0, 
+      total: 0 
+    }],
     subtotal: 0,
     vat_percentage: 10,
     vat_amount: 0,
@@ -157,10 +168,14 @@ export default function SalesInvoices() {
     updatedItems[index] = {
       ...updatedItems[index],
       product_name: product.name,
+      part_number: product.part_number || '',  // NEW
       category: product.category || '',
+      sub_category: product.sub_category || '',  // NEW
       brand: product.brand || '',
       division: product.division || '',
-      model: product.model || ''
+      model: product.model || '',
+      unit_price: product.price || 0,
+      total: (product.price || 0) * updatedItems[index].quantity
     };
     setFormData(prev => ({ ...prev, items: updatedItems }));
     setShowProductDropdown(prev => ({ ...prev, [index]: false }));
@@ -240,7 +255,18 @@ export default function SalesInvoices() {
       customer_name: '',
       sales_rep_id: user?.id || '',
       sales_rep_name: user?.name || '',
-      items: [{ product_name: '', category: '', brand: '', division: '', model: '', quantity: 1, unit_price: 0, total: 0 }],
+      items: [{ 
+        product_name: '', 
+        part_number: '',  // NEW
+        category: '', 
+        sub_category: '',  // NEW
+        brand: '', 
+        division: '', 
+        model: '', 
+        quantity: 1, 
+        unit_price: 0, 
+        total: 0 
+      }],
       subtotal: 0,
       vat_percentage: 10,
       vat_amount: 0,

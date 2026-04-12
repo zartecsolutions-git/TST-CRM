@@ -16,7 +16,9 @@ db = client[os.environ.get('DB_NAME', 'crm_db')]
 # Pydantic Models
 class InvoiceItem(BaseModel):
     product_name: str
+    part_number: Optional[str] = ""  # NEW: Part number linked to product
     category: Optional[str] = ""
+    sub_category: Optional[str] = ""  # NEW: Sub-category from master data
     brand: Optional[str] = ""
     division: Optional[str] = ""
     quantity: float
