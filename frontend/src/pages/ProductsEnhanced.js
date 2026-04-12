@@ -557,6 +557,11 @@ export default function ProductsEnhanced() {
                       options={divisions.map(div => ({ value: div.name, label: div.name }))}
                       placeholder="Select Division"
                     />
+                    {formData.division && !divisions.find(d => d.name === formData.division) && (
+                      <p className="text-xs text-orange-600 mt-1">
+                        ⚠️ Current: "{formData.division}" (not in master data) - Please select a valid option
+                      </p>
+                    )}
                   </div>
                   
                   <div>
@@ -585,18 +590,17 @@ export default function ProductsEnhanced() {
                     <SearchableSelect
                       value={formData.sub_category}
                       onChange={(val) => setFormData({...formData, sub_category: val})}
-                      options={[
-                        ...subcategories
-                          .filter(sub => sub.parent_category === formData.category)
-                          .map(sub => ({ value: sub.name, label: sub.name })),
-                        // Add current value if not in list
-                        ...(formData.sub_category && !subcategories.find(s => s.name === formData.sub_category) 
-                          ? [{ value: formData.sub_category, label: formData.sub_category }] 
-                          : [])
-                      ]}
-                      placeholder="Select Sub-Category"
+                      options={subcategories
+                        .filter(sub => sub.parent_category === formData.category)
+                        .map(sub => ({ value: sub.name, label: sub.name }))}
+                      placeholder={formData.sub_category || "Select Sub-Category"}
                       disabled={!formData.category}
                     />
+                    {formData.sub_category && !subcategories.find(s => s.name === formData.sub_category) && (
+                      <p className="text-xs text-orange-600 mt-1">
+                        Current: "{formData.sub_category}" (not in master data) - Please select a valid option
+                      </p>
+                    )}
                   </div>
                   
                   <div>
