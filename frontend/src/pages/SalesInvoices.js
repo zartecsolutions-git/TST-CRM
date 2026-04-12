@@ -21,6 +21,8 @@ export default function SalesInvoices() {
   const [editingInvoice, setEditingInvoice] = useState(null);
   const [productSearchTerm, setProductSearchTerm] = useState({});
   const [showProductDropdown, setShowProductDropdown] = useState({});
+  const [partNumberSearchTerm, setPartNumberSearchTerm] = useState({});  // NEW: For part number search
+  const [showPartNumberDropdown, setShowPartNumberDropdown] = useState({});  // NEW: For part number dropdown
   const [showExcelImport, setShowExcelImport] = useState(false);
   const [expandedInvoice, setExpandedInvoice] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -68,6 +70,9 @@ export default function SalesInvoices() {
     const handleClickOutside = (event) => {
       if (!event.target.closest('.product-dropdown-container')) {
         setShowProductDropdown({});
+      }
+      if (!event.target.closest('.part-number-dropdown-container')) {
+        setShowPartNumberDropdown({});
       }
     };
     
@@ -200,6 +205,43 @@ export default function SalesInvoices() {
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (product.part_number && product.part_number.toLowerCase().includes(searchTerm.toLowerCase()))  // NEW: Search by part number
     );
+  };
+
+  // NEW: Handler for Part Number search
+  const handlePartNumberSearch = (index, value) => {
+    setPartNumberSearchTerm(prev => ({ ...prev, [index]: value }));
+    handleItemChange(index, 'part_number', value);
+    setShowPartNumberDropdown(prev => ({ ...prev, [index]: true }));
+  };
+
+  // NEW: Get filtered products by part number
+  const getFilteredProductsByPartNumber = (index) => {
+    const searchTerm = partNumberSearchTerm[index] || '';
+    if (!searchTerm) return products.filter(p => p.part_number); // Only show products with part numbers
+    return products.filter(product =>
+      product.part_number && product.part_number.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  };
+
+  // NEW: Handler for Part Number selection
+  const handlePartNumberSelect = (index, product) => {
+    const updatedItems = [...formData.items];
+    updatedItems[index] = {
+      ...updatedItems[index],
+      part_number: product.part_number || '',
+      product_name: product.name,
+      category: product.category || '',
+      sub_category: product.sub_category || '',
+      brand: product.brand || '',
+      division: product.division || '',
+      model: product.model || '',
+      unit_price: product.price || 0,
+      total: (product.price || 0) * updatedItems[index].quantity
+    };
+    setFormData(prev => ({ ...prev, items: updatedItems }));
+    setShowPartNumberDropdown(prev => ({ ...prev, [index]: false }));
+    setPartNumberSearchTerm(prev => ({ ...prev, [index]: product.part_number }));
+    setProductSearchTerm(prev => ({ ...prev, [index]: product.name }));  // Also update product name search term
   };
 
   const addItem = () => {
@@ -703,15 +745,34 @@ export default function SalesInvoices() {
                   {formData.items.map((item, index) => (
                     <div key={index} className="border border-gray-200 rounded p-3 bg-gray-50">
                       <div className="grid grid-cols-1 md:grid-cols-8 gap-2">
-                        {/* Part Number - NEW FIELD */}
-                        <div>
+                        {/* Part Number - SEARCHABLE FIELD */}
+                        <div className="relative part-number-dropdown-container">
                           <input
                             type="text"
                             placeholder="Part Number"
-                            value={item.part_number || ''}
-                            onChange={(e) => handleItemChange(index, 'part_number', e.target.value)}
+                            value={partNumberSearchTerm[index] || item.part_number || ''}
+                            onChange={(e) => handlePartNumberSearch(index, e.target.value)}
+                            onFocus={() => setShowPartNumberDropdown(prev => ({ ...prev, [index]: true }))}
                             className="w-full p-2 border border-gray-300 rounded text-sm"
                           />
+                          {showPartNumberDropdown[index] && getFilteredProductsByPartNumber(index).length > 0 && (
+                            <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                              {getFilteredProductsByPartNumber(index).map((product) => (
+                                <div
+                                  key={product.id}
+                                  onClick={() => handlePartNumberSelect(index, product)}
+                                  className="px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm border-b border-gray-100"
+                                >
+                                  <div className="font-medium">{product.part_number}</div>
+                                  <div className="text-xs text-gray-500">
+                                    {product.name}
+                                    {product.category && ` • ${product.category}`}
+                                    {product.brand && ` • ${product.brand}`}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
 
                         {/* Product Name with Search */}
