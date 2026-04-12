@@ -457,10 +457,21 @@ async def get_product_sales_report(
         
         results = await db.sales_invoices.aggregate(pipeline).to_list(1000)
         
+        # Get part numbers from products collection
+        product_names = [r["_id"] for r in results]
+        products = await db.products.find(
+            {"name": {"$in": product_names}},
+            {"_id": 0, "name": 1, "part_number": 1}
+        ).to_list(1000)
+        
+        # Create a map of product name to part number
+        product_map = {p["name"]: p.get("part_number", "") for p in products}
+        
         formatted_results = []
         for r in results:
             formatted_results.append({
                 "product_name": r["_id"],
+                "part_number": product_map.get(r["_id"], ""),
                 "category": r.get("category", ""),
                 "brand": r.get("brand", ""),
                 "division": r.get("division", ""),

@@ -32,6 +32,7 @@ export default function ProductsEnhanced() {
   
   const [formData, setFormData] = useState({
     name: '',
+    part_number: '',
     category: '',
     sub_category: '',
     brand: '',
@@ -302,6 +303,7 @@ export default function ProductsEnhanced() {
     setSelectedProduct(null);
     setFormData({
       name: '',
+      part_number: '',
       category: '',
       sub_category: '',
       brand: '',
@@ -323,6 +325,7 @@ export default function ProductsEnhanced() {
     setIsEditMode(true);
     setFormData({
       name: product.name || '',
+      part_number: product.part_number || '',
       category: product.category || 'others',
       sub_category: product.sub_category || '',
       description: product.description || '',
@@ -475,6 +478,17 @@ export default function ProductsEnhanced() {
                       value={formData.name}
                       onChange={(e) => setFormData({...formData, name: e.target.value})}
                       className="w-full border rounded px-3 py-2"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Part Number</label>
+                    <input
+                      type="text"
+                      value={formData.part_number}
+                      onChange={(e) => setFormData({...formData, part_number: e.target.value})}
+                      className="w-full border rounded px-3 py-2"
+                      placeholder="e.g., PN-12345"
                     />
                   </div>
                   

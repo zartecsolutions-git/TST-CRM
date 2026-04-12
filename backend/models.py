@@ -260,6 +260,7 @@ class SerialNumberAssignment(BaseModel):
 # Product Models
 class ProductCreate(BaseModel):
     name: str
+    part_number: Optional[str] = None  # Part Number for product identification
     category: ProductCategory = ProductCategory.others
     sub_category: Optional[str] = None
     description: Optional[str] = None
@@ -284,6 +285,7 @@ class Product(ProductCreate):
 
 class ProductUpdate(BaseModel):
     name: Optional[str] = None
+    part_number: Optional[str] = None
     category: Optional[ProductCategory] = None
     sub_category: Optional[str] = None
     description: Optional[str] = None

@@ -106,7 +106,8 @@ export default function SalesReports() {
   );
 
   const filteredProductData = productData.filter(product =>
-    product.product_name?.toLowerCase().includes(searchProduct.toLowerCase())
+    product.product_name?.toLowerCase().includes(searchProduct.toLowerCase()) ||
+    product.part_number?.toLowerCase().includes(searchProduct.toLowerCase())
   );
 
   const filteredSalesRepData = salesRepData.filter(rep =>
@@ -420,7 +421,7 @@ export default function SalesReports() {
             <div className="mb-4">
               <input
                 type="text"
-                placeholder="🔍 Search products..."
+                placeholder="🔍 Search products by name or part number..."
                 value={searchProduct}
                 onChange={(e) => setSearchProduct(e.target.value)}
                 className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -437,6 +438,7 @@ export default function SalesReports() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Part Number</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product Name</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Brand</th>
@@ -448,6 +450,7 @@ export default function SalesReports() {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredProductData.map((row, idx) => (
                     <tr key={idx}>
+                      <td className="px-4 py-3 text-sm font-medium text-blue-600">{row.part_number || '-'}</td>
                       <td className="px-4 py-3 text-sm font-medium text-gray-900">{row.product_name}</td>
                       <td className="px-4 py-3 text-sm text-gray-600">{row.category || '-'}</td>
                       <td className="px-4 py-3 text-sm text-gray-600">{row.brand || '-'}</td>
