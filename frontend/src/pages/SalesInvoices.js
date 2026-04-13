@@ -98,7 +98,7 @@ export default function SalesInvoices() {
       
       setInvoices(invoicesRes.data || []);
       setCustomers(customersRes.data || []);
-      setSalesReps(usersRes.data.filter(u => u.role === 'sales' || u.role === 'admin') || []);
+      setSalesReps(usersRes.data || []);  // Show ALL users (admin, sales, support)
       setCategories(categoriesRes.data || []);
       setSubcategories(subcategoriesRes.data || []);  // NEW
       setBrands(brandsRes.data || []);
