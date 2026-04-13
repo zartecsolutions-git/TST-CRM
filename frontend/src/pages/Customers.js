@@ -8,16 +8,19 @@ const API_URL = process.env.REACT_APP_BACKEND_URL;
 export default function Customers() {
   const { user } = useAuth(); // Use AuthContext instead of localStorage
   const [customers, setCustomers] = useState([]);
+  const [divisions, setDivisions] = useState([]);  // NEW: For division dropdown
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [formData, setFormData] = useState({
-    name: '', email: '', phone: '', address: '', region: '', business_vertical: '', contact_person: ''
+    name: '', email: '', phone: '', address: '', region: '', business_vertical: '', contact_person: '', 
+    vat_reg_no: '', cr_no: '', division: ''  // NEW: Added new fields
   });
   const [editFormData, setEditFormData] = useState({
-    name: '', email: '', phone: '', address: '', region: '', business_vertical: '', contact_person: ''
+    name: '', email: '', phone: '', address: '', region: '', business_vertical: '', contact_person: '',
+    vat_reg_no: '', cr_no: '', division: ''  // NEW: Added new fields
   });
 
   const token = localStorage.getItem('token');
@@ -25,8 +28,20 @@ export default function Customers() {
   useEffect(() => { 
     console.log('Current user in Customers page:', user);
     console.log('User role:', user?.role);
-    fetchCustomers(); 
+    fetchCustomers();
+    fetchDivisions();  // NEW: Fetch divisions for dropdown
   }, [user]);
+
+  const fetchDivisions = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/api/master-data/divisions`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setDivisions(response.data || []);
+    } catch (error) {
+      console.error('Error fetching divisions:', error);
+    }
+  };
 
   const fetchCustomers = async () => {
     try {
@@ -49,7 +64,7 @@ export default function Customers() {
       });
       fetchCustomers();
       setShowForm(false);
-      setFormData({ name: '', email: '', phone: '', address: '', region: '', business_vertical: '', contact_person: '' });
+      setFormData({ name: '', email: '', phone: '', address: '', region: '', business_vertical: '', contact_person: '', vat_reg_no: '', cr_no: '', division: '' });
       alert('Customer created successfully!');
     } catch (error) {
       alert(error.response?.data?.detail || 'Error saving customer');
@@ -162,8 +177,11 @@ export default function Customers() {
                   <div><label className="block text-sm mb-1 font-medium">Email *</label><input type="email" required value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="mobile-input" data-testid="customer-email-input" /></div>
                   <div><label className="block text-sm mb-1 font-medium">Phone</label><input type="tel" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className="mobile-input" data-testid="customer-phone-input" /></div>
                   <div><label className="block text-sm mb-1 font-medium">Contact Person</label><input type="text" value={formData.contact_person} onChange={(e) => setFormData({...formData, contact_person: e.target.value})} className="mobile-input" data-testid="customer-contact-input" /></div>
+                  <div><label className="block text-sm mb-1 font-medium">VAT REG NO.</label><input type="text" value={formData.vat_reg_no} onChange={(e) => setFormData({...formData, vat_reg_no: e.target.value})} className="mobile-input" data-testid="customer-vat-input" placeholder="e.g., BH123456789" /></div>
+                  <div><label className="block text-sm mb-1 font-medium">CR NO.</label><input type="text" value={formData.cr_no} onChange={(e) => setFormData({...formData, cr_no: e.target.value})} className="mobile-input" data-testid="customer-cr-input" placeholder="e.g., CR-12345" /></div>
                   <div><label className="block text-sm mb-1 font-medium">Region</label><input type="text" value={formData.region} onChange={(e) => setFormData({...formData, region: e.target.value})} className="mobile-input" data-testid="customer-region-input" /></div>
                   <div><label className="block text-sm mb-1 font-medium">Business Vertical</label><input type="text" value={formData.business_vertical} onChange={(e) => setFormData({...formData, business_vertical: e.target.value})} className="mobile-input" data-testid="customer-business-input" /></div>
+                  <div><label className="block text-sm mb-1 font-medium">Customer Division</label><select value={formData.division} onChange={(e) => setFormData({...formData, division: e.target.value})} className="mobile-input" data-testid="customer-division-select"><option value="">Select Division</option>{divisions.map(div => (<option key={div.name} value={div.name}>{div.name}</option>))}</select></div>
                 </div>
                 <div className="mt-4"><label className="block text-sm mb-1 font-medium">Address</label><textarea value={formData.address} onChange={(e) => setFormData({...formData, address: e.target.value})} className="mobile-input" rows="2" data-testid="customer-address-input" /></div>
               </form>
@@ -186,8 +204,11 @@ export default function Customers() {
                   <div><label className="block text-sm mb-1">Email *</label><input type="email" required value={editFormData.email} onChange={(e) => setEditFormData({...editFormData, email: e.target.value})} className="w-full border rounded px-3 py-2" /></div>
                   <div><label className="block text-sm mb-1">Phone</label><input type="tel" value={editFormData.phone} onChange={(e) => setEditFormData({...editFormData, phone: e.target.value})} className="w-full border rounded px-3 py-2" /></div>
                   <div><label className="block text-sm mb-1">Contact Person</label><input type="text" value={editFormData.contact_person} onChange={(e) => setEditFormData({...editFormData, contact_person: e.target.value})} className="w-full border rounded px-3 py-2" /></div>
+                  <div><label className="block text-sm mb-1">VAT REG NO.</label><input type="text" value={editFormData.vat_reg_no} onChange={(e) => setEditFormData({...editFormData, vat_reg_no: e.target.value})} className="w-full border rounded px-3 py-2" placeholder="e.g., BH123456789" /></div>
+                  <div><label className="block text-sm mb-1">CR NO.</label><input type="text" value={editFormData.cr_no} onChange={(e) => setEditFormData({...editFormData, cr_no: e.target.value})} className="w-full border rounded px-3 py-2" placeholder="e.g., CR-12345" /></div>
                   <div><label className="block text-sm mb-1">Region</label><input type="text" value={editFormData.region} onChange={(e) => setEditFormData({...editFormData, region: e.target.value})} className="w-full border rounded px-3 py-2" /></div>
                   <div><label className="block text-sm mb-1">Business Vertical</label><input type="text" value={editFormData.business_vertical} onChange={(e) => setEditFormData({...editFormData, business_vertical: e.target.value})} className="w-full border rounded px-3 py-2" /></div>
+                  <div><label className="block text-sm mb-1">Customer Division</label><select value={editFormData.division} onChange={(e) => setEditFormData({...editFormData, division: e.target.value})} className="w-full border rounded px-3 py-2"><option value="">Select Division</option>{divisions.map(div => (<option key={div.name} value={div.name}>{div.name}</option>))}</select></div>
                 </div>
                 <div><label className="block text-sm mb-1">Address</label><textarea value={editFormData.address} onChange={(e) => setEditFormData({...editFormData, address: e.target.value})} className="w-full border rounded px-3 py-2" rows="2" /></div>
                 <div className="flex gap-2 justify-end">

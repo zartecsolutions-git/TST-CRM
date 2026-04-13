@@ -221,6 +221,9 @@ class CustomerCreate(BaseModel):
     region: Optional[str] = None
     business_vertical: Optional[str] = None
     contact_person: Optional[str] = None
+    vat_reg_no: Optional[str] = None  # NEW: VAT Registration Number
+    cr_no: Optional[str] = None  # NEW: Commercial Registration Number
+    division: Optional[str] = None  # NEW: Customer Division (linked to master data)
 
 class Customer(CustomerCreate):
     model_config = ConfigDict(extra="ignore")
@@ -237,6 +240,9 @@ class CustomerUpdate(BaseModel):
     region: Optional[str] = None
     business_vertical: Optional[str] = None
     contact_person: Optional[str] = None
+    vat_reg_no: Optional[str] = None  # NEW
+    cr_no: Optional[str] = None  # NEW
+    division: Optional[str] = None  # NEW
 
 class ProductCategory(str, Enum):
     industrial = "industrial"
