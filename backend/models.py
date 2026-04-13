@@ -393,6 +393,31 @@ class CompanyUpdate(BaseModel):
     tax_id: Optional[str] = None
     tax_percentage: Optional[float] = None
     address: Optional[str] = None
+
+# Payment Models
+class PaymentCreate(BaseModel):
+    invoice_number: str
+    customer_name: str
+    invoice_amount: float
+    received_amount: float
+    received_date: str  # Date in YYYY-MM-DD format
+    payment_mode: str  # Cash, Cheque, Bank Transfer
+    payment_status: str  # Full, Partial
+    balance_amount: float
+
+class Payment(PaymentCreate):
+    model_config = ConfigDict(extra="ignore")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    created_by: str
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class PaymentUpdate(BaseModel):
+    received_amount: Optional[float] = None
+    received_date: Optional[str] = None
+    payment_mode: Optional[str] = None
+    payment_status: Optional[str] = None
+    balance_amount: Optional[float] = None
     phone: Optional[str] = None
     email: Optional[EmailStr] = None
     logo_url: Optional[str] = None

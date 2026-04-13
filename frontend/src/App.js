@@ -19,6 +19,7 @@ import CompanySettings from './pages/CompanySettings';
 import Reports from './pages/Reports';
 import SalesInvoices from './pages/SalesInvoices';
 import SalesReports from './pages/SalesReports';
+import Payments from './pages/Payments';
 import MasterData from './pages/MasterData';
 import '@/App.css';
 import './mobile.css';
@@ -252,6 +253,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <LocationTracking />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/payments"
+              element={
+                <ProtectedRoute>
+                  <Payments />
                 </ProtectedRoute>
               }
             />

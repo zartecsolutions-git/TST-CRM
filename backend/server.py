@@ -21,7 +21,8 @@ from routes import (
     geofence_routes,
     dashboard_routes,
     sales_routes,
-    master_data_routes
+    master_data_routes,
+    payment_routes
 )
 
 ROOT_DIR = Path(__file__).parent
@@ -87,6 +88,7 @@ app.include_router(geofence_routes.router, prefix="/api")
 app.include_router(dashboard_routes.router, prefix="/api")
 app.include_router(sales_routes.router, prefix="/api")
 app.include_router(master_data_routes.router, prefix="/api")
+app.include_router(payment_routes.router, prefix="/api")
 
 # ============================================================================
 # MIDDLEWARE
