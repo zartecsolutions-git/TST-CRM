@@ -600,7 +600,7 @@ export default function SalesInvoices() {
                       Invoices
                     </th>
                     <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Avg Invoice
+                      Overdue Amount
                     </th>
                     <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Commission
@@ -628,8 +628,8 @@ export default function SalesInvoices() {
                         <div className="text-sm text-gray-900">{rep.invoice_count}</div>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-right">
-                        <div className="text-sm text-gray-600">
-                          BHD {(rep.total_sales / rep.invoice_count).toFixed(2)}
+                        <div className="text-sm font-semibold text-red-600">
+                          BHD {(rep.overdue_amount || 0).toFixed(2)}
                         </div>
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-right">
@@ -650,7 +650,9 @@ export default function SalesInvoices() {
                       <td className="px-4 py-3 text-right text-sm font-bold text-gray-900">
                         {salesPerformance.reduce((sum, rep) => sum + rep.invoice_count, 0)}
                       </td>
-                      <td className="px-4 py-3"></td>
+                      <td className="px-4 py-3 text-right text-sm font-bold text-red-600">
+                        BHD {salesPerformance.reduce((sum, rep) => sum + (rep.overdue_amount || 0), 0).toFixed(2)}
+                      </td>
                       <td className="px-4 py-3 text-right text-sm font-bold text-green-600">
                         BHD {salesPerformance.reduce((sum, rep) => sum + rep.commission, 0).toFixed(2)}
                       </td>

@@ -507,6 +507,10 @@ async def get_salesrep_performance_report(
         if sales_rep_id:
             match_stage["sales_rep_id"] = sales_rep_id
         
+        # Calculate overdue invoices (30+ days old and not fully paid)
+        from datetime import datetime, timezone, timedelta
+        thirty_days_ago = (datetime.now(timezone.utc) - timedelta(days=30)).strftime("%Y-%m-%d")
+        
         pipeline = [
             {"$match": match_stage} if match_stage else {"$match": {}},
             {
@@ -514,7 +518,21 @@ async def get_salesrep_performance_report(
                     "_id": "$sales_rep_id",
                     "sales_rep_name": {"$first": "$sales_rep_name"},
                     "total_sales": {"$sum": "$total_amount"},
-                    "invoice_count": {"$sum": 1}
+                    "invoice_count": {"$sum": 1},
+                    "overdue_amount": {
+                        "$sum": {
+                            "$cond": [
+                                {
+                                    "$and": [
+                                        {"$lt": ["$invoice_date", thirty_days_ago]},
+                                        {"$ne": ["$payment_status", "Paid"]}
+                                    ]
+                                },
+                                "$total_amount",
+                                0
+                            ]
+                        }
+                    }
                 }
             },
             {"$sort": {"total_sales": -1}}
@@ -565,6 +583,7 @@ async def get_salesrep_performance_report(
                 "sales_rep_name": r["sales_rep_name"],
                 "total_sales": round(total_sales, 2),
                 "invoice_count": r["invoice_count"],
+                "overdue_amount": round(r.get("overdue_amount", 0), 2),
                 "monthly_target": monthly_target,
                 "achievement_percentage": achievement_pct,
                 "commission": commission
