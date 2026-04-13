@@ -3,16 +3,16 @@ from motor.motor_asyncio import AsyncIOMotorDatabase
 from typing import List
 from datetime import datetime, timezone
 import os
-from ..models import Payment, PaymentCreate, PaymentUpdate
-from ..auth import get_current_user, get_db
+from models import Payment, PaymentCreate, PaymentUpdate
+from auth import get_current_user
+from utils.dependencies import db
 
 router = APIRouter()
 
 @router.post("/payments", response_model=Payment)
 async def create_payment(
     payment: PaymentCreate,
-    current_user: dict = Depends(get_current_user),
-    db: AsyncIOMotorDatabase = Depends(get_db)
+    current_user: dict = Depends(get_current_user)
 ):
     """Create a new payment record"""
     try:
@@ -48,8 +48,7 @@ async def create_payment(
 
 @router.get("/payments", response_model=List[Payment])
 async def get_payments(
-    current_user: dict = Depends(get_current_user),
-    db: AsyncIOMotorDatabase = Depends(get_db)
+    current_user: dict = Depends(get_current_user)
 ):
     """Get all payments"""
     try:
@@ -61,8 +60,7 @@ async def get_payments(
 @router.get("/payments/{payment_id}", response_model=Payment)
 async def get_payment(
     payment_id: str,
-    current_user: dict = Depends(get_current_user),
-    db: AsyncIOMotorDatabase = Depends(get_db)
+    current_user: dict = Depends(get_current_user)
 ):
     """Get a specific payment"""
     try:
@@ -79,8 +77,7 @@ async def get_payment(
 async def update_payment(
     payment_id: str,
     payment_update: PaymentUpdate,
-    current_user: dict = Depends(get_current_user),
-    db: AsyncIOMotorDatabase = Depends(get_db)
+    current_user: dict = Depends(get_current_user)
 ):
     """Update a payment"""
     try:
@@ -121,8 +118,7 @@ async def update_payment(
 @router.delete("/payments/{payment_id}")
 async def delete_payment(
     payment_id: str,
-    current_user: dict = Depends(get_current_user),
-    db: AsyncIOMotorDatabase = Depends(get_db)
+    current_user: dict = Depends(get_current_user)
 ):
     """Delete a payment"""
     try:
