@@ -492,6 +492,11 @@ export default function SalesInvoices() {
     }
     
     return matchesSearch && matchesStatus && matchesDate;
+  }).sort((a, b) => {
+    // Sort by invoice_number descending (newest/highest first)
+    const numA = parseInt(a.invoice_number) || 0;
+    const numB = parseInt(b.invoice_number) || 0;
+    return numB - numA;
   });
 
   const clearFilters = () => {

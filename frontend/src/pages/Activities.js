@@ -401,6 +401,11 @@ const Activities = () => {
       invoiceNumber.includes(query) ||
       workOrderNumber.includes(query)
     );
+  }).sort((a, b) => {
+    // Sort by created_at descending (newest first)
+    const dateA = new Date(a.created_at || a.updated_at || 0);
+    const dateB = new Date(b.created_at || b.updated_at || 0);
+    return dateB - dateA;
   });
 
   const isAdmin = currentUser?.role === 'admin';
