@@ -46,7 +46,13 @@ export default function Payments() {
       const response = await axios.get(`${API_URL}/api/sales/invoices`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setInvoices(response.data || []);
+      // Filter invoices based on user role
+      let filteredInvoices = response.data || [];
+      if (user?.role === 'sales' || user?.role === 'support') {
+        // Show only their own invoices
+        filteredInvoices = filteredInvoices.filter(inv => inv.sales_rep_id === user.id);
+      }
+      setInvoices(filteredInvoices);
     } catch (error) {
       console.error('Error fetching invoices:', error);
     }
@@ -106,18 +112,31 @@ export default function Payments() {
     inv.customer_name.toLowerCase().includes(invoiceSearch.toLowerCase())
   ).filter(inv => inv.payment_status !== 'Paid');  // Only show unpaid/partially paid invoices
 
-  const filteredPayments = payments.filter(payment =>
-    payment.invoice_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    payment.customer_name.toLowerCase().includes(searchQuery.toLowerCase())
-  ).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  const filteredPayments = payments.filter(payment => {
+    // Role-based filtering: Sales/Support see only payments for their invoices
+    if (user?.role === 'sales' || user?.role === 'support') {
+      const userInvoiceNumbers = invoices.map(inv => inv.invoice_number);
+      if (!userInvoiceNumbers.includes(payment.invoice_number)) {
+        return false;
+      }
+    }
+    
+    // Search filter
+    return (
+      payment.invoice_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      payment.customer_name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
   return (
     <div className="p-4">
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">💳 Payments</h1>
-        <button onClick={() => setShowForm(true)} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-          + Record Payment
-        </button>
+        <h1 className="text-2xl font-bold">💳 {user?.role === 'admin' ? 'Payments' : 'My Invoice Payments'}</h1>
+        {user?.role === 'admin' && (
+          <button onClick={() => setShowForm(true)} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+            + Record Payment
+          </button>
+        )}
       </div>
 
       {/* Payment Form Modal */}
