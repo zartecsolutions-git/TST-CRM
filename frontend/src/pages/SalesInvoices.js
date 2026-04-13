@@ -499,6 +499,26 @@ export default function SalesInvoices() {
     return numB - numA;
   });
 
+  // Calculate overdue status for an invoice
+  const getOverdueInfo = (invoice) => {
+    const invoiceDate = new Date(invoice.invoice_date);
+    const today = new Date();
+    const daysDiff = Math.floor((today - invoiceDate) / (1000 * 60 * 60 * 24));
+    
+    // Consider overdue if more than 30 days and not fully paid
+    if (daysDiff > 30 && invoice.payment_status !== 'Paid') {
+      return {
+        isOverdue: true,
+        overdueDays: daysDiff - 30  // Days past the 30-day period
+      };
+    }
+    
+    return {
+      isOverdue: false,
+      overdueDays: 0
+    };
+  };
+
   const clearFilters = () => {
     setSearchTerm('');
     setFilterStatus('all');
@@ -1133,6 +1153,7 @@ export default function SalesInvoices() {
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sales Rep</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Overdue</th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                   </tr>
                 </thead>
@@ -1158,6 +1179,19 @@ export default function SalesInvoices() {
                           }`}>
                             {invoice.payment_status}
                           </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          {(() => {
+                            const overdueInfo = getOverdueInfo(invoice);
+                            if (overdueInfo.isOverdue) {
+                              return (
+                                <span className="px-2 py-1 text-xs rounded-full bg-red-100 text-red-800 font-semibold">
+                                  ⚠️ {overdueInfo.overdueDays} days overdue
+                                </span>
+                              );
+                            }
+                            return <span className="text-xs text-gray-400">-</span>;
+                          })()}
                         </td>
                         <td className="px-4 py-3 text-sm" onClick={(e) => e.stopPropagation()}>
                           <div className="flex gap-2">
@@ -1190,7 +1224,7 @@ export default function SalesInvoices() {
                       {/* Expandable Invoice Details */}
                       {expandedInvoice === invoice.invoice_number && (
                         <tr>
-                          <td colSpan="8" className="px-4 py-4 bg-gray-50">
+                          <td colSpan="9" className="px-4 py-4 bg-gray-50">
                             <div className="space-y-4">
                               <div className="flex justify-between items-start">
                                 <div>
