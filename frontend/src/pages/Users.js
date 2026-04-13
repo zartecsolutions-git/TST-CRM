@@ -333,8 +333,8 @@ const Users = () => {
                     </select>
                   </div>
                   
-                  {/* Commission Percentage - Only show for sales role */}
-                  {newUser.role === 'sales' && (
+                  {/* Commission Percentage - Show for sales and support roles */}
+                  {(newUser.role === 'sales' || newUser.role === 'support') && (
                     <>
                       <div className="md:col-span-2">
                         <Label>Monthly Sales Target (BHD)</Label>
@@ -442,8 +442,8 @@ const Users = () => {
                     </select>
                   </div>
                   
-                  {/* Commission Slabs - Only show for sales role */}
-                  {editingUser.role === 'sales' && (
+                  {/* Commission Slabs - Show for sales and support roles */}
+                  {(editingUser.role === 'sales' || editingUser.role === 'support') && (
                     <>
                       <div className="md:col-span-2">
                         <Label>Monthly Sales Target (BHD)</Label>
@@ -518,7 +518,7 @@ const Users = () => {
                       <div>
                         <h3 className="font-bold text-gray-900">{user.name}</h3>
                         <p className="text-sm text-gray-600">{user.email}</p>
-                        {user.role === 'sales' && user.commission_slabs && user.commission_slabs.length > 0 && (
+                        {(user.role === 'sales' || user.role === 'support') && user.commission_slabs && user.commission_slabs.length > 0 && (
                           <p className="text-xs text-green-600 font-medium mt-1">💰 {user.commission_slabs.length} Commission Slab(s)</p>
                         )}
                       </div>
