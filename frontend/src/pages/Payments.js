@@ -3,7 +3,6 @@ import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
-const token = localStorage.getItem('token');
 
 export default function Payments() {
   const { user } = useAuth();
@@ -32,6 +31,7 @@ export default function Payments() {
 
   const fetchPayments = async () => {
     try {
+      const token = localStorage.getItem('token');
       const response = await axios.get(`${API_URL}/api/payments`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -43,6 +43,7 @@ export default function Payments() {
 
   const fetchInvoices = async () => {
     try {
+      const token = localStorage.getItem('token');
       const response = await axios.get(`${API_URL}/api/sales/invoices`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -90,11 +91,12 @@ export default function Payments() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const token = localStorage.getItem('token');
       await axios.post(`${API_URL}/api/payments`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       alert('Payment recorded successfully!');
-      fetchPayments();
+      await fetchPayments();  // Await to ensure state updates
       setShowForm(false);
       setFormData({
         invoice_number: '', customer_name: '', invoice_amount: 0, received_amount: 0,
