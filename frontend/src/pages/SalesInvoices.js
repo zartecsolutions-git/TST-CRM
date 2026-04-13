@@ -61,8 +61,8 @@ export default function SalesInvoices() {
   useEffect(() => {
     fetchData();
     
-    // Fetch sales performance for admin and sales users
-    if (user?.role === 'admin' || user?.role === 'sales') {
+    // Fetch sales performance for admin, sales, and support users
+    if (user?.role === 'admin' || user?.role === 'sales' || user?.role === 'support') {
       fetchSalesPerformance();
     }
     
@@ -117,8 +117,8 @@ export default function SalesInvoices() {
   const fetchSalesPerformance = async () => {
     try {
       console.log('Fetching sales performance for user:', user);
-      // For sales users, filter by their own ID
-      const url = user?.role === 'sales' 
+      // For sales and support users, filter by their own ID
+      const url = (user?.role === 'sales' || user?.role === 'support')
         ? `/sales/reports/salesreps?sales_rep_id=${user.id}`
         : '/sales/reports/salesreps';
       
@@ -465,6 +465,14 @@ export default function SalesInvoices() {
 
   // Filter invoices based on search and filters
   const filteredInvoices = invoices.filter(invoice => {
+    // Role-based filter: Sales and Support users see only their own invoices
+    if (user?.role === 'sales' || user?.role === 'support') {
+      if (invoice.sales_rep_id !== user.id) {
+        return false;
+      }
+    }
+    // Admin sees all invoices (no filter)
+    
     // Search filter (invoice number, customer name)
     const matchesSearch = searchTerm === '' || 
       invoice.invoice_number.toString().toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -516,7 +524,7 @@ export default function SalesInvoices() {
             ← Back to Dashboard
           </Button>
           <h1 className="text-2xl font-bold text-gray-900">
-            💰 {user?.role === 'sales' ? 'My Sales Invoices' : 'Sales Invoices'}
+            💰 {user?.role === 'admin' ? 'Sales Invoices' : 'My Sales Invoices'}
           </h1>
         </div>
         {user?.role === 'admin' && (
@@ -544,12 +552,12 @@ export default function SalesInvoices() {
       </div>
 
       {/* Sales Performance - Admin and Sales Users Only */}
-      {(user?.role === 'admin' || user?.role === 'sales') && salesPerformance.length > 0 && (
+      {(user?.role === 'admin' || user?.role === 'sales' || user?.role === 'support') && salesPerformance.length > 0 && (
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <span>📊</span>
-              <span>{user?.role === 'sales' ? 'My Performance' : 'Sales Performance by User'}</span>
+              <span>{user?.role === 'admin' ? 'Sales Performance by User' : 'My Performance'}</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -999,7 +1007,7 @@ export default function SalesInvoices() {
       <Card>
         <CardHeader>
           <CardTitle>
-            {user?.role === 'sales' ? 'My Invoices' : 'All Invoices'} ({filteredInvoices.length})
+            {user?.role === 'admin' ? 'All Invoices' : 'My Invoices'} ({filteredInvoices.length})
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -1098,7 +1106,7 @@ export default function SalesInvoices() {
               </p>
               <p className="text-gray-500">
                 {invoices.length === 0 
-                  ? (user?.role === 'sales' ? 'You haven\'t created any invoices yet.' : 'Create your first invoice to get started.')
+                  ? (user?.role === 'admin' ? 'Create your first invoice to get started.' : 'You haven\'t created any invoices yet.')
                   : 'Try adjusting your search or filters.'
                 }
               </p>
