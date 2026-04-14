@@ -14,6 +14,9 @@ import ActivityStats from '../components/activities/ActivityStats';
 import ActivityFilters from '../components/activities/ActivityFilters';
 import ActivitySearchBar from '../components/activities/ActivitySearchBar';
 import ActivityPerformanceChart from '../components/activities/ActivityPerformanceChart';
+import ActivityForm from '../components/activities/ActivityForm';
+import ActivityStatusModal from '../components/activities/ActivityStatusModal';
+import ActivityProgressModal from '../components/activities/ActivityProgressModal';
 
 const Activities = () => {
   const { user: currentUser } = useAuth();
@@ -378,9 +381,6 @@ const Activities = () => {
   // Count completed activities
   const completedActivitiesCount = activities.filter(act => act.status === 'completed').length;
 
-  // Get support users for dropdown
-  const supportUsers = users.filter(u => u.role === 'support');
-
   const filteredActivities = activities.filter(activity => {
     if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
@@ -614,357 +614,45 @@ const Activities = () => {
 
         {/* Create Activity Modal */}
         {showAddForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-            <Card className="w-full max-w-3xl my-4 max-h-[90vh] overflow-y-auto">
-              <CardHeader className="sticky top-0 bg-white z-10 border-b">
-                <div className="flex justify-between items-center">
-                  <CardTitle className="text-2xl">Create New Activity</CardTitle>
-                  <Button
-                    variant="ghost"
-                    onClick={() => setShowAddForm(false)}
-                    className="text-gray-500 hover:text-gray-700"
-                    type="button"
-                  >
-                    ✕
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="p-6">
-                <form onSubmit={handleAddActivity} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label>Title</Label>
-                      <Input
-                        value={newActivity.title}
-                        onChange={(e) => setNewActivity({...newActivity, title: e.target.value})}
-                        required
-                      />
-                    </div>
-                    <div>
-                      <Label>Assign To</Label>
-                      <select
-                        className="w-full border rounded-md p-2"
-                        value={newActivity.assigned_to}
-                        onChange={(e) => setNewActivity({...newActivity, assigned_to: e.target.value})}
-                      >
-                        <option value="">Select User</option>
-                        {users.map(user => (
-                          <option key={user.id} value={user.id}>{user.name} ({user.role})</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <Label>Support Staff</Label>
-                      <select
-                        className="w-full border rounded-md p-2"
-                        value={newActivity.support_staff}
-                        onChange={(e) => setNewActivity({...newActivity, support_staff: e.target.value})}
-                      >
-                        <option value="">Select Support Staff</option>
-                        {supportUsers.map(user => (
-                          <option key={user.id} value={user.id}>{user.name}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div>
-                      <Label>Customer</Label>
-                      <select
-                        className="w-full border rounded-md p-2"
-                        value={newActivity.customer_id}
-                        onChange={(e) => {
-                          setNewActivity({...newActivity, customer_id: e.target.value, product_id: '', serial_number: ''});
-                        }}
-                      >
-                        <option value="">Select Customer (Optional)</option>
-                        {customers.map(customer => (
-                          <option key={customer.id} value={customer.id}>
-                            {customer.name} - {customer.business_vertical || 'N/A'}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    
-                    {/* Product Selection */}
-                    <div>
-                      <Label>Product</Label>
-                      {newActivity.customer_id ? (
-                        <select
-                          className="w-full border rounded-md p-2"
-                          value={newActivity.product_id}
-                          onChange={(e) => {
-                            setNewActivity({...newActivity, product_id: e.target.value, serial_number: ''});
-                          }}
-                        >
-                          <option value="">Select Product</option>
-                          {products
-                            .filter(p => p.serial_numbers?.some(s => s.customer_id === newActivity.customer_id && s.status === 'sold'))
-                            .map(product => (
-                              <option key={product.id} value={product.id}>
-                                {product.name} - {product.model || product.category}
-                              </option>
-                            ))}
-                        </select>
-                      ) : (
-                        <div className="w-full border rounded-md p-2 bg-gray-50 flex items-center justify-center text-gray-500">
-                          Please select a customer first
-                        </div>
-                      )}
-                    </div>
-                    
-                    {/* Serial Number Selection */}
-                    <div>
-                      <Label>Product Serial Number</Label>
-                      {newActivity.product_id && newActivity.customer_id ? (
-                        <select
-                          className="w-full border rounded-md p-2"
-                          value={newActivity.serial_number}
-                          onChange={(e) => setNewActivity({...newActivity, serial_number: e.target.value})}
-                        >
-                          <option value="">Select Serial Number</option>
-                          {(() => {
-                            const product = products.find(p => p.id === newActivity.product_id);
-                            return product?.serial_numbers
-                              ?.filter(s => s.customer_id === newActivity.customer_id && s.status === 'sold')
-                              .map((serial, index) => (
-                                <option key={index} value={serial.serial_number}>
-                                  {serial.serial_number} (Sold: {serial.sale_date ? new Date(serial.sale_date).toLocaleDateString() : 'N/A'})
-                                </option>
-                              )) || [];
-                          })()}
-                        </select>
-                      ) : (
-                        <div className="w-full border rounded-md p-2 bg-gray-50 flex items-center justify-center text-gray-500 text-sm">
-                          {!newActivity.customer_id ? 'Select customer and product first' : 'Select a product first'}
-                        </div>
-                      )}
-                      <p className="text-sm text-gray-500 mt-1">
-                        Only serial numbers assigned to the selected customer are shown
-                      </p>
-                    </div>
-                    <div className="md:col-span-2">
-                      <Label>Description</Label>
-                      <textarea
-                        className="w-full border rounded-md p-2"
-                        rows="3"
-                        value={newActivity.description}
-                        onChange={(e) => setNewActivity({...newActivity, description: e.target.value})}
-                      />
-                    </div>
-                    <div>
-                      <Label>Status</Label>
-                      <select
-                        className="w-full border rounded-md p-2"
-                        value={newActivity.status}
-                        onChange={(e) => setNewActivity({...newActivity, status: e.target.value})}
-                      >
-                        <option value="pending">Pending</option>
-                        <option value="in_progress">In Progress</option>
-                        <option value="completed">Completed</option>
-                      </select>
-                    </div>
-                    <div>
-                      <Label>Activity Type</Label>
-                      <select
-                        className="w-full border rounded-md p-2"
-                        value={newActivity.activity_type}
-                        onChange={(e) => setNewActivity({...newActivity, activity_type: e.target.value})}
-                      >
-                        <option value="demo_poc">Demo/POC</option>
-                        <option value="warranty">Warranty</option>
-                        <option value="service_call">Service Call</option>
-                        <option value="periodic_visit">Periodic Visit</option>
-                        <option value="new_installation">New Installation</option>
-                        <option value="others">Others</option>
-                      </select>
-                    </div>
-                    <div>
-                      <Label>Due Date (Optional)</Label>
-                      <Input
-                        type="date"
-                        value={newActivity.due_date}
-                        onChange={(e) => setNewActivity({...newActivity, due_date: e.target.value})}
-                      />
-                    </div>
-                    
-                    {newActivity.status === 'completed' && (
-                      <>
-                        <div>
-                          <Label>Invoice Number</Label>
-                          <Input
-                            value={newActivity.invoice_number}
-                            onChange={(e) => setNewActivity({...newActivity, invoice_number: e.target.value})}
-                            placeholder="INV-2024-001"
-                          />
-                        </div>
-                        <div>
-                          <Label>Work Order Number</Label>
-                          <Input
-                            value={newActivity.work_order_no}
-                            onChange={(e) => setNewActivity({...newActivity, work_order_no: e.target.value})}
-                            placeholder="WO-2024-001"
-                          />
-                        </div>
-                        <div>
-                          <Label>Total Amount ({companySettings?.currency || 'USD'})</Label>
-                          <Input
-                            type="number"
-                            value={newActivity.total_amount}
-                            onChange={(e) => setNewActivity({...newActivity, total_amount: e.target.value})}
-                            placeholder="0.00"
-                          />
-                        </div>
-                        <div>
-                          <Label>Next Maintenance Due Date</Label>
-                          <Input
-                            type="date"
-                            value={newActivity.next_maintenance_date}
-                            onChange={(e) => setNewActivity({...newActivity, next_maintenance_date: e.target.value})}
-                          />
-                          <p className="text-xs text-gray-500 mt-1">
-                            This will be synced to the product's serial number record
-                          </p>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                  <div className="flex justify-end space-x-2 pt-4 border-t">
-                    <Button type="button" variant="outline" onClick={() => setShowAddForm(false)}>
-                      Cancel
-                    </Button>
-                    <Button type="submit" className="bg-gradient-to-r from-blue-700 to-green-700">
-                      Create Activity
-                    </Button>
-                  </div>
-                </form>
-              </CardContent>
-            </Card>
-          </div>
+          <ActivityForm
+            newActivity={newActivity}
+            setNewActivity={setNewActivity}
+            users={users}
+            customers={customers}
+            products={products}
+            companySettings={companySettings}
+            onSubmit={handleAddActivity}
+            onCancel={() => setShowAddForm(false)}
+          />
         )}
 
         {/* Status Update Modal */}
         {showStatusModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <Card className="w-full max-w-md mx-4">
-              <CardHeader>
-                <CardTitle>Update Activity Status</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <p className="text-sm text-gray-600">
-                    You are updating the status to: <strong className="capitalize">{selectedActivity?.newStatus?.replace('_', ' ')}</strong>
-                  </p>
-                  <div>
-                    <Label>Enter details about this status update *</Label>
-                    <textarea
-                      className="w-full border rounded-md p-2 mt-1"
-                      rows="4"
-                      placeholder="What work was done? Any blockers? Next steps?"
-                      value={statusUpdateNote}
-                      onChange={(e) => setStatusUpdateNote(e.target.value)}
-                      required
-                    />
-                  </div>
-                  
-                  {/* Show invoice and amount fields when completing */}
-                  {selectedActivity?.newStatus === 'completed' && (
-                    <div className="border-t pt-4 space-y-4">
-                      <h4 className="font-semibold text-green-700">💰 Completion Details</h4>
-                      <div>
-                        <Label>Work Order No.</Label>
-                        <Input
-                          placeholder="WO-2024-001"
-                          value={completionData.work_order_no}
-                          onChange={(e) => setCompletionData({...completionData, work_order_no: e.target.value})}
-                        />
-                      </div>
-                      <div>
-                        <Label>Invoice Number</Label>
-                        <Input
-                          placeholder="INV-2024-001"
-                          value={completionData.invoice_number}
-                          onChange={(e) => setCompletionData({...completionData, invoice_number: e.target.value})}
-                        />
-                      </div>
-                      <div>
-                        <Label>Next Maintenance Date</Label>
-                        <Input
-                          type="date"
-                          value={completionData.next_maintenance_date}
-                          onChange={(e) => setCompletionData({...completionData, next_maintenance_date: e.target.value})}
-                        />
-                      </div>
-                      <div>
-                        <Label>Total Amount ({companySettings?.currency || 'USD'})</Label>
-                        <Input
-                          type="number"
-                          placeholder="0.00"
-                          value={completionData.total_amount}
-                          onChange={(e) => setCompletionData({...completionData, total_amount: e.target.value})}
-                        />
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div className="flex space-x-2">
-                    <Button 
-                      onClick={handleConfirmStatusUpdate}
-                      className="bg-gradient-to-r from-blue-700 to-green-700"
-                    >
-                      Confirm Update
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      onClick={() => {
-                        setShowStatusModal(false);
-                        setStatusUpdateNote('');
-                        setCompletionData({ invoice_number: '', work_order_no: '', total_amount: '' });
-                        setSelectedActivity(null);
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          <ActivityStatusModal
+            selectedActivity={selectedActivity}
+            statusUpdateNote={statusUpdateNote}
+            setStatusUpdateNote={setStatusUpdateNote}
+            completionData={completionData}
+            setCompletionData={setCompletionData}
+            companySettings={companySettings}
+            onConfirm={handleConfirmStatusUpdate}
+            onCancel={() => {
+              setShowStatusModal(false);
+              setStatusUpdateNote('');
+              setCompletionData({ invoice_number: '', work_order_no: '', total_amount: '', next_maintenance_date: '' });
+              setSelectedActivity(null);
+            }}
+          />
         )}
 
         {/* Progress Update Modal */}
         {showProgressModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <Card className="w-full max-w-md mx-4">
-              <CardHeader>
-                <CardTitle>Add Progress Update</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <p className="text-sm text-gray-600">
-                    Track your progress on this activity
-                  </p>
-                  <div>
-                    <Label>Progress Details *</Label>
-                    <textarea
-                      className="w-full border rounded-md p-2 mt-1"
-                      rows="4"
-                      placeholder="What have you completed? What's next?"
-                      value={progressUpdate.update}
-                      onChange={(e) => setProgressUpdate({...progressUpdate, update: e.target.value})}
-                      required
-                    />
-                  </div>
-                  <div className="flex space-x-2">
-                    <Button onClick={handleConfirmProgressUpdate} className="bg-gradient-to-r from-blue-700 to-green-700">
-                      Save Progress
-                    </Button>
-                    <Button variant="outline" onClick={() => setShowProgressModal(false)}>
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          <ActivityProgressModal
+            progressUpdate={progressUpdate}
+            setProgressUpdate={setProgressUpdate}
+            onConfirm={handleConfirmProgressUpdate}
+            onCancel={() => setShowProgressModal(false)}
+          />
         )}
 
         {/* Activity Details Modal */}
