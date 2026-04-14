@@ -146,7 +146,7 @@ async def update_company(
         raise HTTPException(status_code=400, detail="No fields to update")
     
     # If setting this company as default, unset all other companies' default flag
-    if update_data.get('is_default') == True:
+    if update_data.get('is_default'):
         await db.companies.update_many(
             {"id": {"$ne": company_id}},
             {"$set": {"is_default": False}}

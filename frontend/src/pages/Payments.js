@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -24,12 +24,7 @@ export default function Payments() {
     balance_amount: 0
   });
 
-  useEffect(() => {
-    fetchPayments();
-    fetchInvoices();
-  }, []);
-
-  const fetchPayments = async () => {
+  const fetchPayments = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.get(`${API_URL}/api/payments`, {
@@ -39,9 +34,9 @@ export default function Payments() {
     } catch (error) {
       console.error('Error fetching payments:', error);
     }
-  };
+  }, []);
 
-  const fetchInvoices = async () => {
+  const fetchInvoices = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.get(`${API_URL}/api/sales/invoices`, {
@@ -57,7 +52,12 @@ export default function Payments() {
     } catch (error) {
       console.error('Error fetching invoices:', error);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    fetchPayments();
+    fetchInvoices();
+  }, [fetchPayments, fetchInvoices]);
 
   const handleInvoiceSelect = (invoice) => {
     const invoiceAmount = invoice.total_amount || 0;

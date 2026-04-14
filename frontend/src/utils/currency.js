@@ -62,7 +62,6 @@ export const fetchCompanySettings = async () => {
     cacheTimestamp = Date.now();
     return companySettingsCache;
   } catch (error) {
-    console.error('Error fetching company settings:', error);
     // Return default settings if API fails
     return {
       currency: 'USD',
@@ -144,7 +143,6 @@ export const clearCompanyCache = () => {
 
 /**
  * Sync format - for use in components (returns Promise)
- * Usage: formatCurrencySync(1000).then(formatted => console.log(formatted))
  */
 export const formatCurrencySync = formatCurrency;
 

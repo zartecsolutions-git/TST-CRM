@@ -15,7 +15,6 @@ class LocationTrackingService {
   // Start automatic location tracking
   async startTracking(token) {
     if (!navigator.geolocation) {
-      console.log('Geolocation not supported by browser');
       return { success: false, message: 'Geolocation not supported' };
     }
 
@@ -45,7 +44,6 @@ class LocationTrackingService {
         this.updateLocation(token);
       }, TRACKING_INTERVAL);
 
-      console.log('Location tracking started (auto, silent)');
       return { success: true };
     } catch (error) {
       console.error('Location tracking error:', error);
@@ -86,7 +84,6 @@ class LocationTrackingService {
 
   // Handle position errors
   handlePositionError(error) {
-    console.log('Position error:', error.message);
     // Don't alert user - silent tracking
   }
 
@@ -115,7 +112,6 @@ class LocationTrackingService {
       const position = await this.getCurrentPosition();
       await this.sendLocation(position, token);
     } catch (error) {
-      console.log('Location update failed:', error.message);
     }
   }
 
@@ -137,7 +133,6 @@ class LocationTrackingService {
       });
 
       if (response.ok) {
-        console.log('Location sent successfully');
       }
     } catch (error) {
       console.error('Failed to send location:', error);
@@ -178,7 +173,6 @@ class LocationTrackingService {
       
       // Clear synced locations
       localStorage.removeItem('offline_locations');
-      console.log(`Synced ${offlineLocations.length} offline locations`);
     } catch (error) {
       console.error('Failed to sync offline locations:', error);
     }
@@ -197,7 +191,6 @@ class LocationTrackingService {
     }
     
     this.isTracking = false;
-    console.log('Location tracking stopped');
   }
 }
 
