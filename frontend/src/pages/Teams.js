@@ -33,7 +33,6 @@ const Teams = () => {
       setUsers(usersRes.data);
       setLoading(false);
     } catch (error) {
-      console.error('Error fetching data:', error);
       setLoading(false);
     }
   };

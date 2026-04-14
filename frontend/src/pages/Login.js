@@ -27,7 +27,6 @@ const Login = () => {
       const response = await axios.get(`${API_URL}/api/companies/default/branding`);
       setCompanyInfo(response.data);
     } catch (error) {
-      console.log('Could not fetch company info for login page');
     }
   };
 

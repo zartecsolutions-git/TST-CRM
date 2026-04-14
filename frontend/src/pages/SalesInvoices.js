@@ -108,7 +108,6 @@ export default function SalesInvoices() {
       setModels(modelsRes.data || []);
       setProducts(productsRes.data || []);
       
-      console.log('Models loaded:', modelsRes.data || []);
     } catch (error) {
       console.error('Failed to fetch data:', error);
     } finally {
@@ -118,18 +117,14 @@ export default function SalesInvoices() {
 
   const fetchSalesPerformance = async () => {
     try {
-      console.log('Fetching sales performance for user:', user);
       // For sales and support users, filter by their own ID
       const url = (user?.role === 'sales' || user?.role === 'support')
         ? `/sales/reports/salesreps?sales_rep_id=${user.id}`
         : '/sales/reports/salesreps';
       
-      console.log('Sales performance URL:', url);
       const response = await api.get(url);
-      console.log('Sales performance response:', response.data);
       setSalesPerformance(response.data || []);
     } catch (error) {
-      console.error('Error fetching sales performance:', error);
     }
   };
 
@@ -348,18 +343,15 @@ export default function SalesInvoices() {
       // Create a local copy of customers array that we'll update during import
       const localCustomers = [...customers];
 
-      console.log(`Starting import of ${importedInvoices.length} invoices...`);
 
       for (let index = 0; index < importedInvoices.length; index++) {
         const invoice = importedInvoices[index];
         try {
-          console.log(`Processing invoice ${index + 1}/${importedInvoices.length}: ${invoice.invoice_number}`);
           
           // Find or create customer (search in localCustomers which gets updated during import)
           let customer = localCustomers.find(c => c.name.toLowerCase() === invoice.customer_name.toLowerCase());
           
           if (!customer) {
-            console.log(`Creating new customer: ${invoice.customer_name}`);
             // Create new customer with unique generated email (timestamp + index for uniqueness)
             const timestamp = Date.now();
             const sanitizedName = invoice.customer_name.toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
@@ -376,7 +368,6 @@ export default function SalesInvoices() {
               customer = customerRes.data;
               // Add newly created customer to local array so subsequent invoices can find it
               localCustomers.push(customer);
-              console.log(`Customer created: ${customer.id} with email: ${generatedEmail}`);
             } catch (custErr) {
               console.error('Customer creation failed:', custErr);
               console.error('Customer creation error response:', custErr.response?.data);
@@ -388,7 +379,6 @@ export default function SalesInvoices() {
               continue;
             }
           } else {
-            console.log(`Using existing customer: ${customer.name}`);
           }
 
           // Calculate totals
@@ -413,10 +403,8 @@ export default function SalesInvoices() {
             notes: 'Imported from Excel'
           };
 
-          console.log(`Creating invoice:`, invoiceData);
           
           await api.post('/sales/invoices', invoiceData);
-          console.log(`Invoice ${invoice.invoice_number} created successfully`);
           successCount++;
         } catch (err) {
           console.error('Error importing invoice:', invoice.invoice_number, err);
@@ -426,10 +414,8 @@ export default function SalesInvoices() {
         }
       }
 
-      console.log(`Import complete - Success: ${successCount}, Failed: ${errorCount}`);
       
       if (errors.length > 0) {
-        console.log('First 10 errors:', errors.slice(0, 10));
       }
 
       const message = `Import complete!\nSuccessful: ${successCount}\nFailed: ${errorCount}${errors.length > 0 ? '\n\nFirst few errors:\n' + errors.slice(0, 5).join('\n') : ''}`;

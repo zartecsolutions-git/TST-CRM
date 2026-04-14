@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -24,40 +24,38 @@ export default function Payments() {
     balance_amount: 0
   });
 
-  const fetchPayments = useCallback(async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/payments`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setPayments(response.data || []);
-    } catch (error) {
-      console.error('Error fetching payments:', error);
-    }
-  }, []);
-
-  const fetchInvoices = useCallback(async () => {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/sales/invoices`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      // Filter invoices based on user role
-      let filteredInvoices = response.data || [];
-      if (user?.role === 'sales' || user?.role === 'support') {
-        // Show only their own invoices
-        filteredInvoices = filteredInvoices.filter(inv => inv.sales_rep_id === user.id);
-      }
-      setInvoices(filteredInvoices);
-    } catch (error) {
-      console.error('Error fetching invoices:', error);
-    }
-  }, [user]);
-
   useEffect(() => {
+    const fetchPayments = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get(`${API_URL}/api/payments`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setPayments(response.data || []);
+      } catch (error) {
+      }
+    };
+
+    const fetchInvoices = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get(`${API_URL}/api/sales/invoices`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        // Filter invoices based on user role
+        let filteredInvoices = response.data || [];
+        if (user?.role === 'sales' || user?.role === 'support') {
+          // Show only their own invoices
+          filteredInvoices = filteredInvoices.filter(inv => inv.sales_rep_id === user.id);
+        }
+        setInvoices(filteredInvoices);
+      } catch (error) {
+      }
+    };
+
     fetchPayments();
     fetchInvoices();
-  }, [fetchPayments, fetchInvoices]);
+  }, [user]);
 
   const handleInvoiceSelect = (invoice) => {
     const invoiceAmount = invoice.total_amount || 0;

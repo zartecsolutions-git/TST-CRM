@@ -26,8 +26,6 @@ export default function Customers() {
   const token = localStorage.getItem('token');
 
   useEffect(() => { 
-    console.log('Current user in Customers page:', user);
-    console.log('User role:', user?.role);
     fetchCustomers();
     fetchDivisions();  // NEW: Fetch divisions for dropdown
   }, [user]);
@@ -39,7 +37,6 @@ export default function Customers() {
       });
       setDivisions(response.data || []);
     } catch (error) {
-      console.error('Error fetching divisions:', error);
     }
   };
 

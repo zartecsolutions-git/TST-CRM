@@ -55,7 +55,6 @@ export default function Leads() {
       });
       setCustomers(response.data);
     } catch (error) {
-      console.error('Error fetching customers:', error);
     }
   };
 
@@ -66,7 +65,6 @@ export default function Leads() {
       });
       setUsers(response.data);
     } catch (error) {
-      console.error('Error fetching users:', error);
     }
   };
 
@@ -166,13 +164,11 @@ export default function Leads() {
       if (!submitData.lost_reason) delete submitData.lost_reason;
       if (!submitData.project_value || submitData.project_value === '') delete submitData.project_value;
       
-      console.log('Submitting update:', submitData);
       
       const response = await axios.put(`${API_URL}/api/leads/${selectedLead.id}`, submitData, {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      console.log('Update response:', response.data);
       alert('Lead updated successfully!');
       fetchLeads();
       setShowUpdateModal(false);

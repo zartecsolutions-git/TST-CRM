@@ -88,7 +88,6 @@ const Reports = () => {
         totalUsers: users.length,
       });
     } catch (error) {
-      console.error('Error fetching report data:', error);
     } finally {
       setLoading(false);
     }

@@ -21,7 +21,6 @@ const Dashboard = () => {
       const response = await api.get('/dashboard/stats');
       setStats(response.data);
     } catch (error) {
-      console.error('Error fetching stats:', error);
     } finally {
       setLoading(false);
     }

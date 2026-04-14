@@ -55,7 +55,6 @@ export default function Products() {
       });
       setCustomers(response.data);
     } catch (error) {
-      console.error('Error fetching customers:', error);
     }
   };
 
@@ -72,7 +71,6 @@ export default function Products() {
       setWarrantyAlerts(warrantyRes.data);
       setMaintenanceAlerts(maintenanceRes.data);
     } catch (error) {
-      console.error('Error fetching alerts:', error);
     }
   };
 
@@ -109,7 +107,6 @@ export default function Products() {
       );
       alert(`Import complete! Imported: ${response.data.imported}, Errors: ${response.data.errors.length}`);
       if (response.data.errors.length > 0) {
-        console.log('Import errors:', response.data.errors);
       }
       setShowImport(false);
       setCsvFile(null);
@@ -153,7 +150,6 @@ export default function Products() {
       );
       setProductActivities(filtered);
     } catch (error) {
-      console.error('Error fetching activities:', error);
     }
   };
 

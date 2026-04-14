@@ -186,7 +186,6 @@ export default function ProductsEnhanced() {
         }));
       }
     } catch (error) {
-      console.error('Error fetching maintenance date from activities:', error);
     }
   };
 
@@ -260,12 +259,6 @@ export default function ProductsEnhanced() {
     e.preventDefault();
     
     // DEBUG: Log complete form state
-    console.log('=== FORM DATA BEFORE SUBMIT ===');
-    console.log('Division:', formData.division);
-    console.log('Category:', formData.category);
-    console.log('Sub-Category:', formData.sub_category);
-    console.log('Brand:', formData.brand);
-    console.log('Full formData:', formData);
     
     try {
       // Clean up formData - convert empty strings to null for optional fields
@@ -287,7 +280,6 @@ export default function ProductsEnhanced() {
         serial_numbers: formData.serial_numbers,
       };
       
-      console.log('Submitting product data:', cleanedData);
       
       if (isEditMode && selectedProduct) {
         // Update existing product
@@ -411,7 +403,6 @@ export default function ProductsEnhanced() {
       const response = await api.post('/products/import/csv', { file_content: text });
       alert(`Import complete! Imported: ${response.data.imported}, Errors: ${response.data.errors.length}`);
       if (response.data.errors.length > 0) {
-        console.log('Import errors:', response.data.errors);
       }
       setShowImport(false);
       setCsvFile(null);

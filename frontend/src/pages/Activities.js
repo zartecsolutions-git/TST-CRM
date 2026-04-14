@@ -86,7 +86,6 @@ const Activities = () => {
       setProducts(productsRes.data);
       setLoading(false);
     } catch (error) {
-      console.error('Error fetching data:', error);
       setLoading(false);
     }
   };
@@ -128,10 +127,8 @@ const Activities = () => {
         delete submitData.customer_id;
       }
       
-      console.log('Creating activity with data:', submitData);
       
       const response = await api.post('/activities', submitData);
-      console.log('Activity created:', response.data);
       
       // Update product's serial number with next_maintenance_date
       if (submitData.product_id && submitData.serial_number && submitData.next_maintenance_date) {
@@ -151,7 +148,6 @@ const Activities = () => {
             await api.put(`/products/${product.id}`, {
               serial_numbers: updatedSerials
             });
-            console.log('Product serial number updated with next maintenance date');
           }
         } catch (updateError) {
           console.error('Error updating product maintenance date:', updateError);
@@ -264,7 +260,6 @@ const Activities = () => {
             await api.put(`/products/${product.id}`, {
               serial_numbers: updatedSerials
             });
-            console.log('Product serial number updated with next maintenance date');
           }
         } catch (updateError) {
           console.error('Error updating product maintenance date:', updateError);
