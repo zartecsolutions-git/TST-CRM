@@ -16,6 +16,9 @@ import {
   Legend
 } from 'chart.js';
 import { Bar, Line, Pie } from 'react-chartjs-2';
+import DateRangeFilter from '../components/sales-reports/DateRangeFilter';
+import AnalysisChart from '../components/sales-reports/AnalysisChart';
+import CustomerProductFilters from '../components/sales-reports/CustomerProductFilters';
 
 // Register ChartJS components
 ChartJS.register(
@@ -447,25 +450,14 @@ export default function SalesReports() {
       <Card className="mb-6">
         <CardContent className="pt-6">
           <div className="flex items-end gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
-              <input
-                type="date"
-                value={dateRange.start_date}
-                onChange={(e) => setDateRange(prev => ({ ...prev, start_date: e.target.value }))}
-                className="p-2 border border-gray-300 rounded"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
-              <input
-                type="date"
-                value={dateRange.end_date}
-                onChange={(e) => setDateRange(prev => ({ ...prev, end_date: e.target.value }))}
-                className="p-2 border border-gray-300 rounded"
-              />
-            </div>
-            <Button onClick={applyDateFilter} className="bg-blue-600 hover:bg-blue-700">
+            <DateRangeFilter
+              startDate={dateRange.start_date}
+              endDate={dateRange.end_date}
+              onStartChange={(value) => setDateRange(prev => ({ ...prev, start_date: value }))}
+              onEndChange={(value) => setDateRange(prev => ({ ...prev, end_date: value }))}
+              className="flex-1 bg-transparent p-0 border-0"
+            />
+            <Button onClick={applyDateFilter} className="bg-blue-600 hover:bg-blue-700 mb-3">
               Apply Filter
             </Button>
             <Button
@@ -474,6 +466,7 @@ export default function SalesReports() {
                 setTimeout(fetchReports, 100);
               }}
               variant="outline"
+              className="mb-3"
             >
               Clear
             </Button>
