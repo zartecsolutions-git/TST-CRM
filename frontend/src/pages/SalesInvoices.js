@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '../contexts/AuthContext';
 import api from '../utils/api';
 import ExcelImport from '../components/ExcelImport';
+import SalesPerformanceTable from '../components/sales-invoices/SalesPerformanceTable';
+import InvoiceFilters from '../components/sales-invoices/InvoiceFilters';
 
 export default function SalesInvoices() {
   const { user } = useAuth();
@@ -577,92 +579,8 @@ export default function SalesInvoices() {
       </div>
 
       {/* Sales Performance - Admin and Sales Users Only */}
-      {(user?.role === 'admin' || user?.role === 'sales' || user?.role === 'support') && salesPerformance.length > 0 && (
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <span>📊</span>
-              <span>{user?.role === 'admin' ? 'Sales Performance by User' : 'My Performance'}</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Sales Rep
-                    </th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Total Sales
-                    </th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Invoices
-                    </th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Overdue Amount
-                    </th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Commission
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {salesPerformance.map((rep, index) => (
-                    <tr key={rep.sales_rep_id} className={index === 0 && user?.role === 'admin' ? 'bg-yellow-50' : 'hover:bg-gray-50'}>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        <div className="flex items-center">
-                          {index === 0 && user?.role === 'admin' && <span className="mr-2">🏆</span>}
-                          <div>
-                            <div className="text-sm font-medium text-gray-900">{rep.sales_rep_name}</div>
-                            {index === 0 && user?.role === 'admin' && <div className="text-xs text-yellow-600">Top Performer</div>}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-right">
-                        <div className="text-sm font-bold text-gray-900">
-                          BHD {rep.total_sales.toFixed(2)}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-right">
-                        <div className="text-sm text-gray-900">{rep.invoice_count}</div>
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-right">
-                        <div className="text-sm font-semibold text-red-600">
-                          BHD {(rep.overdue_amount || 0).toFixed(2)}
-                        </div>
-                      </td>
-                      <td className="px-4 py-3 whitespace-nowrap text-right">
-                        <div className="text-sm font-medium text-green-600">
-                          BHD {rep.commission.toFixed(2)}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-                {user?.role === 'admin' && salesPerformance.length > 1 && (
-                  <tfoot className="bg-gray-50">
-                    <tr>
-                      <td className="px-4 py-3 text-sm font-bold text-gray-900">Total</td>
-                      <td className="px-4 py-3 text-right text-sm font-bold text-gray-900">
-                        BHD {salesPerformance.reduce((sum, rep) => sum + rep.total_sales, 0).toFixed(2)}
-                      </td>
-                      <td className="px-4 py-3 text-right text-sm font-bold text-gray-900">
-                        {salesPerformance.reduce((sum, rep) => sum + rep.invoice_count, 0)}
-                      </td>
-                      <td className="px-4 py-3 text-right text-sm font-bold text-red-600">
-                        BHD {salesPerformance.reduce((sum, rep) => sum + (rep.overdue_amount || 0), 0).toFixed(2)}
-                      </td>
-                      <td className="px-4 py-3 text-right text-sm font-bold text-green-600">
-                        BHD {salesPerformance.reduce((sum, rep) => sum + rep.commission, 0).toFixed(2)}
-                      </td>
-                    </tr>
-                  </tfoot>
-                )}
-              </table>
-            </div>
-          </CardContent>
-        </Card>
+      {(user?.role === 'admin' || user?.role === 'sales' || user?.role === 'support') && (
+        <SalesPerformanceTable salesPerformance={salesPerformance} userRole={user?.role} />
       )}
 
       {/* Excel Import Modal */}
@@ -1039,91 +957,15 @@ export default function SalesInvoices() {
         </CardHeader>
         <CardContent>
           {/* Search and Filters */}
-          <div className="mb-6 space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              {/* Search Bar */}
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  🔍 Search
-                </label>
-                <input
-                  type="text"
-                  placeholder="Search by invoice #, customer, or sales rep..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  data-testid="invoice-search-input"
-                />
-              </div>
-              
-              {/* Payment Status Filter */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Payment Status
-                </label>
-                <select
-                  value={filterStatus}
-                  onChange={(e) => setFilterStatus(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
-                  data-testid="invoice-status-filter"
-                >
-                  <option value="all">All Status</option>
-                  <option value="Pending">Pending</option>
-                  <option value="Paid">Paid</option>
-                  <option value="Partial">Partial</option>
-                </select>
-              </div>
-
-              {/* Clear Filters */}
-              <div className="flex items-end">
-                <Button
-                  onClick={clearFilters}
-                  variant="outline"
-                  className="w-full"
-                  data-testid="clear-filters-btn"
-                >
-                  Clear Filters
-                </Button>
-              </div>
-            </div>
-
-            {/* Date Range Filter */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  From Date
-                </label>
-                <input
-                  type="date"
-                  value={dateFilter.start}
-                  onChange={(e) => setDateFilter(prev => ({ ...prev, start: e.target.value }))}
-                  className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  To Date
-                </label>
-                <input
-                  type="date"
-                  value={dateFilter.end}
-                  onChange={(e) => setDateFilter(prev => ({ ...prev, end: e.target.value }))}
-                  className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            </div>
-
-            {/* Active Filters Summary */}
-            {(searchTerm || filterStatus !== 'all' || dateFilter.start || dateFilter.end) && (
-              <div className="flex items-center gap-2 text-sm text-gray-600 bg-blue-50 p-2 rounded">
-                <span className="font-medium">Active Filters:</span>
-                {searchTerm && <span className="px-2 py-1 bg-blue-100 rounded">Search: "{searchTerm}"</span>}
-                {filterStatus !== 'all' && <span className="px-2 py-1 bg-blue-100 rounded">Status: {filterStatus}</span>}
-                {dateFilter.start && <span className="px-2 py-1 bg-blue-100 rounded">From: {dateFilter.start}</span>}
-                {dateFilter.end && <span className="px-2 py-1 bg-blue-100 rounded">To: {dateFilter.end}</span>}
-              </div>
-            )}
-          </div>
+          <InvoiceFilters
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            filterStatus={filterStatus}
+            setFilterStatus={setFilterStatus}
+            dateFilter={dateFilter}
+            setDateFilter={setDateFilter}
+            onClearFilters={clearFilters}
+          />
 
           {filteredInvoices.length === 0 ? (
             <div className="text-center py-12">
