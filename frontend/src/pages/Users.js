@@ -30,10 +30,6 @@ const Users = () => {
     commission_percentage: 5.0
   });
 
-  useEffect(() => {
-    fetchUsers();
-  }, [filterRole]);
-
   const fetchUsers = async () => {
     try {
       const endpoint = filterRole === 'all' ? '/users' : `/users?role=${filterRole}`;
@@ -44,6 +40,11 @@ const Users = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterRole]);
 
   const handleAddUser = async (e) => {
     e.preventDefault();

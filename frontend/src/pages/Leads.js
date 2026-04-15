@@ -25,24 +25,16 @@ export default function Leads() {
     update_note: '', lost_reason: '', update_date: '', project_value: ''
   });
 
-  const token = localStorage.getItem('token');
   const user = JSON.parse(localStorage.getItem('user') || '{}');
-
-  useEffect(() => { 
-    fetchLeads();
-    fetchCustomers();
-    fetchUsers();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const fetchLeads = async () => {
     try {
+      const token = localStorage.getItem('token');
       const response = await axios.get(`${API_URL}/api/leads`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setLeads(response.data);
     } catch (error) {
-      console.error('Error:', error);
     } finally {
       setLoading(false);
     }
@@ -50,6 +42,7 @@ export default function Leads() {
 
   const fetchCustomers = async () => {
     try {
+      const token = localStorage.getItem('token');
       const response = await axios.get(`${API_URL}/api/customers`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -60,6 +53,7 @@ export default function Leads() {
 
   const fetchUsers = async () => {
     try {
+      const token = localStorage.getItem('token');
       const response = await axios.get(`${API_URL}/api/users`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -67,6 +61,13 @@ export default function Leads() {
     } catch (error) {
     }
   };
+
+  useEffect(() => { 
+    fetchLeads();
+    fetchCustomers();
+    fetchUsers();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const getUserName = (userId) => {
     const foundUser = users.find(u => u.id === userId);
@@ -131,6 +132,7 @@ export default function Leads() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const token = localStorage.getItem('token');
       // Clean up form data - remove empty datetime fields
       const submitData = { ...formData };
       if (!submitData.expected_close_date) delete submitData.expected_close_date;
@@ -148,7 +150,6 @@ export default function Leads() {
         status: 'new', priority: 'medium', estimated_value: '', 
         quote_ref: '', quote_value: '', quote_date: '', expected_close_date: '', notes: '' });
     } catch (error) {
-      console.error('Error creating lead:', error);
       alert(error.response?.data?.detail || 'Error saving lead');
     }
   };
@@ -156,6 +157,7 @@ export default function Leads() {
   const handleUpdate = async (e) => {
     e.preventDefault();
     try {
+      const token = localStorage.getItem('token');
       // Clean up update data - remove empty fields
       const submitData = { ...updateData };
       if (!submitData.quote_date) delete submitData.quote_date;
@@ -174,8 +176,6 @@ export default function Leads() {
       setShowUpdateModal(false);
       setSelectedLead(null);
     } catch (error) {
-      console.error('Full error object:', error);
-      console.error('Error response:', error.response);
       
       // Better error message extraction
       let errorMessage = 'Error updating lead';

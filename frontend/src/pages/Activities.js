@@ -61,10 +61,6 @@ const Activities = () => {
     next_maintenance_date: ''
   });
 
-  useEffect(() => {
-    fetchData();
-  }, [filterStatus, searchQuery]);
-
   const fetchData = async () => {
     try {
       // Build query parameters
@@ -89,6 +85,11 @@ const Activities = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterStatus, searchQuery]);
 
   const handleAddActivity = async (e) => {
     e.preventDefault();

@@ -12,10 +12,6 @@ const Dashboard = () => {
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchStats();
-  }, [user]);
-
   const fetchStats = async () => {
     try {
       const response = await api.get('/dashboard/stats');
@@ -25,6 +21,11 @@ const Dashboard = () => {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchStats();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   return (
     <div className="w-full h-full overflow-x-hidden overflow-y-auto">

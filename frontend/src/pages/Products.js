@@ -25,24 +25,16 @@ export default function Products() {
     specifications: '', warranty_period: '', purchase_date: '', next_maintenance_date: '', license_code: ''
   });
 
-  const token = localStorage.getItem('token');
   const user = JSON.parse(localStorage.getItem('user') || '{}');
-
-  useEffect(() => { 
-    fetchProducts();
-    fetchCustomers();
-    fetchAlerts();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const fetchProducts = async () => {
     try {
+      const token = localStorage.getItem('token');
       const response = await axios.get(`${API_URL}/api/products`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setProducts(response.data);
     } catch (error) {
-      console.error('Error:', error);
     } finally {
       setLoading(false);
     }
@@ -50,6 +42,7 @@ export default function Products() {
 
   const fetchCustomers = async () => {
     try {
+      const token = localStorage.getItem('token');
       const response = await axios.get(`${API_URL}/api/customers`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -60,6 +53,7 @@ export default function Products() {
 
   const fetchAlerts = async () => {
     try {
+      const token = localStorage.getItem('token');
       const [warrantyRes, maintenanceRes] = await Promise.all([
         axios.get(`${API_URL}/api/products/alerts/warranty-expiring?days=30`, {
           headers: { Authorization: `Bearer ${token}` }
@@ -74,8 +68,16 @@ export default function Products() {
     }
   };
 
+  useEffect(() => { 
+    fetchProducts();
+    fetchCustomers();
+    fetchAlerts();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleExport = async () => {
     try {
+      const token = localStorage.getItem('token');
       const response = await axios.get(`${API_URL}/api/products/export/csv`, {
         headers: { Authorization: `Bearer ${token}` },
         responseType: 'blob'

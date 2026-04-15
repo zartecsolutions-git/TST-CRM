@@ -23,15 +23,9 @@ export default function Customers() {
     vat_reg_no: '', cr_no: '', division: ''  // NEW: Added new fields
   });
 
-  const token = localStorage.getItem('token');
-
-  useEffect(() => { 
-    fetchCustomers();
-    fetchDivisions();  // NEW: Fetch divisions for dropdown
-  }, [user]);
-
   const fetchDivisions = async () => {
     try {
+      const token = localStorage.getItem('token');
       const response = await axios.get(`${API_URL}/api/master-data/divisions`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -42,20 +36,27 @@ export default function Customers() {
 
   const fetchCustomers = async () => {
     try {
+      const token = localStorage.getItem('token');
       const response = await axios.get(`${API_URL}/api/customers`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setCustomers(response.data);
     } catch (error) {
-      console.error('Error:', error);
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => { 
+    fetchCustomers();
+    fetchDivisions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const token = localStorage.getItem('token');
       await axios.post(`${API_URL}/api/customers`, formData, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -85,6 +86,7 @@ export default function Customers() {
   const handleUpdateCustomer = async (e) => {
     e.preventDefault();
     try {
+      const token = localStorage.getItem('token');
       await axios.put(`${API_URL}/api/customers/${selectedCustomer.id}`, editFormData, {
         headers: { Authorization: `Bearer ${token}` }
       });
