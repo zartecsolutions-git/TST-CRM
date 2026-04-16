@@ -107,7 +107,15 @@ const MobileLayout = ({ children }) => {
             
             {/* Profile Dropdown */}
             {showProfileMenu && (
-              <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border z-50" data-testid="profile-dropdown">
+              <>
+                {/* Backdrop for mobile */}
+                <div 
+                  className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
+                  onClick={() => setShowProfileMenu(false)}
+                />
+                
+                {/* Dropdown Menu */}
+                <div className="absolute right-0 mt-2 w-full sm:w-80 lg:w-64 bg-white rounded-lg shadow-xl border z-50 max-h-[85vh] overflow-y-auto" data-testid="profile-dropdown">
                 <div className="p-3 border-b bg-gradient-to-r from-blue-50 to-green-50">
                   <p className="font-semibold text-gray-900 text-sm">{user?.name}</p>
                   <p className="text-xs text-gray-600 mt-0.5">{user?.email}</p>
@@ -169,6 +177,7 @@ const MobileLayout = ({ children }) => {
                   </button>
                 </div>
               </div>
+              </>
             )}
           </div>
         </div>
