@@ -53,21 +53,40 @@ const MobileLayout = ({ children }) => {
       {/* Top Header - Mobile */}
       <header className="lg:hidden bg-white shadow-sm border-b sticky top-0 z-40">
         <div className="flex justify-between items-center px-3 py-2.5">
-          {/* Logo - Left Side */}
-          <div className="flex items-center space-x-2 flex-shrink-0">
-            {companySettings?.logo_url ? (
-              <img 
-                src={companySettings.logo_url} 
-                alt="Logo" 
-                className="h-10 w-auto object-contain"
-              />
-            ) : (
-              <div className="bg-gradient-to-r from-blue-600 to-green-600 p-2 rounded-lg">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          {/* Logo and Back Button - Left Side */}
+          <div className="flex items-center space-x-3 flex-shrink-0">
+            {/* Back to Dashboard Button - Only show when NOT on dashboard */}
+            {location.pathname !== '/dashboard' && (
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="p-2 rounded-lg hover:bg-gray-100 active:bg-gray-200 transition-colors"
+                aria-label="Back to Dashboard"
+              >
+                <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                 </svg>
-              </div>
+              </button>
             )}
+            
+            {/* Logo */}
+            <button 
+              onClick={() => navigate('/dashboard')}
+              className="flex items-center"
+            >
+              {companySettings?.logo_url ? (
+                <img 
+                  src={companySettings.logo_url} 
+                  alt="Logo" 
+                  className="h-10 w-auto object-contain"
+                />
+              ) : (
+                <div className="bg-gradient-to-r from-blue-600 to-green-600 p-2 rounded-lg">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                </div>
+              )}
+            </button>
           </div>
           
           {/* User Name and Profile - Right Side */}
@@ -95,6 +114,28 @@ const MobileLayout = ({ children }) => {
                   <span className="inline-block mt-2 px-2 py-1 bg-blue-600 text-white text-xs rounded-full font-medium">
                     {user?.role?.toUpperCase()}
                   </span>
+                </div>
+                
+                {/* Main Navigation */}
+                <div className="py-1 border-b">
+                  <p className="px-3 py-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wide">Main Menu</p>
+                  {filteredNavItems.map((item) => (
+                    <button
+                      key={item.path}
+                      onClick={() => {
+                        navigate(item.path);
+                        setShowProfileMenu(false);
+                      }}
+                      className={`w-full text-left px-3 py-2.5 flex items-center gap-2 text-sm transition-colors ${
+                        isActive(item.path) 
+                          ? 'bg-blue-50 text-blue-700 font-semibold' 
+                          : 'hover:bg-gray-50 text-gray-700'
+                      }`}
+                    >
+                      <span className="text-lg">{item.icon}</span>
+                      <span>{item.label}</span>
+                    </button>
+                  ))}
                 </div>
                 
                 {/* Admin Menu Items */}
