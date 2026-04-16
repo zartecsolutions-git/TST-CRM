@@ -12,41 +12,55 @@ export default function ActivityFilters({
 }) {
   return (
     <>
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex space-x-2">
+      {/* Mobile & Desktop Layout */}
+      <div className="mb-6 space-y-3">
+        {/* Filter Buttons */}
+        <div className="flex flex-wrap gap-2">
           <Button
             onClick={() => setFilterStatus('all')}
             variant={filterStatus === 'all' ? 'default' : 'outline'}
-            className={filterStatus === 'all' ? 'bg-gradient-to-r from-blue-700 to-green-700' : ''}
+            className={`${filterStatus === 'all' ? 'bg-gradient-to-r from-blue-700 to-green-700' : ''} text-sm`}
           >
             All
           </Button>
           <Button
             onClick={() => setFilterStatus('pending')}
             variant={filterStatus === 'pending' ? 'default' : 'outline'}
-            className={filterStatus === 'pending' ? 'bg-amber-600' : ''}
+            className={`${filterStatus === 'pending' ? 'bg-amber-600' : ''} text-sm`}
           >
             Pending
           </Button>
           <Button
             onClick={() => setFilterStatus('in_progress')}
             variant={filterStatus === 'in_progress' ? 'default' : 'outline'}
-            className={filterStatus === 'in_progress' ? 'bg-blue-600' : ''}
+            className={`${filterStatus === 'in_progress' ? 'bg-blue-600' : ''} text-sm`}
           >
             In Progress
           </Button>
           <Button
             onClick={() => setFilterStatus('completed')}
             variant={filterStatus === 'completed' ? 'default' : 'outline'}
-            className={filterStatus === 'completed' ? 'bg-green-600' : ''}
+            className={`${filterStatus === 'completed' ? 'bg-green-600' : ''} text-sm`}
           >
             Completed
           </Button>
         </div>
         
-        {/* Search Box - for Support Users */}
+        {/* Create Activity Button - Full width on mobile, auto on desktop */}
+        {canCreateActivity && (
+          <div className="w-full lg:w-auto">
+            <Button
+              onClick={() => setShowAddForm(true)}
+              className="bg-gradient-to-r from-blue-700 to-green-700 w-full lg:w-auto text-base font-semibold py-3"
+            >
+              + Create Activity
+            </Button>
+          </div>
+        )}
+        
+        {/* Search Box - for Support Users - Desktop Only */}
         {currentUser?.role === 'support' && (
-          <div className="relative">
+          <div className="relative hidden lg:block">
             <input
               type="text"
               placeholder="Search by Serial #, Customer, Invoice #, Work Order #..."
@@ -63,15 +77,6 @@ export default function ActivityFilters({
               </button>
             )}
           </div>
-        )}
-        
-        {canCreateActivity && (
-          <Button
-            onClick={() => setShowAddForm(true)}
-            className="bg-gradient-to-r from-blue-700 to-green-700"
-          >
-            + Create Activity
-          </Button>
         )}
       </div>
 
