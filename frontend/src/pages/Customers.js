@@ -130,19 +130,6 @@ export default function Customers() {
           </PageHeader>
         </div>
         
-        {/* Debug Info - Shows user role for troubleshooting */}
-        {user && (
-          <div className="mb-4 p-3 bg-yellow-50 border-2 border-yellow-400 rounded-lg text-sm">
-            <div className="font-bold mb-1">🔍 Debug: User Role Check</div>
-            <div>Name: {user.name} | Email: {user.email}</div>
-            <div>Role: <strong>{user.role}</strong> | Admin Check: 
-              <strong className={user?.role?.toLowerCase() === 'admin' ? 'text-green-600' : 'text-red-600'}>
-                {user?.role?.toLowerCase() === 'admin' ? ' ✅ YES' : ' ❌ NO'}
-              </strong>
-            </div>
-          </div>
-        )}
-        
         {/* Mobile only: Add Customer button */}
         <div className="lg:hidden mb-3">
           <button onClick={() => setShowForm(true)} className="bg-gradient-to-r from-blue-700 to-green-700 text-white px-4 py-2 rounded-lg text-sm w-full">+ Add Customer</button>
