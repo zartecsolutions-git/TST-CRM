@@ -712,8 +712,8 @@ export default function ProductsEnhanced() {
                 </button>
                 
                 <div className="max-h-60 overflow-y-auto border rounded p-2">
-                  {formData.serial_numbers.map((serial, index) => (
-                    <div key={index} className="flex justify-between items-center p-2 mb-2 bg-gray-50 rounded">
+                  {formData.serial_numbers.map((serial) => (
+                    <div key={serial.serial_number} className="flex justify-between items-center p-2 mb-2 bg-gray-50 rounded">
                       <div className="flex-1">
                         <span className="font-medium">{serial.serial_number}</span>
                         <span className={`ml-3 px-2 py-1 text-xs rounded ${
@@ -828,8 +828,8 @@ export default function ProductsEnhanced() {
                 </div>
                 
                 <div className="space-y-2 max-h-60 overflow-y-auto">
-                  {selectedProduct.serial_numbers?.map((serial, index) => (
-                    <div key={index} className="bg-white p-3 rounded border">
+                  {selectedProduct.serial_numbers?.map((serial) => (
+                    <div key={serial.serial_number} className="bg-white p-3 rounded border">
                       <div className="flex justify-between items-start">
                         <div>
                           <p className="font-mono font-medium">{serial.serial_number}</p>
@@ -993,7 +993,7 @@ export default function ProductsEnhanced() {
                 <div className="space-y-2 max-h-60 overflow-y-auto">
                   {selectedProduct.serial_numbers?.map((serial, index) => (
                     serial.status === 'in_stock' && (
-                      <div key={index} className="flex items-center gap-3 p-2 bg-white rounded border">
+                      <div key={serial.serial_number} className="flex items-center gap-3 p-2 bg-white rounded border">
                         <input
                           type="checkbox"
                           checked={selectedSerialIndexes.includes(index)}

@@ -72,8 +72,8 @@ const ActivityPerformanceChart = ({ activities, getUserName, formatAmount, curre
             </thead>
             <tbody>
               {performanceData.length > 0 ? (
-                performanceData.map((perf, index) => (
-                  <tr key={index} className="border-b border-gray-100 hover:bg-gray-50">
+                performanceData.map((perf) => (
+                  <tr key={perf.userId} className="border-b border-gray-100 hover:bg-gray-50">
                     <td className="py-3 px-4">
                       <div className="flex items-center">
                         <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-700 to-green-700 flex items-center justify-center text-white font-bold mr-3">

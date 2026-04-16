@@ -682,7 +682,7 @@ export default function SalesInvoices() {
                 
                 <div className="space-y-3">
                   {formData.items.map((item, index) => (
-                    <div key={index} className="border border-gray-200 rounded p-3 bg-gray-50">
+                    <div key={`${item.part_number || 'item'}-${index}`} className="border border-gray-200 rounded p-3 bg-gray-50">
                       <div className="grid grid-cols-1 md:grid-cols-8 gap-2">
                         {/* Part Number - SEARCHABLE FIELD */}
                         <div className="relative part-number-dropdown-container">

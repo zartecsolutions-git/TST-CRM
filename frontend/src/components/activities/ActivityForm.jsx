@@ -135,8 +135,8 @@ const ActivityForm = ({
                       const product = products.find(p => p.id === newActivity.product_id);
                       return product?.serial_numbers
                         ?.filter(s => s.customer_id === newActivity.customer_id && s.status === 'sold')
-                        .map((serial, index) => (
-                          <option key={index} value={serial.serial_number}>
+                        .map((serial) => (
+                          <option key={serial.serial_number} value={serial.serial_number}>
                             {serial.serial_number} (Sold: {serial.sale_date ? new Date(serial.sale_date).toLocaleDateString() : 'N/A'})
                           </option>
                         )) || [];

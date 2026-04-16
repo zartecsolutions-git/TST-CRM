@@ -6,6 +6,12 @@ from models import Activity, ActivityCreate, ActivityUpdate, ActivityStatus
 from auth import get_current_user
 from rbac import require_admin, get_current_user_data
 from utils.dependencies import db
+from utils.datetime_helpers import (
+    convert_datetime_fields,
+    parse_datetime_fields,
+    get_current_utc_iso
+)
+from utils.validation_helpers import validate_update_data, check_activity_edit_permission
 
 router = APIRouter(prefix="/activities", tags=["activities"])
 
@@ -41,8 +47,6 @@ async def get_activities(
     current_user_id: str = Depends(get_current_user)
 ):
     """Get all activities with optional filters"""
-    user_data = await get_current_user_data(current_user_id)
-    
     query = {}
     
     if assigned_to:
@@ -122,28 +126,18 @@ async def update_activity(
     
     user_data = await get_current_user_data(current_user_id)
     
-    # Sales users cannot edit activities
-    if user_data['role'] == 'sales':
-        raise HTTPException(status_code=403, detail="Sales users have read-only access to activities")
-    
-    # Admin, creator, or assignee can edit
-    if (user_data['role'] != 'admin' and 
-        activity_doc.get('created_by') != current_user_id and 
-        activity_doc.get('assigned_to') != current_user_id):
-        raise HTTPException(
-            status_code=403, 
-            detail="You can only edit activities that you created or are assigned to"
-        )
+    # Check edit permissions
+    await check_activity_edit_permission(activity_doc, current_user_id, user_data)
     
     update_data = activity_update.model_dump(exclude_unset=True)
-    if not update_data:
-        raise HTTPException(status_code=400, detail="No fields to update")
+    validate_update_data(update_data)
     
+    # Handle status update with history tracking
     if 'status' in update_data:
         status_entry = {
             'status': update_data['status'],
             'updated_by': current_user_id,
-            'timestamp': datetime.now(timezone.utc).isoformat(),
+            'timestamp': get_current_utc_iso(),
             'notes': update_data.pop('notes', '')
         }
         
@@ -152,11 +146,10 @@ async def update_activity(
             {"$push": {"status_history": status_entry}}
         )
     
-    update_data['updated_at'] = datetime.now(timezone.utc).isoformat()
-    if 'due_date' in update_data and update_data['due_date']:
-        update_data['due_date'] = update_data['due_date'].isoformat()
-    if 'next_maintenance_date' in update_data and update_data['next_maintenance_date']:
-        update_data['next_maintenance_date'] = update_data['next_maintenance_date'].isoformat()
+    update_data['updated_at'] = get_current_utc_iso()
+    
+    # Convert datetime fields to ISO format
+    convert_datetime_fields(update_data, ['due_date', 'next_maintenance_date'])
     
     result = await db.activities.update_one(
         {"id": activity_id},
@@ -168,12 +161,8 @@ async def update_activity(
     
     activity_doc = await db.activities.find_one({"id": activity_id}, {"_id": 0})
     
-    if isinstance(activity_doc.get('created_at'), str):
-        activity_doc['created_at'] = datetime.fromisoformat(activity_doc['created_at'])
-    if isinstance(activity_doc.get('updated_at'), str):
-        activity_doc['updated_at'] = datetime.fromisoformat(activity_doc['updated_at'])
-    if activity_doc.get('due_date') and isinstance(activity_doc['due_date'], str):
-        activity_doc['due_date'] = datetime.fromisoformat(activity_doc['due_date'])
+    # Parse datetime fields back to datetime objects
+    parse_datetime_fields(activity_doc, ['created_at', 'updated_at', 'due_date'])
     
     return Activity(**activity_doc)
 

@@ -6,6 +6,13 @@ from models import LeadCreate, Lead, LeadUpdate
 from auth import get_current_user
 from rbac import get_current_user_data
 from utils.dependencies import get_db
+from utils.datetime_helpers import (
+    convert_datetime_fields,
+    parse_datetime_fields,
+    get_current_utc_iso,
+    get_current_date_string
+)
+from utils.validation_helpers import validate_update_data, check_lead_ownership
 
 router = APIRouter()
 
@@ -32,14 +39,14 @@ async def create_lead(
             # If it's already a string, keep it; if datetime, convert
             if isinstance(lead_dict['quote_date'], datetime):
                 lead_dict['quote_date'] = lead_dict['quote_date'].isoformat()
-        except:
+        except (AttributeError, ValueError):
             pass
     
     if lead_dict.get('expected_close_date'):
         try:
             if isinstance(lead_dict['expected_close_date'], datetime):
                 lead_dict['expected_close_date'] = lead_dict['expected_close_date'].isoformat()
-        except:
+        except (AttributeError, ValueError):
             pass
     
     await db.leads.insert_one(lead_dict)
@@ -130,35 +137,30 @@ async def update_lead(
     
     # Sales users can only update their own leads
     user_data = await get_current_user_data(current_user_id)
-    if user_data['role'] == 'sales' and lead['created_by'] != current_user_id:
-        raise HTTPException(status_code=403, detail="Not authorized to update this lead")
+    await check_lead_ownership(db, lead, current_user_id, user_data)
     
     update_data = lead_update.model_dump(exclude_unset=True)
-    if not update_data:
-        raise HTTPException(status_code=400, detail="No fields to update")
+    validate_update_data(update_data)
     
     # Track update in history
     update_note = update_data.pop('update_note', None)
     update_date = update_data.pop('update_date', None)
     update_history_entry = {
-        "updated_at": datetime.now(timezone.utc).isoformat(),
-        "update_date": update_date or datetime.now(timezone.utc).isoformat().split('T')[0],
+        "updated_at": get_current_utc_iso(),
+        "update_date": update_date or get_current_date_string(),
         "updated_by": current_user_id,
         "note": update_note,
         "changes": update_data.copy()
     }
     
-    update_data['updated_at'] = datetime.now(timezone.utc).isoformat()
+    update_data['updated_at'] = get_current_utc_iso()
     
     # Auto-set closed_at when status changes to closed_won or closed_lost
     if 'status' in update_data and update_data['status'] in ['closed_won', 'closed_lost']:
-        update_data['closed_at'] = datetime.now(timezone.utc).isoformat()
+        update_data['closed_at'] = get_current_utc_iso()
     
     # Convert datetime fields to ISO format
-    if 'quote_date' in update_data and isinstance(update_data['quote_date'], datetime):
-        update_data['quote_date'] = update_data['quote_date'].isoformat()
-    if 'expected_close_date' in update_data and isinstance(update_data['expected_close_date'], datetime):
-        update_data['expected_close_date'] = update_data['expected_close_date'].isoformat()
+    convert_datetime_fields(update_data, ['quote_date', 'expected_close_date'])
     
     # Add to updates history
     result = await db.leads.update_one(
@@ -174,11 +176,8 @@ async def update_lead(
     
     updated_lead = await db.leads.find_one({"id": lead_id}, {"_id": 0})
     
-    # Convert datetime strings properly
-    if isinstance(updated_lead.get('created_at'), str):
-        updated_lead['created_at'] = datetime.fromisoformat(updated_lead['created_at'])
-    if isinstance(updated_lead.get('updated_at'), str):
-        updated_lead['updated_at'] = datetime.fromisoformat(updated_lead['updated_at'])
+    # Parse datetime fields back to datetime objects
+    parse_datetime_fields(updated_lead, ['created_at', 'updated_at', 'closed_at'])
     
     # Keep date fields as strings
     if updated_lead.get('quote_date') and isinstance(updated_lead.get('quote_date'), datetime):

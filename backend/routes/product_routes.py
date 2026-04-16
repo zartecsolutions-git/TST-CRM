@@ -11,6 +11,14 @@ from models import ProductCreate, Product, ProductUpdate
 from auth import get_current_user
 from rbac import require_admin
 from utils.dependencies import get_db
+from utils.datetime_helpers import (
+    convert_datetime_fields,
+    convert_serial_numbers_dates,
+    parse_datetime_fields,
+    get_current_utc_iso
+)
+from utils.validation_helpers import validate_serial_number_uniqueness, validate_update_data
+from utils.csv_helpers import export_products_to_csv
 
 router = APIRouter()
 
@@ -142,47 +150,19 @@ async def update_product(
     await require_admin(current_user_id)
     
     update_data = product_update.model_dump(exclude_unset=True)
-    if not update_data:
-        raise HTTPException(status_code=400, detail="No fields to update")
+    validate_update_data(update_data)
     
-    # Check if any serial numbers in the update already exist in other products
+    # Validate serial number uniqueness
     if 'serial_numbers' in update_data and update_data['serial_numbers']:
-        for serial_obj in update_data['serial_numbers']:
-            if isinstance(serial_obj, dict) and 'serial_number' in serial_obj:
-                serial_num = serial_obj['serial_number']
-            else:
-                serial_num = serial_obj.serial_number if hasattr(serial_obj, 'serial_number') else None
-            
-            if serial_num:
-                existing = await db.products.find_one({
-                    "serial_numbers.serial_number": serial_num,
-                    "id": {"$ne": product_id}
-                })
-                if existing:
-                    raise HTTPException(
-                        status_code=400, 
-                        detail=f"Serial number {serial_num} already exists in another product"
-                    )
+        await validate_serial_number_uniqueness(db, update_data['serial_numbers'], product_id)
     
-    update_data['updated_at'] = datetime.now(timezone.utc).isoformat()
-    if update_data.get('purchase_date'):
-        update_data['purchase_date'] = update_data['purchase_date'].isoformat()
-    if update_data.get('installation_date'):
-        update_data['installation_date'] = update_data['installation_date'].isoformat()
+    # Convert datetime fields to ISO format
+    update_data['updated_at'] = get_current_utc_iso()
+    convert_datetime_fields(update_data, ['purchase_date', 'installation_date'])
     
-    # Convert serial_numbers datetime fields to ISO format
+    # Convert serial numbers datetime fields
     if update_data.get('serial_numbers'):
-        for serial in update_data['serial_numbers']:
-            if isinstance(serial, dict):
-                if serial.get('sale_date'):
-                    if not isinstance(serial['sale_date'], str):
-                        serial['sale_date'] = serial['sale_date'].isoformat()
-                if serial.get('customer_warranty_end_date'):
-                    if not isinstance(serial['customer_warranty_end_date'], str):
-                        serial['customer_warranty_end_date'] = serial['customer_warranty_end_date'].isoformat()
-                if serial.get('next_maintenance_date'):
-                    if not isinstance(serial['next_maintenance_date'], str):
-                        serial['next_maintenance_date'] = serial['next_maintenance_date'].isoformat()
+        convert_serial_numbers_dates(update_data['serial_numbers'])
     
     result = await db.products.update_one(
         {"id": product_id},
@@ -194,10 +174,8 @@ async def update_product(
     
     product_doc = await db.products.find_one({"id": product_id}, {"_id": 0})
     
-    if isinstance(product_doc.get('created_at'), str):
-        product_doc['created_at'] = datetime.fromisoformat(product_doc['created_at'])
-    if isinstance(product_doc.get('updated_at'), str):
-        product_doc['updated_at'] = datetime.fromisoformat(product_doc['updated_at'])
+    # Parse datetime fields back to datetime objects
+    parse_datetime_fields(product_doc, ['created_at', 'updated_at'])
     if product_doc.get('purchase_date') and isinstance(product_doc['purchase_date'], str):
         product_doc['purchase_date'] = datetime.fromisoformat(product_doc['purchase_date'])
     if product_doc.get('installation_date') and isinstance(product_doc['installation_date'], str):
@@ -272,92 +250,11 @@ async def export_products_csv(
     customers = await db.customers.find({}, {"_id": 0, "id": 1, "name": 1}).to_list(1000)
     customer_map = {c['id']: c['name'] for c in customers}
     
-    # Create CSV in memory
-    output = io.StringIO()
-    writer = csv.DictWriter(output, fieldnames=[
-        'Product Name', 'Category', 'Model', 'Serial Number', 'Customer',
-        'Warranty Period (Months)', 'Warranty End Date', 'Warranty Status',
-        'Next Maintenance Date', 'License Code', 'Sales Date', 'Purchase Date'
-    ])
+    # Use helper function to generate CSV content
+    csv_content = export_products_to_csv(products, customer_map)
     
-    writer.writeheader()
-    now = datetime.now(timezone.utc)
-    
-    for product in products:
-        serial_numbers = product.get('serial_numbers', [])
-        
-        if serial_numbers:
-            # Export each serial number as a separate row
-            for serial in serial_numbers:
-                # Get customer name
-                customer_name = customer_map.get(serial.get('customer_id'), 'Unassigned')
-                
-                # Calculate warranty status
-                warranty_status = 'N/A'
-                warranty_end_date = ''
-                if serial.get('customer_warranty_end_date'):
-                    warranty_date = serial['customer_warranty_end_date']
-                    if isinstance(warranty_date, str):
-                        warranty_date = datetime.fromisoformat(warranty_date)
-                    warranty_status = 'Active' if warranty_date > now else 'Expired'
-                    warranty_end_date = warranty_date.strftime('%Y-%m-%d')
-                
-                # Format dates
-                sales_date = ''
-                if serial.get('sales_date'):
-                    sd = serial['sales_date']
-                    if isinstance(sd, str):
-                        sd = datetime.fromisoformat(sd)
-                    sales_date = sd.strftime('%Y-%m-%d')
-                
-                purchase_date = ''
-                if serial.get('purchase_date'):
-                    pd = serial['purchase_date']
-                    if isinstance(pd, str):
-                        pd = datetime.fromisoformat(pd)
-                    purchase_date = pd.strftime('%Y-%m-%d')
-                
-                next_maintenance_date = ''
-                if serial.get('next_maintenance_date') or product.get('next_maintenance_date'):
-                    nmd = serial.get('next_maintenance_date') or product.get('next_maintenance_date')
-                    if isinstance(nmd, str):
-                        nmd = datetime.fromisoformat(nmd)
-                    next_maintenance_date = nmd.strftime('%Y-%m-%d')
-                
-                writer.writerow({
-                    'Product Name': product.get('name', ''),
-                    'Category': product.get('category', ''),
-                    'Model': product.get('model', ''),
-                    'Serial Number': serial.get('serial_number', ''),
-                    'Customer': customer_name,
-                    'Warranty Period (Months)': serial.get('warranty_period_months', 0),
-                    'Warranty End Date': warranty_end_date,
-                    'Warranty Status': warranty_status,
-                    'Next Maintenance Date': next_maintenance_date,
-                    'License Code': serial.get('license_code', ''),
-                    'Sales Date': sales_date,
-                    'Purchase Date': purchase_date
-                })
-        else:
-            # Product without serial numbers
-            writer.writerow({
-                'Product Name': product.get('name', ''),
-                'Category': product.get('category', ''),
-                'Model': product.get('model', ''),
-                'Serial Number': 'No Serial Numbers',
-                'Customer': 'N/A',
-                'Warranty Period (Months)': 0,
-                'Warranty End Date': '',
-                'Warranty Status': 'N/A',
-                'Next Maintenance Date': '',
-                'License Code': '',
-                'Sales Date': '',
-                'Purchase Date': ''
-            })
-    
-    output.seek(0)
     return StreamingResponse(
-        iter([output.getvalue()]),
+        iter([csv_content]),
         media_type="text/csv",
         headers={"Content-Disposition": "attachment; filename=products_export.csv"}
     )

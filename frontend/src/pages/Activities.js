@@ -703,10 +703,10 @@ const Activities = () => {
                       <span className="text-gray-500">📦 Products:</span>
                       <div className="ml-2 mt-1">
                         {selectedActivity.product_ids && selectedActivity.product_ids.length > 0
-                          ? selectedActivity.product_ids.map((pid, index) => {
+                          ? selectedActivity.product_ids.map((pid) => {
                               const product = products.find(p => p.id === pid);
                               return (
-                                <div key={index} className="mb-1">
+                                <div key={pid} className="mb-1">
                                   <span className="font-medium">{product?.name || pid}</span>
                                   {product?.serial_number && (
                                     <span className="ml-2 text-sm text-blue-600">

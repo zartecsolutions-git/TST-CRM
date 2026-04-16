@@ -48,8 +48,8 @@ const WarrantyAlerts = ({ products, formatAmount }) => {
           </AlertTitle>
           <AlertDescription className="text-red-700">
             <div className="mt-2 space-y-1">
-              {expiredWarranties.slice(0, 3).map((item, index) => (
-                <div key={index} className="text-sm">
+              {expiredWarranties.slice(0, 3).map((item) => (
+                <div key={`${item.productName}-${item.serialNumber}`} className="text-sm">
                   <span className="font-medium">{item.productName}</span> 
                   {' '}- SN: {item.serialNumber}
                   {' '}- Expired {item.daysAgo} days ago
@@ -72,8 +72,8 @@ const WarrantyAlerts = ({ products, formatAmount }) => {
           </AlertTitle>
           <AlertDescription className="text-amber-700">
             <div className="mt-2 space-y-1">
-              {expiringWarranties.slice(0, 3).map((item, index) => (
-                <div key={index} className="text-sm">
+              {expiringWarranties.slice(0, 3).map((item) => (
+                <div key={`${item.productName}-${item.serialNumber}`} className="text-sm">
                   <span className="font-medium">{item.productName}</span> 
                   {' '}- SN: {item.serialNumber}
                   {' '}- {item.daysRemaining} days remaining
