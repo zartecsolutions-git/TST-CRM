@@ -9,6 +9,14 @@ import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
+// Company Branding from Environment Variables
+const COMPANY_NAME = process.env.REACT_APP_COMPANY_NAME || 'Sales & Service CRM';
+const COMPANY_TAGLINE = process.env.REACT_APP_COMPANY_TAGLINE || 'Track activities, manage teams, and monitor performance';
+const COMPANY_LOCATION = process.env.REACT_APP_COMPANY_LOCATION || '';
+const COMPANY_LOGO_URL = process.env.REACT_APP_COMPANY_LOGO_URL || '';
+const PRIMARY_COLOR = process.env.REACT_APP_PRIMARY_COLOR || '#1e40af';
+const SECONDARY_COLOR = process.env.REACT_APP_SECONDARY_COLOR || '#16a34a';
+
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -52,25 +60,36 @@ const Login = () => {
         <Card className="shadow-2xl border-0">
           <CardHeader className="space-y-1 text-center">
             <div className="flex items-center justify-center mb-6">
-              {companyInfo?.logo_url ? (
+              {(companyInfo?.logo_url || COMPANY_LOGO_URL) ? (
                 <img 
-                  src={companyInfo.logo_url} 
-                  alt={companyInfo.name || 'Company Logo'} 
+                  src={companyInfo?.logo_url || COMPANY_LOGO_URL} 
+                  alt={companyInfo?.name || COMPANY_NAME} 
                   className="h-32 w-auto max-w-[300px] object-contain"
                 />
               ) : (
-                <div className="bg-gradient-to-r from-blue-700 to-green-700 p-4 rounded-2xl">
+                <div 
+                  className="p-4 rounded-2xl"
+                  style={{
+                    background: `linear-gradient(to right, ${PRIMARY_COLOR}, ${SECONDARY_COLOR})`
+                  }}
+                >
                   <svg className="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                   </svg>
                 </div>
               )}
             </div>
-            <CardTitle className="text-3xl font-bold bg-gradient-to-r from-blue-700 to-green-700 bg-clip-text text-transparent">
-              {companyInfo?.name || 'Sales & Service CRM'}
+            <CardTitle 
+              className="text-3xl font-bold bg-clip-text text-transparent"
+              style={{
+                backgroundImage: `linear-gradient(to right, ${PRIMARY_COLOR}, ${SECONDARY_COLOR})`
+              }}
+            >
+              {companyInfo?.name || COMPANY_NAME}
             </CardTitle>
             <CardDescription className="text-base">
-              {companyInfo?.country && `${companyInfo.country} • `}Track activities, manage teams, and monitor performance
+              {(companyInfo?.country || COMPANY_LOCATION) && `${companyInfo?.country || COMPANY_LOCATION} • `}
+              {COMPANY_TAGLINE}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -111,7 +130,10 @@ const Login = () => {
               
               <Button
                 type="submit"
-                className="w-full h-11 bg-gradient-to-r from-blue-700 to-green-700 hover:from-blue-700 hover:to-green-700"
+                className="w-full h-11 hover:opacity-90"
+                style={{
+                  background: `linear-gradient(to right, ${PRIMARY_COLOR}, ${SECONDARY_COLOR})`
+                }}
                 disabled={loading}
                 data-testid="login-submit-button"
               >

@@ -5,6 +5,12 @@ import { useCurrency } from '../../contexts/CurrencyContext';
 import PWAInstallPrompt from '../PWAInstallPrompt';
 import OfflineIndicator from '../OfflineIndicator';
 
+// Company Branding from Environment Variables
+const COMPANY_NAME = process.env.REACT_APP_COMPANY_NAME || 'CRM';
+const COMPANY_LOGO_URL = process.env.REACT_APP_COMPANY_LOGO_URL || '';
+const PRIMARY_COLOR = process.env.REACT_APP_PRIMARY_COLOR || '#1e40af';
+const SECONDARY_COLOR = process.env.REACT_APP_SECONDARY_COLOR || '#16a34a';
+
 const MobileLayout = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -73,14 +79,19 @@ const MobileLayout = ({ children }) => {
               onClick={() => navigate('/dashboard')}
               className="flex items-center"
             >
-              {companySettings?.logo_url ? (
+              {(companySettings?.logo_url || COMPANY_LOGO_URL) ? (
                 <img 
-                  src={companySettings.logo_url} 
-                  alt="Logo" 
+                  src={companySettings?.logo_url || COMPANY_LOGO_URL} 
+                  alt={COMPANY_NAME} 
                   className="h-10 w-auto object-contain"
                 />
               ) : (
-                <div className="bg-gradient-to-r from-blue-600 to-green-600 p-2 rounded-lg">
+                <div 
+                  className="p-2 rounded-lg"
+                  style={{
+                    background: `linear-gradient(to right, ${PRIMARY_COLOR}, ${SECONDARY_COLOR})`
+                  }}
+                >
                   <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                   </svg>
