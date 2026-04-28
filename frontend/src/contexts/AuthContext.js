@@ -50,7 +50,7 @@ export const AuthProvider = ({ children }) => {
         locationTracking.startTracking(access_token);
       }, 2000);
       
-      return { success: true };
+      return { success: true, user };
     } catch (error) {
       return { success: false, error: error.response?.data?.detail || 'Login failed' };
     }

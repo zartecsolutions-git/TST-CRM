@@ -46,7 +46,9 @@ const Login = () => {
     const result = await login(email, password);
     
     if (result.success) {
-      navigate('/dashboard');
+      // Employees go straight to Daily Tasks
+      const dest = result.user?.role === 'employee' ? '/daily-tasks' : '/dashboard';
+      navigate(dest);
     } else {
       setError(result.error);
     }

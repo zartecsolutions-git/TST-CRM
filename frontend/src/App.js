@@ -29,7 +29,7 @@ import './mobile-aggressive.css';
 import './mobile-portrait.css';
 
 // Protected Route Component with MobileLayout
-const ProtectedRoute = ({ children }) => {
+const ProtectedRoute = ({ children, allowEmployee = false }) => {
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -45,6 +45,11 @@ const ProtectedRoute = ({ children }) => {
 
   if (!user) {
     return <Navigate to="/login" replace />;
+  }
+
+  // Employees are restricted to Daily Tasks only
+  if (user.role === 'employee' && !allowEmployee) {
+    return <Navigate to="/daily-tasks" replace />;
   }
 
   return <MobileLayout>{children}</MobileLayout>;
@@ -66,10 +71,19 @@ const PublicRoute = ({ children }) => {
   }
 
   if (user) {
-    return <Navigate to="/dashboard" replace />;
+    // Employees should land on Daily Tasks, others on Dashboard
+    return <Navigate to={user.role === 'employee' ? '/daily-tasks' : '/dashboard'} replace />;
   }
 
   return children;
+};
+
+// Default route — sends authenticated employees to Daily Tasks, others to Dashboard
+const RoleAwareDefault = () => {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (!user) return <Navigate to="/login" replace />;
+  return <Navigate to={user.role === 'employee' ? '/daily-tasks' : '/dashboard'} replace />;
 };
 
 function App() {
@@ -268,16 +282,16 @@ function App() {
             <Route
               path="/daily-tasks"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute allowEmployee={true}>
                   <DailyTasks />
                 </ProtectedRoute>
               }
             />
 
 
-            {/* Default Route */}
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            {/* Default Route - employees go to Daily Tasks, others to Dashboard */}
+            <Route path="/" element={<RoleAwareDefault />} />
+            <Route path="*" element={<RoleAwareDefault />} />
           </Routes>
         </LocationProvider>
       </BrowserRouter>
