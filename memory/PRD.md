@@ -33,6 +33,20 @@ Branding driven by env vars:
 
 ## Changelog
 
+### 2026-04-28 — data_entry FULL ACCESS Across CRM Modules
+- **Backend**:
+  - `customer_routes.py` POST: now allows `data_entry` (was admin/sales/support only).
+  - `lead_routes.py` POST: now allows `data_entry` (was admin/sales only). Update/Delete already worked because `check_lead_ownership` only restricts the `sales` role to own leads.
+  - Products, Sales Invoices, Payments POST/PUT/DELETE were already allowed for `data_entry` via existing rbac/router-level guards.
+- **Frontend** (new helper `src/utils/roles.js`):
+  - `Customers.js` — Edit button shown for data_entry; "View Only" label only for support.
+  - `Leads.js` — "+ Add Lead" and per-row "Update" buttons now visible to data_entry.
+  - `SalesInvoices.js` — "+ New Invoice", "Import from Excel", per-row Edit/Delete now visible to data_entry.
+  - `Payments.js` — "+ Record Payment" now visible to data_entry.
+  - `ProductFilters.js` and `ProductTable.js` — Add/Import/Export and per-row Edit now visible to data_entry.
+  - "Attached pics" upload section in Product Details remains hidden for data_entry (explicit role exclusion preserved).
+- **Verified**: Iteration_10 — Backend pytest 12/12 PASS, Frontend Playwright validated all 5 modules + attachment exclusion + employee regression.
+
 ### 2026-04-28 — Daily Tasks: Search & Status Filter
 - **Frontend (DailyTasks.js)**: Added a search bar (matches across description, customer name, status, user name, date, and progress note text) plus a status dropdown (All / Logged / In Progress / Completed) and a live "{n} of {total}" counter. No backend changes — fully client-side.
 - **Verified live**: With 5 tasks, "UITEST9" → 1 of 5; status=completed → 3 of 5.
