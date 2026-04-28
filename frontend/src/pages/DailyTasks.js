@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus, Calendar, Clock, Edit2, CheckCircle, MessageSquarePlus, Lock, User } from 'lucide-react';
+import { Plus, Calendar, Clock, Edit2, CheckCircle, MessageSquarePlus, Lock, User, Search, X } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
 
@@ -24,6 +24,8 @@ const DailyTasks = () => {
   const [success, setSuccess] = useState('');
   const [progressDraft, setProgressDraft] = useState({}); // { [taskId]: 'note text' }
   const [busyTaskId, setBusyTaskId] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all'); // all | logged | in_progress | completed
 
   const authHeaders = () => ({
     'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -177,6 +179,26 @@ const DailyTasks = () => {
     return map[status] || 'bg-gray-100 text-gray-700';
   };
 
+  const filteredTasks = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    return tasks.filter((t) => {
+      if (statusFilter !== 'all' && t.status !== statusFilter) return false;
+      if (!q) return true;
+      const haystack = [
+        t.task_description,
+        t.customer_name,
+        t.status,
+        t.user_name,
+        t.task_date,
+        ...(t.progress_notes || []).map((p) => p.note),
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+      return haystack.includes(q);
+    });
+  }, [tasks, searchQuery, statusFilter]);
+
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
@@ -294,6 +316,48 @@ const DailyTasks = () => {
         </Card>
       )}
 
+      {/* Search & Filter Bar */}
+      {tasks.length > 0 && (
+        <div className="flex flex-col sm:flex-row gap-3" data-testid="daily-tasks-search-bar">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by description, customer, status or progress notes..."
+              className="w-full pl-9 pr-9 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              data-testid="daily-tasks-search-input"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600"
+                aria-label="Clear search"
+                data-testid="daily-tasks-search-clear"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="px-3 py-2 border rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            data-testid="daily-tasks-status-filter"
+          >
+            <option value="all">All statuses</option>
+            <option value="logged">Logged</option>
+            <option value="in_progress">In Progress</option>
+            <option value="completed">Completed</option>
+          </select>
+          <div className="text-xs text-gray-500 self-center sm:ml-2" data-testid="daily-tasks-result-count">
+            {filteredTasks.length} of {tasks.length}
+          </div>
+        </div>
+      )}
+
       {/* Tasks List */}
       <div className="space-y-4">
         {tasks.length === 0 ? (
@@ -304,8 +368,16 @@ const DailyTasks = () => {
               <p className="text-sm mt-2">Start logging your daily tasks to track your work</p>
             </CardContent>
           </Card>
+        ) : filteredTasks.length === 0 ? (
+          <Card>
+            <CardContent className="py-12 text-center text-gray-500" data-testid="daily-tasks-no-match">
+              <Search className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+              <p>No tasks match your search</p>
+              <p className="text-sm mt-2">Try adjusting your filters or clearing the search</p>
+            </CardContent>
+          </Card>
         ) : (
-          tasks.map((task) => {
+          filteredTasks.map((task) => {
             const isClosed = task.status === 'completed';
             return (
               <Card key={task.id} className="hover:shadow-md transition-shadow" data-testid={`task-card-${task.id}`}>

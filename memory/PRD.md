@@ -33,6 +33,10 @@ Branding driven by env vars:
 
 ## Changelog
 
+### 2026-04-28 — Daily Tasks: Search & Status Filter
+- **Frontend (DailyTasks.js)**: Added a search bar (matches across description, customer name, status, user name, date, and progress note text) plus a status dropdown (All / Logged / In Progress / Completed) and a live "{n} of {total}" counter. No backend changes — fully client-side.
+- **Verified live**: With 5 tasks, "UITEST9" → 1 of 5; status=completed → 3 of 5.
+
 ### 2026-04-28 — Add-Progress Bug Fix (PWA Service Worker)
 - **Bug**: Employee got `Uncaught: Failed to execute 'json' on 'Response': body stream already read` when adding a progress note to a Daily Task. Root cause: the PWA `service-worker.js` `fetch` handler intercepted the API POST, attempted `cache.put()` on a non-GET request which threw, and the outer `.catch()` swapped the response with the offline page — leaving the original body unread but the cloned/swapped response already consumed.
 - **Fix**:
