@@ -195,6 +195,7 @@ const CompanySettings = () => {
         setFormData(response.data[0]);
       }
     } catch (error) {
+      console.error(error);
     } finally {
       setLoading(false);
     }

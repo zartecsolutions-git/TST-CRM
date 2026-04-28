@@ -57,8 +57,8 @@ const CustomerProductFilters = ({
             className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
           >
             <option value="">All Customers</option>
-            {customerData.map((customer, idx) => (
-              <option key={idx} value={customer.customer_id}>
+            {customerData.map((customer) => (
+              <option key={customer.customer_id} value={customer.customer_id}>
                 {customer.customer_name}
               </option>
             ))}

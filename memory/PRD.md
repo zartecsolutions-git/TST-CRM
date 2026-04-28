@@ -33,6 +33,22 @@ Branding driven by env vars:
 
 ## Changelog
 
+### 2026-04-28 — Code Quality Phase 1
+- **Backend:**
+  - Renamed shadowed `company` loop var in `routes/company_routes.py:41-47` (silenced false-positive "may be unbound").
+  - Replaced bare `except:` with `except Exception:` in `server.py` and `utils/dependencies.py` ConnectionManager.broadcast.
+  - Removed unused `data` var and 3 placeholder f-strings via `ruff --fix`.
+- **Frontend:**
+  - Replaced array-index `key`s with stable content-based keys across `SalesReports.js` (11 spots), `Activities.js` (2), `Leads.js` (2), `SalesInvoices.js` (1), `Geofences.js` (1), `AnalysisChart.jsx`, `CustomerProductFilters.jsx`. Index keys retained only for two legitimate cases (commission slab inputs in `Users.js` where index IS the controlled-input identity, and `SearchableSelect.jsx` keyboard highlight).
+  - Empty `catch {}` → `console.error(error)` across 11 files (Customers, Leads, Payments, Products, ProductsEnhanced, SalesInvoices, CompanySettings, Reports, Dashboard, Login, locationTracking).
+  - `useMemo` added to 5 flagged hot-path computations: `ActivityForm.jsx` supportUsers + productsForCustomer; `Activities.js` supportUsers; `LocationTracking.js` nonAdminUsers; `AnalysisChart.jsx` total; `ExcelImport.jsx` invoiceTotals.
+  - `DailyTasks.js` — converted `fetchTasks`, `fetchCustomers`, `authHeaders` to `useCallback` and added them to the `useEffect` dep array.
+- **Skipped (deliberately):**
+  - `is None` / `is not None` (correct PEP 8 idiom — review was incorrect).
+  - localStorage → httpOnly cookies migration (Phase 2 — requires dedicated session).
+  - Splitting >500-line components and complex backend functions (Phase 3).
+- **Verified:** Backend smoke 8/8 endpoints 200; ESLint + Ruff clean (excluding `server_old.py` dead-code).
+
 ### 2026-04-28 — data_entry FULL ACCESS Across CRM Modules
 - **Backend**:
   - `customer_routes.py` POST: now allows `data_entry` (was admin/sales/support only).

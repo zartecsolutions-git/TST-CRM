@@ -17,6 +17,7 @@ const Dashboard = () => {
       const response = await api.get('/dashboard/stats');
       setStats(response.data);
     } catch (error) {
+      console.error(error);
     } finally {
       setLoading(false);
     }

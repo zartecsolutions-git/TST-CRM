@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,7 +14,15 @@ const ActivityForm = ({
   onSubmit,
   onCancel
 }) => {
-  const supportUsers = users.filter(u => u.role === 'support');
+  const supportUsers = useMemo(() => users.filter(u => u.role === 'support'), [users]);
+
+  // Pre-filter products that have a serial sold to the selected customer
+  const productsForCustomer = useMemo(() => {
+    if (!newActivity.customer_id) return [];
+    return products.filter(p =>
+      p.serial_numbers?.some(s => s.customer_id === newActivity.customer_id && s.status === 'sold')
+    );
+  }, [products, newActivity.customer_id]);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
@@ -106,13 +114,11 @@ const ActivityForm = ({
                     }}
                   >
                     <option value="">Select Product</option>
-                    {products
-                      .filter(p => p.serial_numbers?.some(s => s.customer_id === newActivity.customer_id && s.status === 'sold'))
-                      .map(product => (
-                        <option key={product.id} value={product.id}>
-                          {product.name} - {product.model || product.category}
-                        </option>
-                      ))}
+                    {productsForCustomer.map(product => (
+                      <option key={product.id} value={product.id}>
+                        {product.name} - {product.model || product.category}
+                      </option>
+                    ))}
                   </select>
                 ) : (
                   <div className="w-full border rounded-md p-2 bg-gray-50 flex items-center justify-center text-gray-500">

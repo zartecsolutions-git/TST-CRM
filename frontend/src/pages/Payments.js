@@ -33,7 +33,8 @@ export default function Payments() {
         });
         setPayments(response.data || []);
       } catch (error) {
-      }
+      console.error(error);
+    }
     };
 
     const fetchInvoices = async () => {
@@ -50,7 +51,8 @@ export default function Payments() {
         }
         setInvoices(filteredInvoices);
       } catch (error) {
-      }
+      console.error(error);
+    }
     };
 
     fetchPayments();

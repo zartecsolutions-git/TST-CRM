@@ -125,6 +125,7 @@ export default function SalesInvoices() {
       const response = await api.get(url);
       setSalesPerformance(response.data || []);
     } catch (error) {
+      console.error(error);
     }
   };
 
@@ -1111,7 +1112,7 @@ export default function SalesInvoices() {
                                     </thead>
                                     <tbody className="divide-y divide-gray-200">
                                       {invoice.items.map((item, idx) => (
-                                        <tr key={idx}>
+                                        <tr key={`${invoice.invoice_number}-item-${item.product_id || item.product_name}-${idx}`}>
                                           <td className="px-3 py-2 text-sm text-gray-900">{item.product_name}</td>
                                           <td className="px-3 py-2 text-sm text-gray-600">{item.division || '-'}</td>
                                           <td className="px-3 py-2 text-sm text-gray-600">{item.category || '-'}</td>

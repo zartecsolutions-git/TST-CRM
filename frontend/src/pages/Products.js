@@ -35,6 +35,7 @@ export default function Products() {
       });
       setProducts(response.data);
     } catch (error) {
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -48,6 +49,7 @@ export default function Products() {
       });
       setCustomers(response.data);
     } catch (error) {
+      console.error(error);
     }
   };
 
@@ -65,6 +67,7 @@ export default function Products() {
       setWarrantyAlerts(warrantyRes.data);
       setMaintenanceAlerts(maintenanceRes.data);
     } catch (error) {
+      console.error(error);
     }
   };
 
@@ -152,6 +155,7 @@ export default function Products() {
       );
       setProductActivities(filtered);
     } catch (error) {
+      console.error(error);
     }
   };
 

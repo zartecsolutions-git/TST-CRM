@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useCurrency } from '../contexts/CurrencyContext';
 import PageHeader from '../components/PageHeader';
@@ -37,6 +37,7 @@ const Activities = () => {
   const [selectedActivity, setSelectedActivity] = useState(null);
   const [statusUpdateNote, setStatusUpdateNote] = useState('');
   const [editAssignedTo, setEditAssignedTo] = useState('');
+  const supportUsers = useMemo(() => users.filter(u => u.role === 'support'), [users]);
   const [completionData, setCompletionData] = useState({
     invoice_number: '',
     work_order_no: '',
@@ -865,8 +866,8 @@ const Activities = () => {
                     )}
                     
                     <div className="space-y-3">
-                      {selectedActivity.progress_updates.slice().reverse().map((update, idx) => (
-                        <div key={idx} className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
+                      {selectedActivity.progress_updates.slice().reverse().map((update) => (
+                        <div key={`progress-${update.timestamp}`} className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
                           <div className="flex justify-between items-start mb-2">
                             <div className="flex-1">
                               <p className="text-sm text-gray-700">{update.update}</p>
@@ -921,8 +922,8 @@ const Activities = () => {
                       🔄 Status History ({selectedActivity.status_history.length} changes)
                     </h4>
                     <div className="space-y-2">
-                      {selectedActivity.status_history.slice().reverse().map((history, idx) => (
-                        <div key={idx} className="bg-gray-50 p-3 rounded-lg">
+                      {selectedActivity.status_history.slice().reverse().map((history) => (
+                        <div key={`status-${history.timestamp}-${history.status}`} className="bg-gray-50 p-3 rounded-lg">
                           <div className="flex justify-between items-start">
                             <div className="flex-1">
                               <Badge className={getStatusBadge(history.status)}>
@@ -1048,13 +1049,11 @@ const Activities = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 >
                   <option value="">-- Unassigned --</option>
-                  {users
-                    .filter(u => u.role === 'support')
-                    .map(user => (
-                      <option key={user.id} value={user.id}>
-                        {user.name}
-                      </option>
-                    ))}
+                  {supportUsers.map(user => (
+                    <option key={user.id} value={user.id}>
+                      {user.name}
+                    </option>
+                  ))}
                 </select>
               </div>
               

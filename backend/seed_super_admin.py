@@ -46,9 +46,9 @@ async def create_super_admin():
     
     await db.users.insert_one(super_admin)
     print("✅ Super Admin created successfully!")
-    print(f"   Email: superadmin@test.com")
-    print(f"   Password: superadmin123")
-    print(f"   Role: super_admin")
+    print("   Email: superadmin@test.com")
+    print("   Password: superadmin123")
+    print("   Role: super_admin")
     
     client.close()
 

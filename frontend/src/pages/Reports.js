@@ -88,6 +88,7 @@ const Reports = () => {
         totalUsers: users.length,
       });
     } catch (error) {
+      console.error(error);
     } finally {
       setLoading(false);
     }

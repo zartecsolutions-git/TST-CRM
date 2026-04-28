@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Pie } from 'react-chartjs-2';
 
@@ -11,6 +11,10 @@ const AnalysisChart = ({
   pieChartData,
   testId 
 }) => {
+  const total = useMemo(
+    () => filteredData.reduce((sum, row) => sum + row.total_sales, 0),
+    [filteredData]
+  );
   return (
     <Card>
       <CardHeader>
@@ -67,8 +71,8 @@ const AnalysisChart = ({
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {filteredData.map((row, idx) => (
-                  <tr key={idx} className="hover:bg-gray-50">
+                {filteredData.map((row) => (
+                  <tr key={row.name} className="hover:bg-gray-50">
                     <td className="px-4 py-2 text-sm">{row.name}</td>
                     <td className="px-4 py-2 text-sm font-semibold">BHD {row.total_sales.toFixed(2)}</td>
                   </tr>
@@ -79,7 +83,7 @@ const AnalysisChart = ({
                   <tr>
                     <td className="px-4 py-2 text-sm font-bold">Total</td>
                     <td className="px-4 py-2 text-sm font-bold">
-                      BHD {filteredData.reduce((sum, row) => sum + row.total_sales, 0).toFixed(2)}
+                      BHD {total.toFixed(2)}
                     </td>
                   </tr>
                 </tfoot>

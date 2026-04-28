@@ -32,6 +32,7 @@ export default function Customers() {
       });
       setDivisions(response.data || []);
     } catch (error) {
+      console.error(error);
     }
   };
 
@@ -43,6 +44,7 @@ export default function Customers() {
       });
       setCustomers(response.data);
     } catch (error) {
+      console.error(error);
     } finally {
       setLoading(false);
     }

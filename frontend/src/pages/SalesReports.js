@@ -519,8 +519,8 @@ export default function SalesReports() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {monthlyData.map((row, idx) => (
-                      <tr key={idx}>
+                    {monthlyData.map((row) => (
+                      <tr key={row.month}>
                         <td className="px-4 py-3 text-sm font-medium text-gray-900">{row.month}</td>
                         <td className="px-4 py-3 text-sm text-gray-600">BHD {row.sales_value.toFixed(2)}</td>
                         <td className="px-4 py-3 text-sm text-gray-600">BHD {row.vat_amount.toFixed(2)}</td>
@@ -581,8 +581,8 @@ export default function SalesReports() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredCustomerData.map((row, idx) => (
-                    <tr key={idx}>
+                  {filteredCustomerData.map((row) => (
+                    <tr key={row.customer_id || row.customer_name}>
                       <td className="px-4 py-3 text-sm font-medium text-gray-900">{row.customer_name}</td>
                       <td className="px-4 py-3 text-sm font-semibold text-gray-900">BHD {row.total_sales.toFixed(2)}</td>
                       <td className="px-4 py-3 text-sm text-gray-600">{row.invoice_count}</td>
@@ -636,8 +636,8 @@ export default function SalesReports() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredProductData.map((row, idx) => (
-                    <tr key={idx}>
+                  {filteredProductData.map((row) => (
+                    <tr key={`${row.part_number || ''}-${row.product_name}`}>
                       <td className="px-4 py-3 text-sm font-medium text-blue-600">{row.part_number || '-'}</td>
                       <td className="px-4 py-3 text-sm font-medium text-gray-900">{row.product_name}</td>
                       <td className="px-4 py-3 text-sm text-gray-600">{row.category || '-'}</td>
@@ -721,8 +721,8 @@ export default function SalesReports() {
                     className="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
                   >
                     <option value="">All Customers</option>
-                    {customerData.map((customer, idx) => (
-                      <option key={idx} value={customer.customer_id}>
+                    {customerData.map((customer) => (
+                      <option key={customer.customer_id} value={customer.customer_id}>
                         {customer.customer_name}
                       </option>
                     ))}
@@ -868,7 +868,7 @@ export default function SalesReports() {
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {filteredTransactions.map((transaction, idx) => (
-                      <tr key={idx} className="hover:bg-blue-50 transition-colors">
+                      <tr key={`${transaction.invoice_number}-${transaction.part_number || ''}-${idx}`} className="hover:bg-blue-50 transition-colors">
                         <td className="px-4 py-3 text-sm text-gray-600">{transaction.invoice_date}</td>
                         <td className="px-4 py-3 text-sm font-medium text-gray-900">{transaction.customer_name}</td>
                         <td className="px-4 py-3 text-sm font-medium text-blue-600">{transaction.part_number || '-'}</td>
@@ -931,8 +931,8 @@ export default function SalesReports() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredSalesRepData.map((row, idx) => (
-                    <tr key={idx}>
+                  {filteredSalesRepData.map((row) => (
+                    <tr key={row.sales_rep_id || row.sales_rep_name}>
                       <td className="px-4 py-3 text-sm font-medium text-gray-900">{row.sales_rep_name}</td>
                       <td className="px-4 py-3 text-sm font-semibold text-gray-900">BHD {row.total_sales.toFixed(2)}</td>
                       <td className="px-4 py-3 text-sm text-gray-600">
@@ -1010,8 +1010,8 @@ export default function SalesReports() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                      {filteredCategoryData.map((row, idx) => (
-                        <tr key={idx}>
+                      {filteredCategoryData.map((row) => (
+                        <tr key={`cat-${row.name}`}>
                           <td className="px-4 py-2 text-sm">{row.name}</td>
                           <td className="px-4 py-2 text-sm font-semibold">BHD {row.total_sales.toFixed(2)}</td>
                         </tr>
@@ -1058,8 +1058,8 @@ export default function SalesReports() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                      {filteredBrandData.map((row, idx) => (
-                        <tr key={idx}>
+                      {filteredBrandData.map((row) => (
+                        <tr key={`brand-${row.name}`}>
                           <td className="px-4 py-2 text-sm">{row.name}</td>
                           <td className="px-4 py-2 text-sm font-semibold">BHD {row.total_sales.toFixed(2)}</td>
                         </tr>
@@ -1106,8 +1106,8 @@ export default function SalesReports() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                      {filteredDivisionData.map((row, idx) => (
-                        <tr key={idx}>
+                      {filteredDivisionData.map((row) => (
+                        <tr key={`div-${row.name}`}>
                           <td className="px-4 py-2 text-sm">{row.name}</td>
                           <td className="px-4 py-2 text-sm font-semibold">BHD {row.total_sales.toFixed(2)}</td>
                         </tr>
@@ -1154,8 +1154,8 @@ export default function SalesReports() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                      {filteredModelData.map((row, idx) => (
-                        <tr key={idx}>
+                      {filteredModelData.map((row) => (
+                        <tr key={`model-${row.name}`}>
                           <td className="px-4 py-2 text-sm">{row.name}</td>
                           <td className="px-4 py-2 text-sm font-semibold">BHD {row.total_sales.toFixed(2)}</td>
                         </tr>
@@ -1202,8 +1202,8 @@ export default function SalesReports() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                      {filteredSubCategoryData.map((row, idx) => (
-                        <tr key={idx}>
+                      {filteredSubCategoryData.map((row) => (
+                        <tr key={`subcat-${row.name}`}>
                           <td className="px-4 py-2 text-sm">{row.name}</td>
                           <td className="px-4 py-2 text-sm font-semibold">BHD {row.total_sales.toFixed(2)}</td>
                         </tr>

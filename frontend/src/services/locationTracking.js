@@ -113,6 +113,7 @@ class LocationTrackingService {
       const position = await this.getCurrentPosition();
       await this.sendLocation(position, token);
     } catch (error) {
+      console.error(error);
     }
   }
 

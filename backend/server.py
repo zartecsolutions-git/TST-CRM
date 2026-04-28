@@ -54,7 +54,8 @@ class ConnectionManager:
         for connection in self.active_connections:
             try:
                 await connection.send_json(message)
-            except:
+            except Exception:
+                # Drop send errors silently — connection will be cleaned up on disconnect
                 pass
 
 manager = ConnectionManager()
@@ -68,8 +69,8 @@ async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
     try:
         while True:
-            data = await websocket.receive_text()
-            # Keep connection alive
+            await websocket.receive_text()
+            # Keep connection alive (no message processing on the server side)
     except WebSocketDisconnect:
         manager.disconnect(websocket)
 

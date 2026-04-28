@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import * as XLSX from 'xlsx';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
@@ -8,6 +8,15 @@ const ExcelImport = ({ onImport, onClose }) => {
   const [previewData, setPreviewData] = useState(null);
   const [error, setError] = useState('');
   const [editableData, setEditableData] = useState([]);
+
+  // Memoized invoice totals so each preview row doesn't reduce on every render
+  const invoiceTotals = useMemo(() => {
+    const totals = {};
+    (editableData || []).forEach((inv, i) => {
+      totals[i] = (inv.items || []).reduce((sum, item) => sum + (Number(item.total) || 0), 0);
+    });
+    return totals;
+  }, [editableData]);
 
   // Download Excel Template
   const downloadTemplate = () => {
@@ -506,7 +515,7 @@ const ExcelImport = ({ onImport, onClose }) => {
                           <tr>
                             <td colSpan="7" className="p-2 text-right">Invoice Total:</td>
                             <td className="p-2 text-right">
-                              {invoice.items.reduce((sum, item) => sum + item.total, 0).toFixed(2)}
+                              {invoiceTotals[invIndex]?.toFixed(2)}
                             </td>
                           </tr>
                         </tfoot>

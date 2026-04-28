@@ -38,13 +38,13 @@ async def list_companies(
     companies = await db.companies.find({}, {"_id": 0}).to_list(1000)
     
     # Convert datetime strings back to datetime objects for pydantic
-    for company in companies:
-        if company.get('created_at') and isinstance(company.get('created_at'), str):
-            company['created_at'] = datetime.fromisoformat(company['created_at'])
-        if company.get('updated_at') and isinstance(company.get('updated_at'), str):
-            company['updated_at'] = datetime.fromisoformat(company['updated_at'])
+    for c in companies:
+        if c.get('created_at') and isinstance(c.get('created_at'), str):
+            c['created_at'] = datetime.fromisoformat(c['created_at'])
+        if c.get('updated_at') and isinstance(c.get('updated_at'), str):
+            c['updated_at'] = datetime.fromisoformat(c['updated_at'])
     
-    return [Company(**company) for company in companies]
+    return [Company(**c) for c in companies]
 
 
 @router.get("/companies/{company_id}", response_model=Company)

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '../contexts/AuthContext';
@@ -13,6 +13,7 @@ export default function LocationTracking() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [locationNames, setLocationNames] = useState({});
+  const nonAdminUsers = useMemo(() => users.filter(u => u.role !== 'admin'), [users]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
@@ -235,7 +236,7 @@ export default function LocationTracking() {
             className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white"
           >
             <option value="all">All Users (Current Location)</option>
-            {users.filter(u => u.role !== 'admin').map(u => (
+            {nonAdminUsers.map(u => (
               <option key={u.id} value={u.id}>{u.name}</option>
             ))}
           </select>

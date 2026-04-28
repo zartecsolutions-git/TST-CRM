@@ -186,6 +186,7 @@ export default function ProductsEnhanced() {
         }));
       }
     } catch (error) {
+      console.error(error);
     }
   };
 

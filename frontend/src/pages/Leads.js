@@ -35,6 +35,7 @@ export default function Leads() {
       });
       setLeads(response.data);
     } catch (error) {
+      console.error(error);
     } finally {
       setLoading(false);
     }
@@ -48,6 +49,7 @@ export default function Leads() {
       });
       setCustomers(response.data);
     } catch (error) {
+      console.error(error);
     }
   };
 
@@ -59,6 +61,7 @@ export default function Leads() {
       });
       setUsers(response.data);
     } catch (error) {
+      console.error(error);
     }
   };
 
@@ -305,8 +308,8 @@ export default function Leads() {
                 </thead>
                 <tbody>
                   {salesRepArray.length > 0 ? (
-                    salesRepArray.map((rep, idx) => (
-                      <tr key={idx} className="border-b hover:bg-blue-50 transition-colors">
+                    salesRepArray.map((rep) => (
+                      <tr key={rep.id || rep.name} className="border-b hover:bg-blue-50 transition-colors">
                         <td className="px-6 py-4">
                           <div className="flex items-center">
                             <div className="w-10 h-10 rounded-full bg-gradient-to-r from-orange-400 to-sky-400 flex items-center justify-center text-white font-bold mr-3">
@@ -492,7 +495,7 @@ export default function Leads() {
                 {selectedLead.updates_history && selectedLead.updates_history.length > 0 ? (
                   <div className="space-y-3 max-h-64 overflow-y-auto border border-gray-200 rounded-lg p-3">
                     {[...selectedLead.updates_history].reverse().map((update, idx) => (
-                      <div key={idx} className="border-l-4 border-blue-500 pl-4 py-2 bg-gradient-to-r from-blue-50 to-white rounded">
+                      <div key={`upd-${update.updated_at}-${idx}`} className="border-l-4 border-blue-500 pl-4 py-2 bg-gradient-to-r from-blue-50 to-white rounded">
                         <div className="flex justify-between items-start mb-2">
                           <span className="font-semibold text-blue-700">Update #{selectedLead.updates_history.length - idx}</span>
                           <div className="text-right">

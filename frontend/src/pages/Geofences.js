@@ -245,8 +245,8 @@ const Geofences = () => {
           <div>
             <h2 className="text-xl font-semibold mb-6">Recent Alerts ({alerts.length})</h2>
             <div className="space-y-4">
-              {alerts.slice(0, 10).map((alert, idx) => (
-                <Card key={idx} className={`border-l-4 ${
+              {alerts.slice(0, 10).map((alert) => (
+                <Card key={alert.id || `${alert.timestamp}-${alert.alert_type}`} className={`border-l-4 ${
                   alert.alert_type === 'enter' ? 'border-l-blue-500' : 'border-l-amber-500'
                 }`}>
                   <CardContent className="p-4">

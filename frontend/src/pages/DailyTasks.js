@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, Calendar, Clock, Edit2, CheckCircle, MessageSquarePlus, Lock, User, Search, X } from 'lucide-react';
@@ -27,32 +27,32 @@ const DailyTasks = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all'); // all | logged | in_progress | completed
 
-  const authHeaders = () => ({
+  const authHeaders = useCallback(() => ({
     'Authorization': `Bearer ${localStorage.getItem('token')}`,
-  });
+  }), []);
 
-  useEffect(() => {
-    fetchTasks();
-    fetchCustomers();
-  }, []);
-
-  const fetchTasks = async () => {
+  const fetchTasks = useCallback(async () => {
     try {
       const response = await fetch(`${API_URL}/api/daily-tasks`, { headers: authHeaders() });
       if (response.ok) setTasks(await response.json());
     } catch (e) {
       console.error('Error fetching tasks:', e);
     }
-  };
+  }, [authHeaders]);
 
-  const fetchCustomers = async () => {
+  const fetchCustomers = useCallback(async () => {
     try {
       const response = await fetch(`${API_URL}/api/daily-tasks/customers`, { headers: authHeaders() });
       if (response.ok) setCustomers(await response.json());
     } catch (e) {
       console.error('Error fetching customers:', e);
     }
-  };
+  }, [authHeaders]);
+
+  useEffect(() => {
+    fetchTasks();
+    fetchCustomers();
+  }, [fetchTasks, fetchCustomers]);
 
   const safeReadError = async (response) => {
     // Defensive: if some intermediary already consumed the body, fall back to status text
