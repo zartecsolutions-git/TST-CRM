@@ -33,6 +33,12 @@ Branding driven by env vars:
 
 ## Changelog
 
+### 2026-04-28 — Employee RBAC Hardening + WebSocket Path Fix
+- **Backend**: Added `block_employee` dependency in `rbac.py` and applied it as router-level guard on 12 modules (customer, product, lead, sales, payment, activity, team, user, dashboard, geofence, master_data, location). Employees now receive 403 on all non-daily-task endpoints. Verified 40/40 pytest cases (iteration_7).
+- **Backend**: Moved WebSocket endpoint from `/ws/locations` to `/api/ws/locations` so K8s ingress (which only forwards `/api/*` to backend) can route it. Verified `wss://…/api/ws/locations` connects.
+- **Frontend**: `ProtectedRoute` now accepts `allowEmployee` prop; only `/daily-tasks` allows employees, all other routes auto-redirect them. `RoleAwareDefault` for `/` and `*`. `Login.js` and `PublicRoute` send employees to `/daily-tasks`, others to `/dashboard`. Verified 7/7 frontend tests (iteration_8).
+- **Frontend**: Geolocation errors downgraded from `console.error` → `console.warn` (LocationContext + locationTracking). LocationContext + AuthContext now skip location polling/WS/tracking entirely for `role==='employee'` to keep the console clean.
+
 ### 2026-04-28 — P0 Login Bug + P1 Role Restrictions
 - **Fixed**: passlib/bcrypt version incompatibility. Replaced `passlib.CryptContext` with direct `bcrypt.checkpw` / `bcrypt.hashpw` (with 72-byte truncation) in `backend/auth.py`. Updated `routes/user_routes.py` admin-reset path to use the shared helper.
 - **Fixed**: Reset password hashes for `admin@zartecsolutions.com`, `rajesh@zartecsolutions.com`. Created `dataentry@test.com` and `employee@test.com` (all `admin123`).

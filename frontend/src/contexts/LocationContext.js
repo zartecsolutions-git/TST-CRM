@@ -72,6 +72,13 @@ export const LocationProvider = ({ children }) => {
 
   // WebSocket connection for real-time updates
   useEffect(() => {
+    // Skip location polling/WS for employee role (no permission, would spam 403s)
+    const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+    if (storedUser?.role === 'employee') {
+      setLoading(false);
+      return;
+    }
+
     fetchCurrentLocations();
 
     // Get backend URL from env

@@ -45,10 +45,12 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('user', JSON.stringify(user));
       setUser(user);
       
-      // Start location tracking after login (automatic, silent)
-      setTimeout(() => {
-        locationTracking.startTracking(access_token);
-      }, 2000);
+      // Start location tracking after login (automatic, silent) — skip for employees
+      if (user?.role !== 'employee') {
+        setTimeout(() => {
+          locationTracking.startTracking(access_token);
+        }, 2000);
+      }
       
       return { success: true, user };
     } catch (error) {
