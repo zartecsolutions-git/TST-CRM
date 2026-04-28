@@ -882,6 +882,20 @@ export default function ProductsEnhanced() {
               </div>
             )}
 
+            {/* Attachments / Pictures Section - Hidden for data_entry role */}
+            {user.role !== 'data_entry' && (
+              <div className="mt-4 bg-yellow-50 p-4 rounded-lg" data-testid="product-attachments-section">
+                <h3 className="font-semibold text-yellow-800 mb-2">📎 Attachments</h3>
+                <input
+                  type="file"
+                  className="text-sm"
+                  accept="image/*,.pdf,.doc,.docx"
+                  data-testid="product-attachment-upload"
+                />
+                <p className="text-xs text-gray-500 mt-1">Upload photos, documents, or maintenance reports</p>
+              </div>
+            )}
+
             <div className="mt-6 flex justify-between">
               {user.role === 'admin' && (
                 <button
