@@ -15,9 +15,9 @@ async def create_customer(
     current_user_id: str = Depends(get_current_user)
 ):
     """Create a new customer"""
-    # Sales and Support can create customers
+    # Admin, Sales, Support and Data Entry can create customers
     user_data = await get_current_user_data(current_user_id)
-    if user_data['role'] not in ['admin', 'sales', 'support']:
+    if user_data['role'] not in ['admin', 'super_admin', 'sales', 'support', 'data_entry']:
         raise HTTPException(status_code=403, detail="Not authorized")
     
     # Check if customer email already exists

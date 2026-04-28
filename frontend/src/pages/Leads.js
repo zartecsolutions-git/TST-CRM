@@ -253,14 +253,14 @@ export default function Leads() {
         
         {/* Mobile Only: Add Lead Button */}
         <div className="lg:hidden mb-3">
-          {(user.role === 'admin' || user.role === 'sales') && (
+          {(user.role === 'admin' || user.role === 'super_admin' || user.role === 'sales' || user.role === 'data_entry') && (
             <button onClick={() => setShowForm(true)} className="bg-gradient-to-r from-blue-700 to-green-700 text-white px-3 py-1.5 rounded-lg w-auto text-base font-bold hover:shadow-lg transition-shadow">+ Add Lead</button>
           )}
         </div>
         
         {/* Desktop Only: Add Lead Button */}
         <div className="hidden lg:block mb-4">
-          {(user.role === 'admin' || user.role === 'sales') && (
+          {(user.role === 'admin' || user.role === 'super_admin' || user.role === 'sales' || user.role === 'data_entry') && (
             <button onClick={() => setShowForm(true)} className="bg-gradient-to-r from-blue-700 to-green-700 text-white px-4 py-2 rounded-lg text-sm font-bold hover:shadow-lg transition-shadow">+ Add Lead</button>
           )}
         </div>
@@ -636,7 +636,7 @@ export default function Leads() {
                     <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
                       {lead.status === 'closed_won' ? (
                         <span className="text-gray-400 text-sm font-medium cursor-not-allowed">🔒 Locked</span>
-                      ) : user?.role === 'admin' ? (
+                      ) : (user?.role === 'admin' || user?.role === 'super_admin' || user?.role === 'sales' || user?.role === 'data_entry') ? (
                         <button onClick={() => openUpdateModal(lead)} className="text-blue-600 hover:text-blue-800 text-sm font-medium">
                           ✏️ Update
                         </button>

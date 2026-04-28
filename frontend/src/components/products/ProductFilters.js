@@ -30,7 +30,7 @@ const ProductFilters = ({
           )}
         </div>
         <div className="flex gap-2">
-          {userRole === 'admin' && (
+          {(userRole === 'admin' || userRole === 'super_admin' || userRole === 'data_entry') && (
             <>
               <button 
                 onClick={onExport} 

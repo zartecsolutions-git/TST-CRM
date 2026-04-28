@@ -58,7 +58,7 @@ const ProductTable = ({
                 >
                   👁️ View
                 </button>
-                {userRole === 'admin' && (
+                {(userRole === 'admin' || userRole === 'super_admin' || userRole === 'data_entry') && (
                   <button
                     onClick={() => onEdit(product)}
                     className="text-green-600 hover:text-green-800"

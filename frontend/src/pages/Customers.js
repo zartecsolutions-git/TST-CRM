@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import PageHeader from '../components/PageHeader';
 import { useAuth } from '../contexts/AuthContext';
+import { canEditRecord } from '../utils/roles';
 import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL;
@@ -240,7 +241,7 @@ export default function Customers() {
                       <td className="px-2 py-2 text-sm whitespace-nowrap">{c.region || '-'}</td>
                       <td className="px-2 py-2 text-sm whitespace-nowrap">{c.business_vertical || '-'}</td>
                       <td className="px-2 py-2 bg-yellow-100 text-center sticky right-0">
-                        {user?.role === 'admin' ? (
+                        {canEditRecord(user?.role) ? (
                           <button 
                             onClick={() => handleEditClick(c)}
                             className="bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700 text-sm whitespace-nowrap font-medium"

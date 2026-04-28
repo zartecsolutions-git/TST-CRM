@@ -132,7 +132,7 @@ export default function Payments() {
     <div className="p-4">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">💳 {user?.role === 'admin' ? 'Payments' : 'My Invoice Payments'}</h1>
-        {user?.role === 'admin' && (
+        {(user?.role === 'admin' || user?.role === 'super_admin' || user?.role === 'data_entry') && (
           <button onClick={() => setShowForm(true)} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
             + Record Payment
           </button>

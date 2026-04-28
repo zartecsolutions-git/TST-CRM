@@ -23,10 +23,10 @@ async def create_lead(
     current_user_id: str = Depends(get_current_user),
     db = Depends(get_db)
 ):
-    # Only sales and admin can create leads
+    # Admin, Sales and Data Entry can create leads
     user_data = await get_current_user_data(current_user_id)
-    if user_data['role'] not in ['admin', 'sales']:
-        raise HTTPException(status_code=403, detail="Only sales team can create leads")
+    if user_data['role'] not in ['admin', 'super_admin', 'sales', 'data_entry']:
+        raise HTTPException(status_code=403, detail="Not authorized")
     
     lead = Lead(**lead_data.model_dump(), created_by=current_user_id)
     lead_dict = lead.model_dump()

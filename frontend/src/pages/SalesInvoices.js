@@ -540,7 +540,7 @@ export default function SalesInvoices() {
             💰 {user?.role === 'admin' ? 'Sales Invoices' : 'My Sales Invoices'}
           </h1>
         </div>
-        {user?.role === 'admin' && (
+        {(user?.role === 'admin' || user?.role === 'super_admin' || user?.role === 'data_entry') && (
           <div className="flex gap-2">
             <Button
               onClick={() => setShowExcelImport(true)}
@@ -1025,7 +1025,7 @@ export default function SalesInvoices() {
                         </td>
                         <td className="px-4 py-3 text-sm" onClick={(e) => e.stopPropagation()}>
                           <div className="flex gap-2">
-                            {user?.role === 'admin' && (
+                            {(user?.role === 'admin' || user?.role === 'super_admin' || user?.role === 'data_entry') && (
                               <>
                                 <Button
                                   size="sm"
