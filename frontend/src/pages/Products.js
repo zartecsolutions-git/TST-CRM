@@ -479,17 +479,20 @@ export default function Products() {
                 </div>
               )}
 
-              {/* Attachments Section */}
-              <div className="mt-4 bg-yellow-50 p-4 rounded-lg print:hidden">
-                <h3 className="font-semibold text-yellow-800 mb-2">📎 Attachments</h3>
-                <input 
-                  type="file" 
-                  onChange={handleAttachmentUpload}
-                  className="text-sm"
-                  accept="image/*,.pdf,.doc,.docx"
-                />
-                <p className="text-xs text-gray-500 mt-1">Upload photos, documents, or maintenance reports</p>
-              </div>
+              {/* Attachments Section - Hidden for data_entry role */}
+              {user.role !== 'data_entry' && (
+                <div className="mt-4 bg-yellow-50 p-4 rounded-lg print:hidden" data-testid="product-attachments-section">
+                  <h3 className="font-semibold text-yellow-800 mb-2">📎 Attachments</h3>
+                  <input 
+                    type="file" 
+                    onChange={handleAttachmentUpload}
+                    className="text-sm"
+                    accept="image/*,.pdf,.doc,.docx"
+                    data-testid="product-attachment-upload"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Upload photos, documents, or maintenance reports</p>
+                </div>
+              )}
 
               <div className="mt-6 flex justify-end print:hidden">
                 <button onClick={() => { setShowDetails(false); setIsEditMode(false); }} className="px-6 py-2 bg-gradient-to-r from-blue-700 to-green-700 text-white rounded-lg hover:shadow-lg">Close</button>

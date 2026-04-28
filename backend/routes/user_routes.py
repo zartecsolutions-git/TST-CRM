@@ -132,9 +132,8 @@ async def change_user_password(
         raise HTTPException(status_code=404, detail="User not found")
     
     # Hash the new password
-    from passlib.context import CryptContext
-    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-    hashed_password = pwd_context.hash(new_password)
+    from auth import get_password_hash
+    hashed_password = get_password_hash(new_password)
     
     # Update password
     result = await db.users.update_one(
