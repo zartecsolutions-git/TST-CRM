@@ -9,7 +9,7 @@ import re
 
 from models import ProductCreate, Product, ProductUpdate
 from auth import get_current_user
-from rbac import require_admin
+from rbac import require_admin, require_admin_or_data_entry
 from utils.dependencies import get_db
 from utils.datetime_helpers import (
     convert_datetime_fields,
@@ -53,8 +53,8 @@ async def create_product(
     current_user_id: str = Depends(get_current_user),
     db = Depends(get_db)
 ):
-    # Only Admin can create products
-    await require_admin(current_user_id)
+    # Admin and Data Entry can create products
+    await require_admin_or_data_entry(current_user_id)
     
     # Check if any serial numbers already exist
     if product_data.serial_numbers:
@@ -146,8 +146,8 @@ async def update_product(
     current_user_id: str = Depends(get_current_user),
     db = Depends(get_db)
 ):
-    # Only Admin can update products
-    await require_admin(current_user_id)
+    # Admin and Data Entry can update products
+    await require_admin_or_data_entry(current_user_id)
     
     update_data = product_update.model_dump(exclude_unset=True)
     validate_update_data(update_data)
@@ -266,8 +266,8 @@ async def delete_product(
     current_user_id: str = Depends(get_current_user),
     db = Depends(get_db)
 ):
-    # Only Admin can delete products
-    await require_admin(current_user_id)
+    # Admin and Data Entry can delete products
+    await require_admin_or_data_entry(current_user_id)
     
     result = await db.products.delete_one({"id": product_id})
     if result.deleted_count == 0:

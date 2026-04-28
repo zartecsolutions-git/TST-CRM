@@ -4,7 +4,7 @@ from typing import List
 from datetime import datetime, timezone
 from models import Customer, CustomerCreate, CustomerUpdate
 from auth import get_current_user
-from rbac import require_admin, get_current_user_data
+from rbac import require_admin, require_admin_or_data_entry, get_current_user_data
 from utils.dependencies import db
 
 router = APIRouter(prefix="/customers", tags=["customers"])
@@ -69,8 +69,8 @@ async def update_customer(
     customer_update: CustomerUpdate,
     current_user_id: str = Depends(get_current_user)
 ):
-    """Update a customer (admin only)"""
-    await require_admin(current_user_id)
+    """Update a customer (admin and data_entry)"""
+    await require_admin_or_data_entry(current_user_id)
     
     update_data = customer_update.model_dump(exclude_unset=True)
     if not update_data:
@@ -100,8 +100,8 @@ async def delete_customer(
     customer_id: str,
     current_user_id: str = Depends(get_current_user)
 ):
-    """Delete a customer (admin only)"""
-    await require_admin(current_user_id)
+    """Delete a customer (admin and data_entry)"""
+    await require_admin_or_data_entry(current_user_id)
     
     result = await db.customers.delete_one({"id": customer_id})
     if result.deleted_count == 0:
