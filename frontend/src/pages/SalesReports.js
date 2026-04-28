@@ -75,10 +75,10 @@ export default function SalesReports() {
   const [searchSubCategory, setSearchSubCategory] = useState('');
   const [searchCustomerProduct, setSearchCustomerProduct] = useState('');  // NEW: Search for customer-product report
 
-  // Remove redirect for sales users - they can now access reports
+  // Allow admin / super_admin / sales / data_entry to view reports.
+  // Other roles (support, employee) get redirected to dashboard.
   useEffect(() => {
-    if (user && user.role !== 'admin' && user.role !== 'sales') {
-      // Only support users are redirected
+    if (user && !['admin', 'super_admin', 'sales', 'data_entry'].includes(user.role)) {
       window.location.href = '/dashboard';
     }
     
@@ -97,7 +97,7 @@ export default function SalesReports() {
   }, [user]);
 
   useEffect(() => {
-    if (user?.role === 'admin' || user?.role === 'sales') {
+    if (user && ['admin', 'super_admin', 'sales', 'data_entry'].includes(user.role)) {
       fetchReports();
     }
   }, [user]);
