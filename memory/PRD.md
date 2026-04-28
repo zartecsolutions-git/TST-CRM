@@ -33,6 +33,14 @@ Branding driven by env vars:
 
 ## Changelog
 
+### 2026-04-28 — Add-Progress Bug Fix (PWA Service Worker)
+- **Bug**: Employee got `Uncaught: Failed to execute 'json' on 'Response': body stream already read` when adding a progress note to a Daily Task. Root cause: the PWA `service-worker.js` `fetch` handler intercepted the API POST, attempted `cache.put()` on a non-GET request which threw, and the outer `.catch()` swapped the response with the offline page — leaving the original body unread but the cloned/swapped response already consumed.
+- **Fix**:
+  - `service-worker.js`: skip all `/api/*`, `/ws/*`, and non-GET requests entirely (no cache, no clone, no replace). Bumped cache to `crm-cache-v2`.
+  - `DailyTasks.js`: defensive `safeReadError(response)` helper reads body as text first then attempts JSON.parse, so future intermediary issues can never throw at the consumer.
+  - `LocationContext.js`: gate `fetchCurrentLocations` on `localStorage.user.role` at call time (skip silently for employees + unauthenticated mounts) — removes the residual 403 console spam reported by testing.
+- **Verified**: Live UI run logs in two consecutive progress notes and "Mark Complete" on a fresh task without any uncaught errors.
+
 ### 2026-04-28 — Daily Tasks: Customer Link + Progress Notes + Close
 - **Model**: Added `customer_id`, `customer_name`, `progress_notes: List[ProgressNote]` to `DailyTask`. Added `ProgressNote` ({note, timestamp}) and `ProgressNoteCreate` models.
 - **Backend endpoints**:

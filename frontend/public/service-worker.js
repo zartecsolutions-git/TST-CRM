@@ -1,6 +1,6 @@
 // Service Worker for PWA offline support
 
-const CACHE_NAME = 'crm-cache-v1';
+const CACHE_NAME = 'crm-cache-v2';
 const urlsToCache = [
   '/',
   '/dashboard',
@@ -26,6 +26,18 @@ self.addEventListener('install', (event) => {
 
 // Fetch event - serve from cache, fallback to network
 self.addEventListener('fetch', (event) => {
+  // Never intercept API or websocket calls — they must reach the server untouched
+  // and must never be cached. Cache-API rejects POST/PUT/DELETE which can also
+  // cause body-stream errors in callers.
+  const url = new URL(event.request.url);
+  if (
+    url.pathname.startsWith('/api/') ||
+    url.pathname.startsWith('/ws/') ||
+    event.request.method !== 'GET'
+  ) {
+    return; // let the browser handle it normally
+  }
+
   event.respondWith(
     caches.match(event.request)
       .then((response) => {

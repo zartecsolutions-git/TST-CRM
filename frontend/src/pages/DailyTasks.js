@@ -52,6 +52,22 @@ const DailyTasks = () => {
     }
   };
 
+  const safeReadError = async (response) => {
+    // Defensive: if some intermediary already consumed the body, fall back to status text
+    try {
+      const text = await response.text();
+      if (!text) return `Request failed (${response.status})`;
+      try {
+        const data = JSON.parse(text);
+        return data.detail || `Request failed (${response.status})`;
+      } catch (_) {
+        return text.slice(0, 200) || `Request failed (${response.status})`;
+      }
+    } catch (_) {
+      return `Request failed (${response.status})`;
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -83,8 +99,7 @@ const DailyTasks = () => {
         setFormData(initialFormData());
         fetchTasks();
       } else {
-        const data = await response.json();
-        setError(data.detail || 'Failed to save task');
+        setError(await safeReadError(response));
       }
     } catch (err) {
       setError('Error saving task');
@@ -127,8 +142,7 @@ const DailyTasks = () => {
         setProgressDraft((prev) => ({ ...prev, [taskId]: '' }));
         await fetchTasks();
       } else {
-        const data = await response.json();
-        setError(data.detail || 'Failed to add progress');
+        setError(await safeReadError(response));
       }
     } finally {
       setBusyTaskId(null);
@@ -147,8 +161,7 @@ const DailyTasks = () => {
         setSuccess('Task marked as completed');
         await fetchTasks();
       } else {
-        const data = await response.json();
-        setError(data.detail || 'Failed to close task');
+        setError(await safeReadError(response));
       }
     } finally {
       setBusyTaskId(null);

@@ -20,11 +20,17 @@ export const LocationProvider = ({ children }) => {
   // Fetch current locations for all users
   const fetchCurrentLocations = useCallback(async () => {
     try {
+      // Gate on auth + role at call time so we don't 403 for employees
+      const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+      if (!storedUser?.id || storedUser.role === 'employee') {
+        setLoading(false);
+        return;
+      }
       const response = await api.get('/locations/current');
       setLocations(response.data);
       setLoading(false);
     } catch (error) {
-      console.error('Error fetching locations:', error);
+      // Silent: 403 for restricted roles is expected; no need to spam console
       setLoading(false);
     }
   }, []);
