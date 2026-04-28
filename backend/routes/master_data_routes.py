@@ -1,11 +1,12 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime
 import os
 from motor.motor_asyncio import AsyncIOMotorClient
+from rbac import block_employee
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(block_employee)])
 
 # MongoDB connection
 MONGO_URL = os.environ.get('MONGO_URL')

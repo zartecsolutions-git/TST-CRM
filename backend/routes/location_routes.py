@@ -5,10 +5,10 @@ import math
 
 from models import LocationCreate, Location, GeofenceAlert, AlertType
 from auth import get_current_user
-from rbac import require_admin
+from rbac import require_admin, block_employee
 from utils.dependencies import get_db, get_websocket_manager
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(block_employee)])
 
 
 def calculate_distance(lat1, lon1, lat2, lon2):

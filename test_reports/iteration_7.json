@@ -1,0 +1,42 @@
+{
+  "summary": "Iteration 7 validation of (a) employee RBAC at router level via block_employee dependency and (b) WebSocket path move to /api/ws/locations + geolocation error downgrade. Backend: 40/40 pytest cases pass — 12 blocked endpoints return 403 for both employee accounts, 3 allowed endpoints return 200, admin/data_entry/sales unaffected (regression intact), WS connect on /api/ws/locations succeeds. Frontend: all 5 logins succeed; geolocation error successfully downgraded from console.error to console.warn ('Location tracking unavailable: User denied Geolocation'); data_entry users still do NOT see product-attachments-section (regression intact, count=0).",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "/api/master-data", "issue": "Endpoint advertised in scope does not exist; actual prefix used is /api/master-data/{categories,brands,divisions,...}. Test was adjusted to use /api/master-data/categories which correctly returns 403 for employees."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {"component": "Dashboard (employee view)", "issue": "Employee 'Rajesh' lands on /dashboard and is shown aggregate widgets (Total Users 19, Total Activities 11, Total Leads 17, Project Value BD103,250, Team Overview / Activities Status). Sidebar correctly hides admin menus, but the stats area still renders pre-populated numbers despite /api/dashboard/stats returning 403. Source of those numbers is likely cached/static fallbacks or hard-coded — should be confirmed and hidden, OR employee should be redirected to /daily-tasks on login.", "selector": "[data-testid='dashboard-stats-cards']", "priority": "MEDIUM"}
+    ],
+    "integration_issues": [
+      {"flow": "Initial WebSocket handshake", "issue": "Transient warning 'WebSocket is closed before the connection is established.' on initial load before the second connect succeeds with 'WebSocket connected'. Not a regression and final state is connected, but suggests a race when navigating during connect.", "affected_selectors": []}
+    ],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_role_access_iter7.py",
+    "/app/test_reports/pytest/pytest_results_iter7.xml"
+  ],
+  "action_items": [
+    "(Optional) Decide policy: either redirect role==='employee' to /daily-tasks on login OR conditionally render the dashboard widgets so employees do not see Total Users / Leads / Activities counts on /dashboard.",
+    "(Optional) Investigate transient 'WebSocket is closed before the connection is established' warning on first page load; possibly debounce socket creation until auth/page is ready."
+  ],
+  "critical_code_review_comments": [
+    "block_employee dependency in /app/backend/rbac.py performs an extra DB lookup per request just to read role; consider caching role in JWT/auth dependency to avoid an additional Mongo round-trip on every gated request.",
+    "rbac.py uses a function-local 'from server import db' inside every dependency to avoid a circular import — this works but is fragile; a shared db.py module would be cleaner.",
+    "Frontend dashboard widgets are still visible to employee role on /dashboard even though sidebar links are hidden; client-side route guard / redirect is missing for employees.",
+    "ProductsEnhanced.js (1183 lines) still exceeds 700-line guideline (carried over from iter6) — recommend splitting."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_role_access_iter7.py (new)"
+  ],
+  "success_rate": {"backend": "100% (40/40 pytest passed; 0 skipped)", "frontend": "100% (5/5 logins, attachments gating regression, WS new path, geolocation downgrade all verified)"},
+  "test_credentials": "All five required credentials verified working. sales role tested with sales@test.com/sales123 (the one in /app/memory/test_credentials.md is agent@test.com/agent123 which is a different sales seed). Suggest adding sales@test.com/sales123 to test_credentials.md.",
+  "seed_data_creation": "None; pytest tests do not create persistent seed data (sales test uses GET only).",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Iteration 7 confirmed backend RBAC + WS path fixes. Pytest file at /app/backend/tests/test_role_access_iter7.py covers employee 403 on 12 endpoints, employee 200 on 3 endpoints, non-employee regression, WS new path connect (and informational old-path probe). Use BASE_URL from REACT_APP_BACKEND_URL. Outstanding (not regressions): (1) employee /dashboard widgets still show aggregate numbers — frontend redirect/guard recommended; (2) transient WS open/close warning on first load.",
+  "rca of the issue": "N/A — this iteration validated fixes rather than triaging a bug. (a) employee router-level guard implemented via block_employee dependency injected into 12 routers — all employee GETs now return 403 with detail 'Employees only have access to Daily Tasks'. (b) WS endpoint registered at @app.websocket('/api/ws/locations') so it routes through the K8s ingress (which only forwards /api/* to backend:8001); frontend LocationContext.js builds wsUrl as backendUrl.replace('http','ws') + '/api/ws/locations'; verified open via Playwright (WS_OPEN logged) and Python websockets client (200 OK upgrade). (c) Geolocation error downgraded to console.warn — confirmed via console capture: 'Location tracking unavailable: User denied Geolocation' is now at warn level, no error-level Geolocation logs."
+}

@@ -4,10 +4,10 @@ from datetime import datetime, timezone
 
 from models import Team, TeamCreate, TeamUpdate
 from auth import get_current_user
-from rbac import require_admin
+from rbac import require_admin, block_employee
 from utils.dependencies import get_db
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(block_employee)])
 
 
 @router.post("/teams", response_model=Team)

@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 
 from models import LeadCreate, Lead, LeadUpdate
 from auth import get_current_user
-from rbac import get_current_user_data
+from rbac import get_current_user_data, block_employee
 from utils.dependencies import get_db
 from utils.datetime_helpers import (
     convert_datetime_fields,
@@ -14,7 +14,7 @@ from utils.datetime_helpers import (
 )
 from utils.validation_helpers import validate_update_data, check_lead_ownership
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(block_employee)])
 
 
 @router.post("/leads", response_model=Lead)

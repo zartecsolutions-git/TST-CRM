@@ -4,10 +4,10 @@ from typing import List
 from datetime import datetime, timezone
 from models import Customer, CustomerCreate, CustomerUpdate
 from auth import get_current_user
-from rbac import require_admin, require_admin_or_data_entry, get_current_user_data
+from rbac import require_admin, require_admin_or_data_entry, get_current_user_data, block_employee
 from utils.dependencies import db
 
-router = APIRouter(prefix="/customers", tags=["customers"])
+router = APIRouter(prefix="/customers", tags=["customers"], dependencies=[Depends(block_employee)])
 
 @router.post("", response_model=Customer)
 async def create_customer(

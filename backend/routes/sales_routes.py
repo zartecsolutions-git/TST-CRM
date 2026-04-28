@@ -5,8 +5,9 @@ from datetime import datetime
 from bson import ObjectId
 import os
 from motor.motor_asyncio import AsyncIOMotorClient
+from rbac import block_employee
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(block_employee)])
 
 # MongoDB connection
 MONGO_URL = os.environ.get('MONGO_URL')

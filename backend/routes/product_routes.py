@@ -9,7 +9,7 @@ import re
 
 from models import ProductCreate, Product, ProductUpdate
 from auth import get_current_user
-from rbac import require_admin, require_admin_or_data_entry
+from rbac import require_admin, require_admin_or_data_entry, block_employee
 from utils.dependencies import get_db
 from utils.datetime_helpers import (
     convert_datetime_fields,
@@ -20,7 +20,7 @@ from utils.datetime_helpers import (
 from utils.validation_helpers import validate_serial_number_uniqueness, validate_update_data
 from utils.csv_helpers import export_products_to_csv
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(block_employee)])
 
 
 def calculate_warranty_finished_date(purchase_date: datetime, warranty_period: str) -> Optional[datetime]:

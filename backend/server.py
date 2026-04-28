@@ -63,7 +63,7 @@ manager = ConnectionManager()
 # WEBSOCKET ENDPOINT
 # ============================================================================
 
-@app.websocket("/ws/locations")
+@app.websocket("/api/ws/locations")
 async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
     try:

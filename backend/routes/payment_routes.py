@@ -5,9 +5,10 @@ from datetime import datetime, timezone
 import os
 from models import Payment, PaymentCreate, PaymentUpdate
 from auth import get_current_user
+from rbac import block_employee
 from utils.dependencies import db
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(block_employee)])
 
 @router.post("/payments", response_model=Payment)
 async def create_payment(

@@ -1,6 +1,20 @@
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, Depends
 from auth import get_current_user
 from models import UserRole
+
+async def block_employee(current_user_id: str = Depends(get_current_user)):
+    """Router-level dependency: 403 if user role is 'employee'.
+    Use on endpoints employees should not access (everything except Daily Tasks)."""
+    from server import db
+    user = await db.users.find_one({"id": current_user_id}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    if user.get('role') == UserRole.employee:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Employees only have access to Daily Tasks"
+        )
+    return current_user_id
 
 async def require_super_admin(current_user_id: str):
     """Middleware to check if user is super admin"""

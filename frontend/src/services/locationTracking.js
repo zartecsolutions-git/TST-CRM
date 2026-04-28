@@ -46,8 +46,9 @@ class LocationTrackingService {
 
       return { success: true };
     } catch (error) {
-      console.error('Location tracking error:', error);
-      return { success: false, message: error.message };
+      // Permission denied or geolocation unavailable is a normal browser state, not an error
+      console.warn('Location tracking unavailable:', error?.message || error);
+      return { success: false, message: error?.message || 'Geolocation unavailable' };
     }
   }
 

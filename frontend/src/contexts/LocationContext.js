@@ -57,7 +57,8 @@ export const LocationProvider = ({ children }) => {
         updateMyLocation(latitude, longitude);
       },
       (error) => {
-        console.error('Geolocation error:', error);
+        // Permission denied / position unavailable / timeout — degrade silently
+        console.warn('Geolocation unavailable:', error?.message || error?.code);
       },
       {
         enableHighAccuracy: true,
@@ -75,7 +76,8 @@ export const LocationProvider = ({ children }) => {
 
     // Get backend URL from env
     const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
-    const wsUrl = backendUrl.replace(/^http/, 'ws') + '/ws/locations';
+    // K8s ingress only routes /api/* to backend, so WS endpoint must live under /api/
+    const wsUrl = backendUrl.replace(/^http/, 'ws') + '/api/ws/locations';
 
     const websocket = new WebSocket(wsUrl);
 

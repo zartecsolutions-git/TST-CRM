@@ -4,10 +4,10 @@ from datetime import datetime, timezone
 
 from models import User, UserUpdate, UserRole
 from auth import get_current_user
-from rbac import require_admin, get_current_user_data
+from rbac import require_admin, get_current_user_data, block_employee
 from utils.dependencies import get_db
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(block_employee)])
 
 
 @router.get("/users", response_model=List[User])

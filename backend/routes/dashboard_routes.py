@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 from datetime import datetime, timedelta, timezone
 
 from auth import get_current_user
+from rbac import block_employee
 from utils.dependencies import get_db
 from utils.dashboard_helpers import (
     get_user_counts,
@@ -12,7 +13,7 @@ from utils.dashboard_helpers import (
     get_system_counts
 )
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(block_employee)])
 
 
 @router.get("/dashboard/stats")
