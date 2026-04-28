@@ -33,6 +33,20 @@ Branding driven by env vars:
 
 ## Changelog
 
+### 2026-04-28 — Daily Tasks: Customer Link + Progress Notes + Close
+- **Model**: Added `customer_id`, `customer_name`, `progress_notes: List[ProgressNote]` to `DailyTask`. Added `ProgressNote` ({note, timestamp}) and `ProgressNoteCreate` models.
+- **Backend endpoints**:
+  - `GET /api/daily-tasks/customers` — lightweight `{id, name}` list (employees/admins only).
+  - `POST /api/daily-tasks/{id}/progress` — append timestamped note; auto-sets status to `in_progress`.
+  - `POST /api/daily-tasks/{id}/close` — set status `completed`; subsequent edits/progress return 409.
+  - `POST/PUT /api/daily-tasks` now hydrate `customer_name` from DB when `customer_id` is provided; reject invalid IDs with 400.
+- **Frontend (DailyTasks.js)**:
+  - Customer dropdown in form (calls new lightweight endpoint).
+  - Per-card "Add Progress" textarea + "Mark Complete" button (with confirm).
+  - Progress notes rendered with timestamps.
+  - When `status==='completed'`: edit/progress UI removed, "Task is closed and locked from edits" indicator shown.
+- **Verified**: Backend 11/11 PASS (iteration_9 pytest at `/app/backend/tests/test_daily_tasks_iter9.py`); Frontend visually validated end-to-end.
+
 ### 2026-04-28 — Employee RBAC Hardening + WebSocket Path Fix
 - **Backend**: Added `block_employee` dependency in `rbac.py` and applied it as router-level guard on 12 modules (customer, product, lead, sales, payment, activity, team, user, dashboard, geofence, master_data, location). Employees now receive 403 on all non-daily-task endpoints. Verified 40/40 pytest cases (iteration_7).
 - **Backend**: Moved WebSocket endpoint from `/ws/locations` to `/api/ws/locations` so K8s ingress (which only forwards `/api/*` to backend) can route it. Verified `wss://…/api/ws/locations` connects.
