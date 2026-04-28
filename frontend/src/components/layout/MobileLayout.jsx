@@ -21,14 +21,15 @@ const MobileLayout = ({ children }) => {
   const isActive = (path) => location.pathname === path;
 
   const navItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: '🏠', roles: ['admin', 'sales', 'support'] },
-    { path: '/activities', label: 'Activities', icon: '📋', roles: ['admin', 'sales', 'support'] },
-    { path: '/customers', label: 'Customers', icon: '👥', roles: ['admin', 'sales', 'support'] },
-    { path: '/products', label: 'Products', icon: '📦', roles: ['admin', 'sales'] },
-    { path: '/leads', label: 'Leads', icon: '🎯', roles: ['admin', 'sales'] },
-    { path: '/sales-invoices', label: 'Sales Invoices', icon: '💰', roles: ['admin', 'sales', 'support'] },
-    { path: '/payments', label: 'Payments', icon: '💳', roles: ['admin', 'sales', 'support'] },
-    { path: '/sales-reports', label: 'Sales Reports', icon: '📈', roles: ['admin', 'sales'] },
+    { path: '/dashboard', label: 'Dashboard', icon: '🏠', roles: ['admin', 'sales', 'support', 'data_entry'] },
+    { path: '/daily-tasks', label: 'Daily Tasks', icon: '✅', roles: ['admin', 'employee'] },
+    { path: '/activities', label: 'Activities', icon: '📋', roles: ['admin', 'sales', 'support', 'data_entry'] },
+    { path: '/customers', label: 'Customers', icon: '👥', roles: ['admin', 'sales', 'support', 'data_entry'] },
+    { path: '/products', label: 'Products', icon: '📦', roles: ['admin', 'sales', 'data_entry'] },
+    { path: '/leads', label: 'Leads', icon: '🎯', roles: ['admin', 'sales', 'data_entry'] },
+    { path: '/sales-invoices', label: 'Sales Invoices', icon: '💰', roles: ['admin', 'sales', 'support', 'data_entry'] },
+    { path: '/payments', label: 'Payments', icon: '💳', roles: ['admin', 'sales', 'support', 'data_entry'] },
+    { path: '/sales-reports', label: 'Sales Reports', icon: '📈', roles: ['admin', 'sales', 'data_entry'] },
   ];
 
   const adminMenuItems = [

@@ -13,6 +13,8 @@ class UserRole(str, Enum):
     admin = "admin"
     sales = "sales"
     support = "support"
+    data_entry = "data_entry"
+    employee = "employee"
 
 
 class UserStatus(str, Enum):

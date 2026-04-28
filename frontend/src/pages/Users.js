@@ -329,6 +329,8 @@ const Users = () => {
                     >
                       <option value="sales">Sales - Can manage customers and leads</option>
                       <option value="support">Support - Can manage activities and customers</option>
+                      <option value="data_entry">Data Entry - Full access except admin menu</option>
+                      <option value="employee">Employee - Can only log daily tasks</option>
                       <option value="admin">Admin - Full system access</option>
                     </select>
                   </div>
@@ -427,6 +429,8 @@ const Users = () => {
                     >
                       <option value="sales">Sales</option>
                       <option value="support">Support</option>
+                      <option value="data_entry">Data Entry</option>
+                      <option value="employee">Employee</option>
                       <option value="admin">Admin</option>
                     </select>
                   </div>

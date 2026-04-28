@@ -21,6 +21,7 @@ import SalesInvoices from './pages/SalesInvoices';
 import SalesReports from './pages/SalesReports';
 import Payments from './pages/Payments';
 import MasterData from './pages/MasterData';
+import DailyTasks from './pages/DailyTasks';
 import '@/App.css';
 import './mobile.css';
 import './mobile-responsive.css';
@@ -261,6 +262,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Payments />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/daily-tasks"
+              element={
+                <ProtectedRoute>
+                  <DailyTasks />
                 </ProtectedRoute>
               }
             />

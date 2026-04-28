@@ -21,6 +21,7 @@ from .location_models import (
     GeofenceCreate, Geofence, GeofenceUpdate, GeofenceAlert
 )
 from .company_models import CompanyBase, CompanyCreate, Company, CompanyUpdate
+from .daily_task_models import DailyTaskCreate, DailyTask, DailyTaskUpdate
 
 __all__ = [
     # User models
@@ -50,4 +51,7 @@ __all__ = [
     
     # Company models
     'CompanyBase', 'CompanyCreate', 'Company', 'CompanyUpdate',
+    
+    # Daily Task models
+    'DailyTaskCreate', 'DailyTask', 'DailyTaskUpdate',
 ]
