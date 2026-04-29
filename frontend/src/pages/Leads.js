@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useCurrency } from '../contexts/CurrencyContext';
-import axios from 'axios';
-
-const API_URL = process.env.REACT_APP_BACKEND_URL;
+import api from '../utils/api';
 
 export default function Leads() {
   const { formatAmount, calculateTotal, companySettings } = useCurrency();
@@ -29,10 +27,7 @@ export default function Leads() {
 
   const fetchLeads = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/leads`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/leads');
       setLeads(response.data);
     } catch (error) {
       console.error(error);
@@ -43,10 +38,7 @@ export default function Leads() {
 
   const fetchCustomers = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/customers`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/customers');
       setCustomers(response.data);
     } catch (error) {
       console.error(error);
@@ -55,10 +47,7 @@ export default function Leads() {
 
   const fetchUsers = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/users`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/users');
       setUsers(response.data);
     } catch (error) {
       console.error(error);
@@ -135,17 +124,14 @@ export default function Leads() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('token');
       // Clean up form data - remove empty datetime fields
       const submitData = { ...formData };
       if (!submitData.expected_close_date) delete submitData.expected_close_date;
       if (!submitData.quote_date) delete submitData.quote_date;
       if (!submitData.estimated_value) delete submitData.estimated_value;
       if (!submitData.quote_value) delete submitData.quote_value;
-      
-      await axios.post(`${API_URL}/api/leads`, submitData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+
+      await api.post('/leads', submitData);
       alert('Lead created successfully!');
       fetchLeads();
       setShowForm(false);
@@ -160,7 +146,6 @@ export default function Leads() {
   const handleUpdate = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('token');
       // Clean up update data - remove empty fields
       const submitData = { ...updateData };
       if (!submitData.quote_date) delete submitData.quote_date;
@@ -168,12 +153,9 @@ export default function Leads() {
       if (!submitData.quote_ref) delete submitData.quote_ref;
       if (!submitData.lost_reason) delete submitData.lost_reason;
       if (!submitData.project_value || submitData.project_value === '') delete submitData.project_value;
-      
-      
-      const response = await axios.put(`${API_URL}/api/leads/${selectedLead.id}`, submitData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      
+
+      await api.put(`/leads/${selectedLead.id}`, submitData);
+
       alert('Lead updated successfully!');
       fetchLeads();
       setShowUpdateModal(false);

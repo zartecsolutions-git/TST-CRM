@@ -1,8 +1,6 @@
-import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { useState, useEffect, useCallback } from 'react';
+import api from '../utils/api';
 import { useAuth } from '../contexts/AuthContext';
-
-const API_URL = process.env.REACT_APP_BACKEND_URL;
 
 export default function Payments() {
   const { user } = useAuth();
@@ -24,40 +22,34 @@ export default function Payments() {
     balance_amount: 0
   });
 
+  const fetchPayments = useCallback(async () => {
+    try {
+      const response = await api.get('/payments');
+      setPayments(response.data || []);
+    } catch (error) {
+      console.error(error);
+    }
+  }, []);
+
+  const fetchInvoices = useCallback(async () => {
+    try {
+      const response = await api.get('/sales/invoices');
+      // Filter invoices based on user role
+      let filteredInvoices = response.data || [];
+      if (user?.role === 'sales' || user?.role === 'support') {
+        // Show only their own invoices
+        filteredInvoices = filteredInvoices.filter(inv => inv.sales_rep_id === user.id);
+      }
+      setInvoices(filteredInvoices);
+    } catch (error) {
+      console.error(error);
+    }
+  }, [user]);
+
   useEffect(() => {
-    const fetchPayments = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get(`${API_URL}/api/payments`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setPayments(response.data || []);
-      } catch (error) {
-      console.error(error);
-    }
-    };
-
-    const fetchInvoices = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const response = await axios.get(`${API_URL}/api/sales/invoices`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        // Filter invoices based on user role
-        let filteredInvoices = response.data || [];
-        if (user?.role === 'sales' || user?.role === 'support') {
-          // Show only their own invoices
-          filteredInvoices = filteredInvoices.filter(inv => inv.sales_rep_id === user.id);
-        }
-        setInvoices(filteredInvoices);
-      } catch (error) {
-      console.error(error);
-    }
-    };
-
     fetchPayments();
     fetchInvoices();
-  }, [user]);
+  }, [fetchPayments, fetchInvoices]);
 
   const handleInvoiceSelect = (invoice) => {
     const invoiceAmount = invoice.total_amount || 0;
@@ -91,10 +83,7 @@ export default function Payments() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('token');
-      await axios.post(`${API_URL}/api/payments`, formData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.post('/payments', formData);
       alert('Payment recorded successfully!');
       await fetchPayments();  // Await to ensure state updates
       setShowForm(false);

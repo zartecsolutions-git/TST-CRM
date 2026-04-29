@@ -2,9 +2,7 @@ import React, { useState, useEffect } from 'react';
 import PageHeader from '../components/PageHeader';
 import { useAuth } from '../contexts/AuthContext';
 import { canEditRecord } from '../utils/roles';
-import axios from 'axios';
-
-const API_URL = process.env.REACT_APP_BACKEND_URL;
+import api from '../utils/api';
 
 export default function Customers() {
   const { user } = useAuth(); // Use AuthContext instead of localStorage
@@ -26,10 +24,7 @@ export default function Customers() {
 
   const fetchDivisions = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/master-data/divisions`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/master-data/divisions');
       setDivisions(response.data || []);
     } catch (error) {
       console.error(error);
@@ -38,10 +33,7 @@ export default function Customers() {
 
   const fetchCustomers = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/customers`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const response = await api.get('/customers');
       setCustomers(response.data);
     } catch (error) {
       console.error(error);
@@ -59,10 +51,7 @@ export default function Customers() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('token');
-      await axios.post(`${API_URL}/api/customers`, formData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.post('/customers', formData);
       fetchCustomers();
       setShowForm(false);
       setFormData({ name: '', email: '', phone: '', address: '', region: '', business_vertical: '', contact_person: '', vat_reg_no: '', cr_no: '', division: '' });
@@ -89,10 +78,7 @@ export default function Customers() {
   const handleUpdateCustomer = async (e) => {
     e.preventDefault();
     try {
-      const token = localStorage.getItem('token');
-      await axios.put(`${API_URL}/api/customers/${selectedCustomer.id}`, editFormData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      await api.put(`/customers/${selectedCustomer.id}`, editFormData);
       alert('Customer updated successfully!');
       fetchCustomers();
       setShowEditModal(false);
