@@ -4,7 +4,8 @@ let trackingInterval = null;
 let watchId = null;
 
 const TRACKING_INTERVAL = 5 * 60 * 1000; // 5 minutes
-const API_URL = process.env.REACT_APP_BACKEND_URL;
+import { BACKEND_URL } from '../utils/backendUrl';
+const API_URL = BACKEND_URL;
 
 class LocationTrackingService {
   constructor() {

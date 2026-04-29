@@ -89,8 +89,8 @@ export const LocationProvider = ({ children }) => {
 
     fetchCurrentLocations();
 
-    // Get backend URL from env
-    const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8001';
+    // Get backend URL from helper (auto-detects current origin in production)
+    const backendUrl = (typeof window !== 'undefined' ? window.location.origin : null) || 'http://localhost:8001';
     // K8s ingress only routes /api/* to backend, so WS endpoint must live under /api/
     const wsUrl = backendUrl.replace(/^http/, 'ws') + '/api/ws/locations';
 

@@ -3,7 +3,8 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Button } from '@/components/ui/button';
 import { Plus, Calendar, Clock, Edit2, CheckCircle, MessageSquarePlus, Lock, User, Search, X } from 'lucide-react';
 
-const API_URL = process.env.REACT_APP_BACKEND_URL;
+import { BACKEND_URL } from '../utils/backendUrl';
+const API_URL = BACKEND_URL;
 
 const initialFormData = () => ({
   task_date: new Date().toISOString().split('T')[0],

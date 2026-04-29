@@ -7,7 +7,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_BACKEND_URL;
+import { BACKEND_URL } from '../utils/backendUrl';
+const API_URL = BACKEND_URL;
 
 // Company Branding from Environment Variables
 const COMPANY_NAME = process.env.REACT_APP_COMPANY_NAME || 'Sales & Service CRM';

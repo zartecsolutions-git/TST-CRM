@@ -1,6 +1,7 @@
 import axios from 'axios';
+import { BACKEND_URL } from './backendUrl';
 
-const API_BASE_URL = process.env.REACT_APP_BACKEND_URL + '/api';
+const API_BASE_URL = BACKEND_URL + '/api';
 
 // Send & receive httpOnly auth cookie on EVERY axios call (covers both this
 // shared `api` instance and any raw `import axios from 'axios'` usage).
