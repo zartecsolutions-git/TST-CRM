@@ -33,6 +33,15 @@ Branding driven by env vars:
 
 ## Changelog
 
+### 2026-04-29 — Phase 2b: Legacy Token-Read Cleanup
+- Migrated `Customers.js`, `Leads.js`, `Payments.js` from `axios.X(URL, { headers: { Authorization: \`Bearer \${localStorage.getItem('token')}\` }})` → shared `api.X(path)` instance (cookie auth via `withCredentials`).
+- Deleted dead `Products.js` (App.js routes `/products` to `ProductsEnhanced.js`).
+- Removed legacy localStorage token interceptor from `utils/api.js` — cookie is now the only auth source.
+- Side-fixes uncovered during cleanup:
+  - `Payments.js` had a `ReferenceError: fetchPayments is not defined` swallowed by try/catch (defined inside useEffect, called from handleSubmit). Hoisted to component scope with `useCallback`.
+  - `Customers.js` edit modal silently dropped `vat_reg_no`, `cr_no`, `division` (not copied into editFormData → blank on save). Now copied.
+- **Verified** (iteration_12): 196 `/api/*` requests audited — ZERO `Authorization` headers; zero `ReferenceError` in console; Customers CRUD passes end-to-end; Phase 1 + Phase 2 regressions intact.
+
 ### 2026-04-29 — Phase 2: httpOnly Cookie Auth Migration
 - **Backend**:
   - `auth.py` rewrote `get_current_user` to read JWT from `auth_token` cookie first, fall back to `Authorization: Bearer …` header. Rejects literal `null` / `undefined` Bearer values. Added `set_auth_cookie` and `clear_auth_cookie` helpers configured for same-origin (`HttpOnly`, `Secure`, `SameSite=Lax`, `Max-Age=7d`).

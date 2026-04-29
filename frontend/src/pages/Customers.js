@@ -70,7 +70,10 @@ export default function Customers() {
       address: customer.address || '',
       region: customer.region || '',
       business_vertical: customer.business_vertical || '',
-      contact_person: customer.contact_person || ''
+      contact_person: customer.contact_person || '',
+      vat_reg_no: customer.vat_reg_no || '',
+      cr_no: customer.cr_no || '',
+      division: customer.division || '',
     });
     setShowEditModal(true);
   };
