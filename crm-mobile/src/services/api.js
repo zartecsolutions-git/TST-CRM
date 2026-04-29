@@ -1,8 +1,13 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Constants from 'expo-constants';
 
-// Backend API URL - replace with your actual backend URL
-const API_URL = 'https://dept-action-crm-1.preview.emergentagent.com/api';
+// Backend API URL — read from Expo config (`expo.extra.apiUrl` in app.json),
+// overridable per build via EAS or app.config.js. NEVER hardcode.
+const API_URL =
+  Constants.expoConfig?.extra?.apiUrl ||
+  Constants.manifest?.extra?.apiUrl ||
+  '';
 
 const api = axios.create({
   baseURL: API_URL,

@@ -29,6 +29,7 @@
       "favicon": "./assets/favicon.png"
     },
     "extra": {
+      "apiUrl": "https://dept-action-crm-1.preview.emergentagent.com/api",
       "eas": {
         "projectId": "d9500a46-1d32-435e-947f-2f23b3c8fce3"
       }
