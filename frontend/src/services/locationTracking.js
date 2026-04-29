@@ -13,7 +13,7 @@ class LocationTrackingService {
   }
 
   // Start automatic location tracking
-  async startTracking(token) {
+  async startTracking() {
     if (!navigator.geolocation) {
       return { success: false, message: 'Geolocation not supported' };
     }
@@ -23,14 +23,14 @@ class LocationTrackingService {
       const position = await this.getCurrentPosition();
       
       // Send initial location
-      await this.sendLocation(position, token);
+      await this.sendLocation(position);
       
       // Start periodic tracking
       this.isTracking = true;
       
       // Use watchPosition for real-time updates (more battery efficient than interval)
       watchId = navigator.geolocation.watchPosition(
-        (position) => this.handlePositionUpdate(position, token),
+        (position) => this.handlePositionUpdate(position),
         (error) => this.handlePositionError(error),
         {
           enableHighAccuracy: false, // Battery-friendly
@@ -41,7 +41,7 @@ class LocationTrackingService {
 
       // Also use interval as backup
       trackingInterval = setInterval(() => {
-        this.updateLocation(token);
+        this.updateLocation();
       }, TRACKING_INTERVAL);
 
       return { success: true };
@@ -64,7 +64,7 @@ class LocationTrackingService {
   }
 
   // Handle position updates from watchPosition
-  async handlePositionUpdate(position, token) {
+  async handlePositionUpdate(position) {
     // Only send if position changed significantly (>50 meters)
     if (this.lastPosition) {
       const distance = this.calculateDistance(
@@ -80,7 +80,7 @@ class LocationTrackingService {
     }
 
     this.lastPosition = position;
-    await this.sendLocation(position, token);
+    await this.sendLocation(position);
   }
 
   // Handle position errors
@@ -108,23 +108,23 @@ class LocationTrackingService {
   }
 
   // Update location manually
-  async updateLocation(token) {
+  async updateLocation() {
     try {
       const position = await this.getCurrentPosition();
-      await this.sendLocation(position, token);
+      await this.sendLocation(position);
     } catch (error) {
       console.error(error);
     }
   }
 
-  // Send location to backend
-  async sendLocation(position, token) {
+  // Send location to backend (auth via httpOnly cookie on same-origin)
+  async sendLocation(position) {
     try {
       const response = await fetch(`${API_URL}/api/locations`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           latitude: position.coords.latitude,
@@ -134,11 +134,12 @@ class LocationTrackingService {
         })
       });
 
-      if (response.ok) {
+      if (!response.ok) {
+        // Restricted role (e.g. employee) — degrade silently
+        return;
       }
     } catch (error) {
-      console.error('Failed to send location:', error);
-      // Store in IndexedDB for retry when online
+      // Network error — buffer for later sync
       this.storeOfflineLocation(position);
     }
   }
@@ -155,8 +156,8 @@ class LocationTrackingService {
     localStorage.setItem('offline_locations', JSON.stringify(offlineLocations));
   }
 
-  // Sync offline locations when back online
-  async syncOfflineLocations(token) {
+  // Sync offline locations when back online (auth via httpOnly cookie)
+  async syncOfflineLocations() {
     const offlineLocations = JSON.parse(localStorage.getItem('offline_locations') || '[]');
     
     if (offlineLocations.length === 0) return;
@@ -165,9 +166,9 @@ class LocationTrackingService {
       for (const location of offlineLocations) {
         await fetch(`${API_URL}/api/locations`, {
           method: 'POST',
+          credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
           },
           body: JSON.stringify(location)
         });

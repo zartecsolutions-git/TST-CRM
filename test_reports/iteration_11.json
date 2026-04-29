@@ -1,0 +1,37 @@
+{
+  "summary": "Iteration 11 - Phase 2 httpOnly cookie auth migration regression. Backend pytest 10/10 PASSED covering cookie issuance (HttpOnly + Secure + SameSite=Lax + Path=/), /me extraction matrix (cookie-only, header-only, no-auth=401, Bearer null=401, Bearer null + valid cookie = 200 cookie-wins), logout cookie clearing, role regression (data_entry/employee). Frontend Playwright validated: login sets HttpOnly cookie not visible to JS, localStorage.token=null + localStorage.user set, hard reload preserves session, direct /customers as admin works, logout (window.confirm accepted) calls /api/auth/logout 200 -> cookie cleared -> redirected /login -> /dashboard revisit redirects to /login (no infinite loop), employee lands on /daily-tasks and is blocked from /customers, data_entry sees Edit buttons (Phase 1 regression preserved).",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_cookie_auth_iter11.py",
+    "/app/test_reports/pytest/pytest_results_iter11.xml"
+  ],
+  "action_items": [
+    "Phase 2b cleanup (already noted by main agent, NOT a bug): some legacy pages still read localStorage.getItem('token') and send 'Authorization: Bearer null'; backend ignores 'Bearer null' and falls back to cookie so it works, but those call sites should be cleaned up.",
+    "Logout uses window.confirm() which is fine functionally but blocks headless tests by default; consider replacing with a styled confirm dialog (shadcn AlertDialog) for better UX consistency. NOT a regression - existing behavior."
+  ],
+  "critical_code_review_comments": [
+    "auth.py: 'Bearer null' is rejected by case-insensitive check ('null' / empty). Implementation is correct and well-commented. Consider also rejecting literal 'undefined' for completeness (frontend tooling sometimes serializes undefined as the string 'undefined').",
+    "auth_routes.py logout endpoint requires auth (Depends(get_current_user)). If a stale frontend without cookie clicks logout it will get 401 silently. Consider making logout idempotent (always return 200, always clear cookie) so the UX never hangs - but current behavior is acceptable since AuthContext also clears local state regardless.",
+    "Cookie config defaults AUTH_COOKIE_SECURE='true' which is correct for production HTTPS but will break local dev over plain http. Document this in README or .env.example.",
+    "axios.defaults.withCredentials = true is set globally; ensure no third-party axios calls (e.g., to public CDNs) are accidentally sending the cookie. Currently only same-origin /api calls are made so this is safe, but worth a defensive note."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_cookie_auth_iter11.py (new)"
+  ],
+  "success_rate": {"backend": "100% (10/10)", "frontend": "100% (7/7 scenarios incl. login/cookie attrs/reload/direct-access/logout/employee-gating/data_entry-edit)"},
+  "test_credentials": "admin@test.com/admin123, admin@zartecsolutions.com/admin123 (data_entry), rajesh@zartecsolutions.com/admin123 (employee) - all working. agent@test.com/agent123 still missing (not relevant to this iteration).",
+  "seed_data_creation": "None - tests are read-only on auth endpoints; no DB rows created.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Cookie auth file: /app/backend/tests/test_cookie_auth_iter11.py. Run: pytest /app/backend/tests/test_cookie_auth_iter11.py -v. Important Playwright caveat: the desktop logout button (data-testid='desktop-logout-btn') triggers a window.confirm; you MUST register page.on('dialog', lambda d: asyncio.create_task(d.accept())) before clicking, otherwise the confirm hangs and the click resolves with no API call. The HttpOnly cookie is verified via page.context.cookies() (httpOnly=True, sameSite='Lax', secure=True). document.cookie correctly does NOT contain auth_token. Bearer null requests with valid cookie correctly succeed (cookie wins) - this is by design while Phase 2b cleanup of legacy localStorage token reads is pending.",
+  "rca of the issue": "N/A - no defects found. Phase 2 migration to httpOnly cookies is functioning correctly end-to-end. The earlier Test4 logout-UI failure in the first Playwright run was a TEST harness issue (window.confirm not auto-accepted), not a product bug - reproduced and resolved by registering a dialog handler."
+}

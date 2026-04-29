@@ -27,27 +27,34 @@ const DailyTasks = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all'); // all | logged | in_progress | completed
 
-  const authHeaders = useCallback(() => ({
-    'Authorization': `Bearer ${localStorage.getItem('token')}`,
-  }), []);
+  // Auth flows via httpOnly cookie set by /api/auth/login. We only need
+  // credentials: 'include' on each fetch call so the cookie is attached.
+  const fetchOpts = useCallback(
+    (extra = {}) => ({
+      credentials: 'include',
+      ...extra,
+      headers: { 'Content-Type': 'application/json', ...(extra.headers || {}) },
+    }),
+    []
+  );
 
   const fetchTasks = useCallback(async () => {
     try {
-      const response = await fetch(`${API_URL}/api/daily-tasks`, { headers: authHeaders() });
+      const response = await fetch(`${API_URL}/api/daily-tasks`, fetchOpts());
       if (response.ok) setTasks(await response.json());
     } catch (e) {
       console.error('Error fetching tasks:', e);
     }
-  }, [authHeaders]);
+  }, [fetchOpts]);
 
   const fetchCustomers = useCallback(async () => {
     try {
-      const response = await fetch(`${API_URL}/api/daily-tasks/customers`, { headers: authHeaders() });
+      const response = await fetch(`${API_URL}/api/daily-tasks/customers`, fetchOpts());
       if (response.ok) setCustomers(await response.json());
     } catch (e) {
       console.error('Error fetching customers:', e);
     }
-  }, [authHeaders]);
+  }, [fetchOpts]);
 
   useEffect(() => {
     fetchTasks();
@@ -88,11 +95,10 @@ const DailyTasks = () => {
         customer_id: formData.customer_id || null,
       };
 
-      const response = await fetch(url, {
+      const response = await fetch(url, fetchOpts({
         method,
-        headers: { 'Content-Type': 'application/json', ...authHeaders() },
         body: JSON.stringify(payload),
-      });
+      }));
 
       if (response.ok) {
         setSuccess(editingTask ? 'Task updated successfully!' : 'Task logged successfully!');
@@ -135,11 +141,10 @@ const DailyTasks = () => {
     if (!note) return;
     setBusyTaskId(taskId);
     try {
-      const response = await fetch(`${API_URL}/api/daily-tasks/${taskId}/progress`, {
+      const response = await fetch(`${API_URL}/api/daily-tasks/${taskId}/progress`, fetchOpts({
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...authHeaders() },
         body: JSON.stringify({ note }),
-      });
+      }));
       if (response.ok) {
         setProgressDraft((prev) => ({ ...prev, [taskId]: '' }));
         await fetchTasks();
@@ -155,10 +160,9 @@ const DailyTasks = () => {
     if (!window.confirm('Mark this task as completed? Once closed, the task cannot be edited.')) return;
     setBusyTaskId(taskId);
     try {
-      const response = await fetch(`${API_URL}/api/daily-tasks/${taskId}/close`, {
+      const response = await fetch(`${API_URL}/api/daily-tasks/${taskId}/close`, fetchOpts({
         method: 'POST',
-        headers: authHeaders(),
-      });
+      }));
       if (response.ok) {
         setSuccess('Task marked as completed');
         await fetchTasks();

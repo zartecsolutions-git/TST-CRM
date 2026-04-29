@@ -78,9 +78,11 @@ export const LocationProvider = ({ children }) => {
 
   // WebSocket connection for real-time updates
   useEffect(() => {
-    // Skip location polling/WS for employee role (no permission, would spam 403s)
+    // Gate everything on having a logged-in user. The cookie-only auth flow
+    // means no token in localStorage, so we use the cached user object as the
+    // auth-state signal. Employees and unauthenticated visitors skip entirely.
     const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
-    if (storedUser?.role === 'employee') {
+    if (!storedUser?.id || storedUser.role === 'employee') {
       setLoading(false);
       return;
     }
