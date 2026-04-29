@@ -11,6 +11,8 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 days
 
 # Cookie configuration — same-origin deployment (frontend + backend share host via ingress)
+# Note: AUTH_COOKIE_SECURE defaults to 'true' for production HTTPS. For local
+# `http://localhost` development, set AUTH_COOKIE_SECURE=false in backend/.env.
 AUTH_COOKIE_NAME = "auth_token"
 AUTH_COOKIE_MAX_AGE = ACCESS_TOKEN_EXPIRE_MINUTES * 60  # seconds
 AUTH_COOKIE_SECURE = os.environ.get('AUTH_COOKIE_SECURE', 'true').lower() == 'true'
@@ -63,7 +65,7 @@ def _extract_token(request: Request) -> Optional[str]:
     if auth_header.startswith("Bearer "):
         candidate = auth_header[7:].strip()
         # Treat literal "null" / empty as missing (frontend sometimes sends Bearer null when token is gone)
-        if candidate and candidate.lower() != "null":
+        if candidate and candidate.lower() not in ("null", "undefined"):
             return candidate
     return None
 

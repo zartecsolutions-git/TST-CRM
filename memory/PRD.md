@@ -33,6 +33,20 @@ Branding driven by env vars:
 
 ## Changelog
 
+### 2026-04-29 — Phase 2: httpOnly Cookie Auth Migration
+- **Backend**:
+  - `auth.py` rewrote `get_current_user` to read JWT from `auth_token` cookie first, fall back to `Authorization: Bearer …` header. Rejects literal `null` / `undefined` Bearer values. Added `set_auth_cookie` and `clear_auth_cookie` helpers configured for same-origin (`HttpOnly`, `Secure`, `SameSite=Lax`, `Max-Age=7d`).
+  - `routes/auth_routes.py` — login/register set the cookie alongside returning the token (transition compat); new `POST /api/auth/logout` clears the cookie. Logout is idempotent (no auth required) so the UX never hangs.
+  - `AUTH_COOKIE_SECURE` env var (default `true`) — set `false` for local `http://localhost` dev.
+- **Frontend**:
+  - `utils/api.js` — `axios.defaults.withCredentials = true` so legacy raw `axios.X` calls auto-include the cookie. 401 response interceptor skips redirect on `/auth/me` AND when already on `/login` or `/register` (kills infinite-redirect loop).
+  - `contexts/AuthContext.js` — bootstrap calls `/api/auth/me` on mount; login no longer stores token in `localStorage` (only the user object as a UX cache); logout calls `/api/auth/logout`.
+  - `services/locationTracking.js` — `fetch` calls now use `credentials: 'include'` instead of injecting `Authorization: Bearer …` from localStorage.
+  - `pages/DailyTasks.js` — `fetchOpts` helper sends `credentials: 'include'` on every raw fetch.
+  - `contexts/LocationContext.js` — gates the location effect on a logged-in user (skips on `/login` to avoid 401 spam).
+- **Backward compat**: legacy `Authorization: Bearer null` headers from un-migrated pages still work because backend ignores them and falls back to the cookie. Cleanup of those call sites is **Phase 2b**.
+- **Verified**: Iteration_11 — Backend pytest 10/10 PASS, Frontend Playwright 7/7 PASS. Auth playbook saved at `/app/auth_testing.md`.
+
 ### 2026-04-28 — Code Quality Phase 1
 - **Backend:**
   - Renamed shadowed `company` loop var in `routes/company_routes.py:41-47` (silenced false-positive "may be unbound").

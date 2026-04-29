@@ -61,8 +61,9 @@ async def login(credentials: UserLogin, response: Response):
 
 
 @router.post("/logout")
-async def logout(response: Response, current_user_id: str = Depends(get_current_user)):
-    """Clear auth cookie and end session."""
+async def logout(response: Response):
+    """Clear auth cookie and end session. Idempotent — safe to call without
+    a valid session so the UX never hangs."""
     clear_auth_cookie(response)
     return {"message": "Logged out"}
 
