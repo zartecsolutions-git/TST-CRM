@@ -30,11 +30,6 @@ next-env.d.ts
 dist/
 dist
 
-# Environment files (comprehensive coverage)
-
-*token.json*
-*credentials.json*
-
 # Logs and debug files
 npm-debug.log*
 yarn-debug.log*
@@ -76,9 +71,17 @@ agenthub/agents/youtube/db
 # Build caches
 .cache/
 
+# Test secrets — never deployed
 memory/test_credentials.md
 
-# Mobile development
+# Sensitive credential files (NOT .env — those are required for deployment)
+*token.json*
+*credentials.json*
+credentials.json
+*.key
+.credentials
+
+# Mobile development build artifacts (Expo / RN)
 android-sdk/crm-mobile/android/app/build/intermediates/cxx/Debug/2u3f1z4l/obj/arm64-v8a/libreactnative.so
 crm-mobile/android/app/build/intermediates/cxx/Debug/2u3f1z4l/obj/arm64-v8a/libreactnative.so
 crm-mobile/node_modules/expo-modules-core/android/build/intermediates/cxx/Debug/3h4in1si/obj/arm64-v8a/libreactnative.so
@@ -91,159 +94,7 @@ crm-mobile/node_modules/react-native-screens/android/build/intermediates/cxx/Deb
 crm-mobile/node_modules/react-native-screens/android/build/intermediates/cxx/Debug/oj595s4o/obj/x86_64/libreactnative.so
 crm-mobile/node_modules/react-native-screens/android/build/intermediates/cxx/Debug/oj595s4o/obj/arm64-v8a/libreactnative.so
 crm-mobile/node_modules/react-native-screens/android/build/intermediates/cxx/Debug/oj595s4o/obj/armeabi-v7a/libreactnative.so
-frontend/node_modules/.cache/default-development/0.pack
-frontend/node_modules/.cache/default-development/1.pack
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
-frontend/node_modules/.cache/default-development/2.pack_
-frontend/node_modules/.cache/default-development/2.pack
-frontend/node_modules/.cache/default-development/4.pack
-frontend/node_modules/.cache/default-development/4.pack
-frontend/node_modules/.cache/default-development/4.pack
-frontend/node_modules/.cache/default-development/5.pack
-frontend/node_modules/.cache/default-development/6.pack
-frontend/node_modules/.cache/default-development/6.pack
-frontend/node_modules/.cache/default-development/7.pack
-frontend/node_modules/.cache/default-development/7.pack
-frontend/node_modules/.cache/default-development/9.pack
+
+# Frontend webpack cache
+frontend/node_modules/.cache/
 frontend/node_modules/.cache/default-development/10.pack
-frontend/node_modules/.cache/default-development/3.pack
-frontend/node_modules/.cache/default-development/3.pack
-frontend/node_modules/.cache/default-development/13.pack
--e 
-# Environment files
-*.env
-*.env.*
-frontend/node_modules/.cache/default-development/1.pack_
--e 
-# Environment and credential files
-.env
-.env.*
-*.env
-credentials.json
-*.pem
-*.key
-.credentials
--e 
-# Environment and credential files
-.env
-.env.*
-*.env
-credentials.json
-*.pem
-*.key
-.credentials
--e 
-# Environment and credential files
-.env
-.env.*
-*.env
-credentials.json
-*.pem
-*.key
-.credentials
-frontend/node_modules/.cache/default-development/8.pack
--e 
-# Environment and credential files
-.env
-.env.*
-*.env
-credentials.json
-*.pem
-*.key
-.credentials
--e 
-# Environment and credential files
-.env
-.env.*
-*.env
-credentials.json
-*.pem
-*.key
-.credentials
--e 
-# Environment and credential files
-.env
-.env.*
-*.env
-credentials.json
-*.pem
-*.key
-.credentials
--e 
-# Environment and credential files
-.env
-.env.*
-*.env
-credentials.json
-*.pem
-*.key
-.credentials
--e 
-# Environment and credential files
-.env
-.env.*
-*.env
-credentials.json
-*.pem
-*.key
-.credentials
--e 
-# Environment and credential files
-.env
-.env.*
-*.env
-credentials.json
-*.pem
-*.key
-.credentials
--e 
-# Environment and credential files
-.env
-.env.*
-*.env
-credentials.json
-*.pem
-*.key
-.credentials
--e 
-# Environment and credential files
-.env
-.env.*
-*.env
-credentials.json
-*.pem
-*.key
-.credentials
--e 
-# Environment and credential files
-.env
-.env.*
-*.env
-credentials.json
-*.pem
-*.key
-.credentials
--e 
-# Environment and credential files
-.env
-.env.*
-*.env
-credentials.json
-*.pem
-*.key
-.credentials
