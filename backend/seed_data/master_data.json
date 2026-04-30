@@ -1,0 +1,122 @@
+{
+  "divisions": [
+    {
+      "name": "Industrial",
+      "description": "",
+      "active": true,
+      "created_at": "2026-04-09T08:28:33.027734"
+    },
+    {
+      "name": "Softwares",
+      "parent_division": "",
+      "description": "",
+      "active": true,
+      "created_at": "2026-04-09T08:43:32.025781"
+    },
+    {
+      "name": "Retail",
+      "parent_division": "",
+      "description": "",
+      "active": true,
+      "created_at": "2026-04-09T09:09:13.580471"
+    }
+  ],
+  "categories": [
+    {
+      "name": "CIJ",
+      "parent_division": "Industrial",
+      "description": "",
+      "active": true,
+      "created_at": "2026-04-09T09:10:44.370089"
+    },
+    {
+      "name": "TIJ",
+      "parent_division": "Industrial",
+      "description": "",
+      "active": true,
+      "created_at": "2026-04-09T09:10:53.083144"
+    },
+    {
+      "name": "EAS",
+      "parent_division": "Retail",
+      "description": "",
+      "active": true,
+      "created_at": "2026-04-09T09:11:08.707677"
+    },
+    {
+      "name": "AI Scale",
+      "parent_division": "Retail",
+      "description": "",
+      "active": true,
+      "created_at": "2026-04-09T09:11:20.266351"
+    }
+  ],
+  "sub_categories": [],
+  "brands": [
+    {
+      "name": "Leadtech",
+      "parent_division": "",
+      "description": "",
+      "active": true,
+      "created_at": "2026-04-09T09:11:44.082694",
+      "parent_category": "CIJ",
+      "updated_at": "2026-04-09T09:31:57.018288"
+    },
+    {
+      "name": "Ronsson",
+      "parent_division": "",
+      "description": "",
+      "active": true,
+      "created_at": "2026-04-09T09:11:50.892342"
+    },
+    {
+      "name": "ZAR TIJ",
+      "parent_division": "",
+      "description": "",
+      "active": true,
+      "created_at": "2026-04-09T09:12:01.988229"
+    },
+    {
+      "name": "Dtect",
+      "parent_division": "",
+      "description": "",
+      "active": true,
+      "created_at": "2026-04-09T09:12:46.594207"
+    },
+    {
+      "name": "Apple Brand",
+      "parent_category": "Laptops",
+      "description": "Premium brand",
+      "active": true,
+      "created_at": "2026-04-09T09:25:19.396278"
+    }
+  ],
+  "models": [
+    {
+      "name": "LT800",
+      "parent_division": "",
+      "description": "",
+      "active": true,
+      "created_at": "2026-04-09T09:12:14.951377",
+      "parent_brand": "Leadtech",
+      "updated_at": "2026-04-09T09:32:10.309228"
+    },
+    {
+      "name": "ZX1 Plus",
+      "parent_division": "",
+      "description": "",
+      "active": true,
+      "created_at": "2026-04-09T09:12:27.778981"
+    },
+    {
+      "name": "MacBook Pro 16",
+      "parent_brand": "Apple Brand",
+      "description": "High-performance laptop",
+      "active": true,
+      "created_at": "2026-04-09T09:25:22.890713"
+    }
+  ],
+  "regions": [],
+  "business_verticals": [],
+  "lead_sources": []
+}
